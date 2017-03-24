@@ -1,4 +1,4 @@
-package services;
+package mobile.slider.app.slider.services;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
