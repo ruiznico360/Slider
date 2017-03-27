@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_permissions_interface"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#3f51b4"
+    tools:context="mobile.slider.app.slider.ui.PermissionsInterface">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:text="SLIDER"
+        android:textSize="75dp"
+        android:id="@+id/sliderHeading"
+        android:gravity="center"/>
+
+    <TextView
+        android:layout_margin="15dp"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/permissionDenied"
+        android:text="Permission Denied Please Allow Permission"
+        android:textSize="35dp"
+        android:textColor="#ff0000"
+        android:gravity="center"
+        android:layout_below="@+id/sliderHeading" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/retryButton"
+        android:layout_below="@id/permissionDenied"
+        android:layout_centerHorizontal="true"
+        android:text="RETRY"
+        android:visibility="invisible"/>
+</RelativeLayout>

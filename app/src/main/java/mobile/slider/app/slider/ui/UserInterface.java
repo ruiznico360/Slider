@@ -110,15 +110,21 @@ public class UserInterface extends FragmentActivity {
         }
     }
     public void checkForServiceEnabled() {
-        if (SystemOverlay.service == null) {
-            Intent i = new Intent(this,SystemOverlay.class);
-            i.putExtra("FromUI",true);
-            startService(i);
-            CustomToast.c = getApplicationContext();
-            SettingsHandler.appContext = getApplicationContext();
-            SettingsHandler.refreshSettings();
+        SettingsHandler.appContext = getApplicationContext();
+        if (SettingsHandler.checkForPermissions()) {
+            if (SystemOverlay.service == null) {
+                Intent i = new Intent(this,SystemOverlay.class);
+                i.putExtra("FromUI",true);
+                startService(i);
+                CustomToast.c = getApplicationContext();
+                SettingsHandler.refreshSettings();
+            }else{
+                disableFloater();
+            }
         }else{
-            disableFloater();
+            //create permissions activity
+            Intent i = new Intent(this, PermissionsInterface.class);
+            startActivity(i);
         }
     }
     public void disableFloater() {

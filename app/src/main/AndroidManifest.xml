@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="mobile.slider.app.slider.ui.UserInterface"
+            android:name=".ui.UserInterface"
             android:autoRemoveFromRecents="true"
             android:excludeFromRecents="true"
             android:finishOnCloseSystemDialogs="true"
@@ -28,23 +28,29 @@
             </intent-filter>
         </activity>
 
-        <service android:name="mobile.slider.app.slider.services.SystemOverlay" />
+        <service android:name=".services.SystemOverlay" />
 
-        <receiver android:name="mobile.slider.app.slider.services.BootReceiver">
+        <receiver android:name=".services.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
         <activity
-            android:name="mobile.slider.app.slider.ui.SettingsActivity"
+            android:name=".ui.PermissionsInterface"
             android:autoRemoveFromRecents="true"
             android:excludeFromRecents="true"
             android:finishOnCloseSystemDialogs="true"
             android:noHistory="true"
             android:taskAffinity=".SettingsActivity"
-            android:theme="@style/AppTheme.SettingsStyle"/>
-
+            android:theme="@style/AppTheme.SettingsStyle" />
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:autoRemoveFromRecents="true"
+            android:excludeFromRecents="true"
+            android:finishOnCloseSystemDialogs="true"
+            android:noHistory="true"
+            android:taskAffinity=".SettingsActivity"
+            android:theme="@style/AppTheme.SettingsStyle" />
     </application>
 
 </manifest>

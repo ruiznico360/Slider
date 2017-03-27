@@ -14,6 +14,9 @@ public class SettingsHandler {
     public static Context appContext;
     public static SharedPreferences sharedPreferences;
 
+    public static boolean checkForPermissions() {
+        return sharedPreferences.getBoolean(SettingType.PERMISSIONS, false);
+    }
     public static void refreshSettings() {
         sharedPreferences = appContext.getSharedPreferences("SETTINGS", Context.MODE_PRIVATE);
         if (!sharedPreferences.contains(SettingType.LANGUAGE)) {

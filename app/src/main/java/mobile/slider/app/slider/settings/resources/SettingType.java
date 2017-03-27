@@ -4,6 +4,7 @@ package mobile.slider.app.slider.settings.resources;
  * Created by Nicolas on 2016-04-20.
  */
 public class SettingType{
+    public static final String PERMISSIONS = "PERMISSIONS";
     public static final String NULL = "NULL";
     public static final String LANGUAGE = "LANGUAGE";
     public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
