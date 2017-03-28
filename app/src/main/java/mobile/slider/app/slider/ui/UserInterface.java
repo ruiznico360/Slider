@@ -56,13 +56,18 @@ public class UserInterface extends FragmentActivity {
     }
     @Override
     public void finish() {
+        if (!getIntent().getExtras().containsKey("Permissions")) {
+            SystemOverlay.overlayFloater.setVisibility(View.VISIBLE);
+            setAnimation();
+        }
         super.finish();
-        SystemOverlay.overlayFloater.setVisibility(View.VISIBLE);
-        setAnimation();
     }
     public void setupActivity() {
+        SettingsHandler.appContext = getApplicationContext();
+        if (!checkPermissions()) {
+            return;
+        }
         checkForServiceEnabled();
-
         if (getIntent().getExtras() != null) {
             if (!getIntent().getExtras().containsKey("FromSettings")) {
                 setAnimation();
@@ -109,22 +114,26 @@ public class UserInterface extends FragmentActivity {
             }
         }
     }
-    public void checkForServiceEnabled() {
-        SettingsHandler.appContext = getApplicationContext();
+    public boolean checkPermissions() {
         if (SettingsHandler.checkForPermissions()) {
-            if (SystemOverlay.service == null) {
-                Intent i = new Intent(this,SystemOverlay.class);
-                i.putExtra("FromUI",true);
-                startService(i);
-                CustomToast.c = getApplicationContext();
-                SettingsHandler.refreshSettings();
-            }else{
-                disableFloater();
-            }
+            return true;
         }else{
             //create permissions activity
             Intent i = new Intent(this, PermissionsInterface.class);
+            getIntent().putExtra("Permissions", true);
             startActivity(i);
+            return false;
+        }
+    }
+    public void checkForServiceEnabled() {
+        if (SystemOverlay.service == null) {
+            Intent i = new Intent(this,SystemOverlay.class);
+            i.putExtra("FromUI",true);
+            startService(i);
+            CustomToast.c = getApplicationContext();
+            SettingsHandler.refreshSettings();
+        }else{
+            disableFloater();
         }
     }
     public void disableFloater() {

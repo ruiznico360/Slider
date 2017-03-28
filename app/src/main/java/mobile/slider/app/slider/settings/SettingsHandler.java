@@ -15,6 +15,7 @@ public class SettingsHandler {
     public static SharedPreferences sharedPreferences;
 
     public static boolean checkForPermissions() {
+        sharedPreferences = appContext.getSharedPreferences("SETTINGS", Context.MODE_PRIVATE);
         return sharedPreferences.getBoolean(SettingType.PERMISSIONS, false);
     }
     public static void refreshSettings() {

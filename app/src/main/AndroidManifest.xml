@@ -19,7 +19,7 @@
             android:excludeFromRecents="true"
             android:finishOnCloseSystemDialogs="true"
             android:noHistory="true"
-            android:taskAffinity=".UserInterface"
+            android:taskAffinity=".ui.UserInterface"
             android:theme="@style/AppTheme.UIStyle">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,11 +37,7 @@
         </receiver>
         <activity
             android:name=".ui.PermissionsInterface"
-            android:autoRemoveFromRecents="true"
-            android:excludeFromRecents="true"
-            android:finishOnCloseSystemDialogs="true"
-            android:noHistory="true"
-            android:taskAffinity=".SettingsActivity"
+            android:taskAffinity=".ui.PermissionsInterface"
             android:theme="@style/AppTheme.SettingsStyle" />
         <activity
             android:name=".ui.SettingsActivity"
@@ -49,7 +45,7 @@
             android:excludeFromRecents="true"
             android:finishOnCloseSystemDialogs="true"
             android:noHistory="true"
-            android:taskAffinity=".SettingsActivity"
+            android:taskAffinity=".ui.SettingsActivity"
             android:theme="@style/AppTheme.SettingsStyle" />
     </application>
 

@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
 import android.os.Build;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -36,6 +37,9 @@ public class Util {
                 return true;
             }
         };
+    }
+    public static void log(String s) {
+        Log.d("Slider", s);
     }
     public static ShapeDrawable backgroundGradientTop(View container) {
         ShapeDrawable d = new ShapeDrawable(new RectShape());
