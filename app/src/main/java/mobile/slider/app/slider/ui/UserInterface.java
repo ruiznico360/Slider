@@ -63,7 +63,7 @@ public class UserInterface extends FragmentActivity {
         super.finish();
     }
     public void setupActivity() {
-        SettingsHandler.appContext = getApplicationContext();
+        SettingsHandler.init(this);
         if (!checkPermissions()) {
             return;
         }

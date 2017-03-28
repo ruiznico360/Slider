@@ -14,12 +14,14 @@ public class SettingsHandler {
     public static Context appContext;
     public static SharedPreferences sharedPreferences;
 
-    public static boolean checkForPermissions() {
+    public static void init(Context c) {
+        appContext = c;
         sharedPreferences = appContext.getSharedPreferences("SETTINGS", Context.MODE_PRIVATE);
+    }
+    public static boolean checkForPermissions() {
         return sharedPreferences.getBoolean(SettingType.PERMISSIONS, false);
     }
     public static void refreshSettings() {
-        sharedPreferences = appContext.getSharedPreferences("SETTINGS", Context.MODE_PRIVATE);
         if (!sharedPreferences.contains(SettingType.LANGUAGE)) {
             resetDefaultSettings();
             return;
