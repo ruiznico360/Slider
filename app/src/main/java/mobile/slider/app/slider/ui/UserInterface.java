@@ -21,6 +21,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +39,7 @@ import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.settings.resources.WindowShader;
 import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.Util;
-
+@ReportsCrashes(formKey = "", mailTo = "ruiznico360@gmail.com;ruiznico360@gmail.com", mode = ReportingInteractionMode.SILENT)
 public class UserInterface extends FragmentActivity {
     private Navigator currentNavigator;
     private int widthPixels;
@@ -56,7 +59,12 @@ public class UserInterface extends FragmentActivity {
     }
     @Override
     public void finish() {
-        if (!getIntent().getExtras().containsKey("Permissions")) {
+        if (getIntent().getExtras() != null) {
+            if (!getIntent().getExtras().containsKey("Permissions")) {
+                SystemOverlay.overlayFloater.setVisibility(View.VISIBLE);
+                setAnimation();
+            }
+        }else{
             SystemOverlay.overlayFloater.setVisibility(View.VISIBLE);
             setAnimation();
         }

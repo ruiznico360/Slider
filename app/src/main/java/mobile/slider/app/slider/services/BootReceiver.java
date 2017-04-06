@@ -5,16 +5,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
 
-import mobile.slider.app.slider.services.SystemOverlay;
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
 
+import mobile.slider.app.slider.services.SystemOverlay;
+import mobile.slider.app.slider.settings.SettingsHandler;
+@ReportsCrashes(formKey = "", mailTo = "ruiznico360@gmail.com;ruiznico360@gmail.com", mode = ReportingInteractionMode.SILENT)
 public class BootReceiver extends BroadcastReceiver {
     public BootReceiver() {
     }
     @Override
     public void onReceive(Context con, Intent intent) {
         if (SystemOverlay.service == null) {
-            Intent i = new Intent(con, SystemOverlay.class);
-            con.startService(i);
+            SettingsHandler.init(con);
+            if(SettingsHandler.checkForPermissions()) {
+                Intent i = new Intent(con, SystemOverlay.class);
+                con.startService(i);
+            }
         }
     }
 }

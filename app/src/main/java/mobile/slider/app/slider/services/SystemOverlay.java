@@ -18,6 +18,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
+
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.settings.SettingsHandler;
 import mobile.slider.app.slider.settings.SettingsUtil;
@@ -28,7 +31,7 @@ import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.Util;
 
-
+@ReportsCrashes(formKey = "", mailTo = "ruiznico360@gmail.com;ruiznico360@gmail.com", mode = ReportingInteractionMode.SILENT)
 public class SystemOverlay extends Service {
     public static SystemOverlay service;
     public static ImageView overlayFloater;
@@ -49,7 +52,6 @@ public class SystemOverlay extends Service {
                 createFloater(View.INVISIBLE);
             }else{
                 CustomToast.c = getApplicationContext();
-                SettingsHandler.appContext = getApplicationContext();
                 SettingsHandler.refreshSettings();
                 createFloater(View.VISIBLE);
 

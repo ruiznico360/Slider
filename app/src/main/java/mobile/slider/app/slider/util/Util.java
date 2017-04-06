@@ -2,6 +2,7 @@ package mobile.slider.app.slider.util;
 
 import android.graphics.Color;
 import android.graphics.LinearGradient;
+import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -18,19 +19,24 @@ public class Util {
     public static View.OnTouchListener darkenAsPressed(final Runnable onClick) {
         return new View.OnTouchListener() {
             private boolean movable = true;
+            private Rect bounds;
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     v.setBackgroundColor(Color.parseColor("#50d3d3d3"));
                     movable = true;
+                    bounds = new Rect(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
                 }
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    movable = false;
+                    if(!bounds.contains(v.getLeft() + (int) event.getX(), v.getTop() + (int) event.getY())){
+                        movable = false;
+                    }else{
+                        movable = true;
+                    }
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (movable) {
                         onClick.run();
-                        movable = true;
                     }
                     v.setBackgroundColor(Color.TRANSPARENT);
                 }

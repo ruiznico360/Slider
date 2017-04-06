@@ -66,6 +66,7 @@ public class SettingsHandler {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.commit();
+        editor.putBoolean(SettingType.PERMISSIONS, true);
         editor.putString(SettingType.LANGUAGE, Language.ENGLISH);
         editor.putInt(SettingType.BACKGROUND_COLOR, SettingsUtil.defaultBackgroundColor());
         editor.putString(SettingType.APP_THEME, AppTheme.LIGHT);
