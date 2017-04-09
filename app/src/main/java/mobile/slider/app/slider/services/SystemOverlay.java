@@ -31,7 +31,6 @@ import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.Util;
 
-@ReportsCrashes(formKey = "", mailTo = "ruiznico360@gmail.com;ruiznico360@gmail.com", mode = ReportingInteractionMode.SILENT)
 public class SystemOverlay extends Service {
     public static SystemOverlay service;
     public static ImageView overlayFloater;
@@ -47,7 +46,7 @@ public class SystemOverlay extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.getExtras() != null) {
+        if (intent != null && intent.getExtras() != null) {
             if (intent.getExtras().containsKey("FromUI")) {
                 createFloater(View.INVISIBLE);
             }else{

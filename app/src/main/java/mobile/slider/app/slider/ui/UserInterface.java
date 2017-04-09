@@ -2,6 +2,7 @@ package mobile.slider.app.slider.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -39,7 +40,6 @@ import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.settings.resources.WindowShader;
 import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.Util;
-@ReportsCrashes(formKey = "", mailTo = "ruiznico360@gmail.com;ruiznico360@gmail.com", mode = ReportingInteractionMode.SILENT)
 public class UserInterface extends FragmentActivity {
     private Navigator currentNavigator;
     private int widthPixels;

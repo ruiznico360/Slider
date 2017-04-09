@@ -10,7 +10,6 @@ import org.acra.annotation.ReportsCrashes;
 
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsHandler;
-@ReportsCrashes(formKey = "", mailTo = "ruiznico360@gmail.com;ruiznico360@gmail.com", mode = ReportingInteractionMode.SILENT)
 public class BootReceiver extends BroadcastReceiver {
     public BootReceiver() {
     }
