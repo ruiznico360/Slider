@@ -6,8 +6,6 @@ import android.content.Context;
 import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
 
-import mobile.slider.app.slider.util.Util;
-
 @ReportsCrashes(
         formUri = "http://www.bugsense.com/api/acra?api_key=b70181c8", formKey = "")
 
