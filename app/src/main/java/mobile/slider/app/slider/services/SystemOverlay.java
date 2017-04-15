@@ -18,9 +18,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
-
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.settings.SettingsHandler;
 import mobile.slider.app.slider.settings.SettingsUtil;
@@ -50,17 +47,11 @@ public class SystemOverlay extends Service {
             if (intent.getExtras().containsKey("FromUI")) {
                 createFloater(View.INVISIBLE);
             }else{
-                CustomToast.c = getApplicationContext();
-                SettingsHandler.refreshSettings();
                 createFloater(View.VISIBLE);
 
             }
         }else{
-            CustomToast.c = getApplicationContext();
-            SettingsHandler.appContext = getApplicationContext();
-            SettingsHandler.refreshSettings();
             createFloater(View.VISIBLE);
-
         }
         return super.onStartCommand(intent, flags, startId);
     }

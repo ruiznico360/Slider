@@ -22,9 +22,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +69,10 @@ public class UserInterface extends FragmentActivity {
     }
     public void setupActivity() {
         SettingsHandler.init(this);
+        SettingsHandler.refreshSettings();
+        CustomToast.makeToast("howdy");
         if (!checkPermissions()) {
+            CustomToast.makeToast("no perms");
             return;
         }
         checkForServiceEnabled();
@@ -126,7 +126,6 @@ public class UserInterface extends FragmentActivity {
         if (SettingsHandler.checkForPermissions()) {
             return true;
         }else{
-            //create permissions activity
             Intent i = new Intent(this, PermissionsInterface.class);
             getIntent().putExtra("Permissions", true);
             startActivity(i);
@@ -138,8 +137,6 @@ public class UserInterface extends FragmentActivity {
             Intent i = new Intent(this,SystemOverlay.class);
             i.putExtra("FromUI",true);
             startService(i);
-            CustomToast.c = getApplicationContext();
-            SettingsHandler.refreshSettings();
         }else{
             disableFloater();
         }
