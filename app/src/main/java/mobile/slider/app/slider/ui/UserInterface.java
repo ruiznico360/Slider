@@ -68,12 +68,6 @@ public class UserInterface extends FragmentActivity {
     }
     public void setupActivity() {
         SettingsWriter.init(this);
-        new Timer().scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                Util.log(SettingsUtil.getPerms() + " " + SettingsUtil.getWindowGravity());
-            }
-        },0,1000);
         if (!checkPermissions()) {
             return;
         }

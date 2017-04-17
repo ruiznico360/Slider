@@ -46,8 +46,8 @@ public class PermissionsInterface extends AppCompatActivity {
             if (requestCode == SYSTEM_ALERT_WINDOW_CODE) {
                 if (Settings.canDrawOverlays(this)) {
                     SettingsUtil.setPerms(true);
+                    finish();
                     Intent i = new Intent(this, UserInterface.class);
-                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(i);
                 } else {
                     retryButton.setVisibility(View.VISIBLE);

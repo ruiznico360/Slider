@@ -39,7 +39,6 @@ public class SettingsWriter {
         SettingsUtil.floaterGravity = sharedPreferences.getString(SettingType.FLOATER_GRAVITY, SettingType.NULL);
         SettingsUtil.floaterPos = sharedPreferences.getInt(SettingType.FLOATER_POS, 0);
         SettingsUtil.floaterIcon = sharedPreferences.getString(SettingType.FLOATER_ICON,SettingType.NULL);
-        CustomToast.makeToast("SET-UP " + new Random().nextInt());
     }
     protected static void setSetting(String setting,int value) {
         SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
