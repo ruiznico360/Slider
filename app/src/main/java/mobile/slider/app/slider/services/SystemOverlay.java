@@ -5,13 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,13 +16,12 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.settings.SettingsHandler;
+import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.SettingType;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.ui.UserInterface;
-import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.Util;
 
 public class SystemOverlay extends Service {
@@ -48,7 +44,6 @@ public class SystemOverlay extends Service {
                 createFloater(View.INVISIBLE);
             }else{
                 createFloater(View.VISIBLE);
-
             }
         }else{
             createFloater(View.VISIBLE);
@@ -158,7 +153,7 @@ public class SystemOverlay extends Service {
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
                         backgroundParams.y = initialY + (int) (event.getRawY() - initialTouchY);
 
-                        SettingsHandler.setSetting(SettingType.FLOATER_POS, initialY + (int) (event.getRawY() - initialTouchY));
+                        SettingsUtil.setFloaterPos(initialY + (int) (event.getRawY() - initialTouchY));
                         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(floater, params);
                         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
 

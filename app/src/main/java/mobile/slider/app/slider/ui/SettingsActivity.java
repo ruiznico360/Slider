@@ -12,13 +12,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.Setting;
-import mobile.slider.app.slider.settings.SettingInflater;
+import mobile.slider.app.slider.settings.resources.SettingInflater;
 import mobile.slider.app.slider.settings.SettingPopup;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.SettingType;

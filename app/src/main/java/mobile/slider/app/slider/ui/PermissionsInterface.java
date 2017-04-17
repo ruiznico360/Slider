@@ -1,14 +1,9 @@
 package mobile.slider.app.slider.ui;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -16,7 +11,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.settings.SettingsHandler;
+import mobile.slider.app.slider.settings.SettingsUtil;
+import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.settings.resources.SettingType;
 import mobile.slider.app.slider.util.Util;
 
@@ -32,6 +28,7 @@ public class PermissionsInterface extends AppCompatActivity {
         init();
     }
     public void init() {
+        SettingsWriter.init(this);
         retryButton = (Button) findViewById(R.id.retryButton);
         permissionDenied = (TextView) findViewById(R.id.permissionDenied);
         if (Build.VERSION.SDK_INT >= 23) {
@@ -48,8 +45,10 @@ public class PermissionsInterface extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23) {
             if (requestCode == SYSTEM_ALERT_WINDOW_CODE) {
                 if (Settings.canDrawOverlays(this)) {
-                    SettingsHandler.setSetting(SettingType.PERMISSIONS, true);
-                    startActivity(new Intent(this, UserInterface.class));
+                    SettingsUtil.setPerms(true);
+                    Intent i = new Intent(this, UserInterface.class);
+                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(i);
                 } else {
                     retryButton.setVisibility(View.VISIBLE);
                     retryButton.setOnClickListener(new View.OnClickListener() {

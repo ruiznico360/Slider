@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.widget.Toast;
 
+import java.util.Random;
+
+import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.resources.AppTheme;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.Language;
@@ -12,19 +15,16 @@ import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.settings.resources.WindowShader;
 import mobile.slider.app.slider.util.CustomToast;
 
-public class SettingsHandler {
+public class SettingsWriter {
     public static Context appContext;
-    private static SharedPreferences sharedPreferences;
+    protected static final String SETTINGS = "SETTINGS";
 
     public static void init(Context c) {
         appContext = c;
-        sharedPreferences = appContext.getSharedPreferences("SETTINGS", Context.MODE_PRIVATE);
-        CustomToast.makeToast("init");
+        refreshSettings();
     }
-    public static boolean checkForPermissions() {
-        return sharedPreferences.getBoolean(SettingType.PERMISSIONS, false);
-    }
-    public static void refreshSettings() {
+    protected static void refreshSettings() {
+        SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
         if (!sharedPreferences.contains(SettingType.LANGUAGE)) {
             resetDefaultSettings();
         }
@@ -39,33 +39,46 @@ public class SettingsHandler {
         SettingsUtil.floaterGravity = sharedPreferences.getString(SettingType.FLOATER_GRAVITY, SettingType.NULL);
         SettingsUtil.floaterPos = sharedPreferences.getInt(SettingType.FLOATER_POS, 0);
         SettingsUtil.floaterIcon = sharedPreferences.getString(SettingType.FLOATER_ICON,SettingType.NULL);
+        CustomToast.makeToast("SET-UP " + new Random().nextInt());
     }
-    public static void setSetting(String setting,int value) {
+    protected static void setSetting(String setting,int value) {
+        SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(setting, value);
-        editor.commit();
-        refreshSettings();
+        boolean commited = editor.commit();
+        if (!commited) {
+            throw new RuntimeException("Editor did not commit for " + setting + " which was being set to " + value);
+        }
     }
-    public static void setSetting(String setting,float value) {
+    protected static void setSetting(String setting,float value) {
+        SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putFloat(setting, value);
-        editor.commit();
-        refreshSettings();
+        boolean commited = editor.commit();
+        if (!commited) {
+            throw new RuntimeException("Editor did not commit for " + setting + " which was being set to " + value);
+        }
     }
-    public static void setSetting(String setting,String value) {
+    protected static void setSetting(String setting,String value) {
+        SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(setting, value);
-        editor.commit();
-        refreshSettings();
+        boolean commited = editor.commit();
+        if (!commited) {
+            throw new RuntimeException("Editor did not commit for " + setting + " which was being set to " + value);
+        }
     }
-    public static void setSetting(String setting,boolean value) {
+    protected static void setSetting(String setting,boolean value) {
+        SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(setting, value);
-        String s = null;
-        editor.commit();
-        refreshSettings();
+        boolean commited = editor.commit();
+        if (!commited) {
+            throw new RuntimeException("Editor did not commit for " + setting + " which was being set to " + value);
+        }
     }
     public static void resetDefaultSettings() {
+        SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(SettingType.PERMISSIONS, true);
         editor.putString(SettingType.LANGUAGE, Language.ENGLISH);
@@ -80,6 +93,9 @@ public class SettingsHandler {
         editor.putInt(SettingType.FLOATER_POS, -1000);
         editor.putString(SettingType.FLOATER_GRAVITY, WindowGravity.RIGHT);
         editor.putString(SettingType.FLOATER_ICON, FloaterIcon.TRANSLUCENT);
-        editor.commit();
+        boolean commited = editor.commit();
+        if (!commited) {
+            throw new RuntimeException("Editor did not commit for resetting");
+        }
     }
 }

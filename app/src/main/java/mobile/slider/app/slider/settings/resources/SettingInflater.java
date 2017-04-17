@@ -1,15 +1,13 @@
-package mobile.slider.app.slider.settings;
+package mobile.slider.app.slider.settings.resources;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -22,6 +20,11 @@ import android.widget.TextView;
 import java.util.HashMap;
 
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.settings.Setting;
+import mobile.slider.app.slider.settings.SettingPopup;
+import mobile.slider.app.slider.settings.SettingsUtil;
+import mobile.slider.app.slider.settings.SettingsWriter;
+import mobile.slider.app.slider.settings.ViewIdGenerator;
 import mobile.slider.app.slider.settings.resources.AppTheme;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.SettingType;
@@ -153,12 +156,12 @@ public class SettingInflater {
 //                p.setOkListener(new Runnable() {
 //                    @Override
 //                    public void run() {
-//                        SettingsHandler.setSetting(SettingType.BACKGROUND_COLOR, picker.getColor());
+//                        SettingsWriter.setSetting(SettingType.BACKGROUND_COLOR, picker.getColor());
 //                        if (SettingsUtil.getAutoSelectAppTheme()) {
 //                            if (SettingsUtil.oppositeBackgroundShade(picker.getColor()) == Color.BLACK) {
-//                                SettingsHandler.setSetting(SettingType.APP_THEME, AppTheme.DARK);
+//                                SettingsWriter.setSetting(SettingType.APP_THEME, AppTheme.DARK);
 //                            } else if (SettingsUtil.oppositeBackgroundShade(picker.getColor()) == Color.WHITE) {
-//                                SettingsHandler.setSetting(SettingType.APP_THEME, AppTheme.LIGHT);
+//                                SettingsWriter.setSetting(SettingType.APP_THEME, AppTheme.LIGHT);
 //                            }
 //                        }
 //                        p.remove();
@@ -185,9 +188,9 @@ public class SettingInflater {
             @Override
             public void onClick(View v) {
                 if (s.setTo.equalsIgnoreCase(AppTheme.DARK)) {
-                    SettingsHandler.setSetting(SettingType.APP_THEME, AppTheme.LIGHT);
+                    SettingsUtil.setAppTheme(AppTheme.LIGHT);
                 } else if (s.setTo.equalsIgnoreCase(AppTheme.LIGHT)) {
-                    SettingsHandler.setSetting(SettingType.APP_THEME, AppTheme.DARK);
+                    SettingsUtil.setAppTheme(AppTheme.DARK);
                 }
                 act.refreshActivity();
             }
@@ -206,13 +209,13 @@ public class SettingInflater {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     if (SettingsUtil.oppositeBackgroundShade(SettingsUtil.getBackgroundColor()) == Color.BLACK) {
-                        SettingsHandler.setSetting(SettingType.APP_THEME, AppTheme.DARK);
+                        SettingsUtil.setAppTheme(AppTheme.DARK);
                     } else if (SettingsUtil.oppositeBackgroundShade(SettingsUtil.getBackgroundColor()) == Color.WHITE) {
-                        SettingsHandler.setSetting(SettingType.APP_THEME, AppTheme.LIGHT);
+                        SettingsUtil.setAppTheme(AppTheme.LIGHT);
                     }
-                    SettingsHandler.setSetting(SettingType.APP_THEME_AUTO_SELECT, true);
+                    SettingsUtil.setAutoSelectAppTheme(true);
                 }else {
-                    SettingsHandler.setSetting(SettingType.APP_THEME_AUTO_SELECT, false);
+                    SettingsUtil.setAutoSelectAppTheme(false);
                 }
                 act.refreshActivity();
             }
@@ -269,7 +272,7 @@ public class SettingInflater {
                 p.setOkListener(new Runnable() {
                     @Override
                     public void run() {
-                        SettingsHandler.setSetting(SettingType.WINDOW_SIZE, seekBar.getProgress() + 50);
+                        SettingsUtil.setWindowSize(seekBar.getProgress() + 50);
                         p.remove();
                     }
                 });
@@ -285,9 +288,9 @@ public class SettingInflater {
             @Override
             public void onClick(View v) {
                 if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-                    SettingsHandler.setSetting(SettingType.WINDOW_GRAVITY, WindowGravity.LEFT);
+                    SettingsUtil.setWindowGravity(WindowGravity.LEFT);
                 } else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
-                    SettingsHandler.setSetting(SettingType.WINDOW_GRAVITY, WindowGravity.RIGHT);
+                    SettingsUtil.setWindowGravity(WindowGravity.RIGHT);
                 }
                 act.refreshActivity();
             }
@@ -347,13 +350,13 @@ public class SettingInflater {
                     @Override
                     public void run() {
                         if (group.getCheckedRadioButtonId() == both.getId()) {
-                            SettingsHandler.setSetting(SettingType.WINDOW_SHADERS, WindowShader.BOTH);
+                            SettingsUtil.setWindowShaders(WindowShader.BOTH);
                         } else if (group.getCheckedRadioButtonId() == top.getId()) {
-                            SettingsHandler.setSetting(SettingType.WINDOW_SHADERS, WindowShader.TOP);
+                            SettingsUtil.setWindowShaders(WindowShader.TOP);
                         } else if (group.getCheckedRadioButtonId() == bottom.getId()) {
-                            SettingsHandler.setSetting(SettingType.WINDOW_SHADERS, WindowShader.BOTTOM);
+                            SettingsUtil.setWindowShaders(WindowShader.BOTTOM);
                         } else if (group.getCheckedRadioButtonId() == neither.getId()) {
-                            SettingsHandler.setSetting(SettingType.WINDOW_SHADERS, WindowShader.NEITHER);
+                            SettingsUtil.setWindowShaders(WindowShader.NEITHER);
                         }
                         s.remove();
                     }
@@ -412,7 +415,7 @@ public class SettingInflater {
                 p.setOkListener(new Runnable() {
                     @Override
                     public void run() {
-                        SettingsHandler.setSetting(SettingType.FLOATER_SIZE, seekBar.getProgress() * 10);
+                        SettingsUtil.setFloaterSize(seekBar.getProgress() * 10);
                         p.remove();
                     }
                 });
@@ -428,9 +431,9 @@ public class SettingInflater {
             @Override
             public void onClick(View v) {
                 if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                    SettingsHandler.setSetting(SettingType.FLOATER_GRAVITY, WindowGravity.LEFT);
+                    SettingsUtil.setFloaterGravity(WindowGravity.LEFT);
                 } else if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                    SettingsHandler.setSetting(SettingType.FLOATER_GRAVITY, WindowGravity.RIGHT);
+                    SettingsUtil.setFloaterGravity(WindowGravity.RIGHT);
                 }
                 act.refreshActivity();
             }
@@ -517,7 +520,7 @@ public class SettingInflater {
                 p.setOkListener(new Runnable() {
                                     @Override
                                     public void run() {
-                                        SettingsHandler.setSetting(SettingType.FLOATER_ICON, selected);
+                                        SettingsUtil.setFloaterIcon(selected);
                                         p.remove();
                                     }
                                 }
@@ -545,7 +548,7 @@ public class SettingInflater {
                 p.setOkListener(new Runnable() {
                     @Override
                     public void run() {
-                        SettingsHandler.resetDefaultSettings();
+                        SettingsWriter.resetDefaultSettings();
                         p.remove();
                     }
                 });

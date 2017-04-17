@@ -1,8 +1,6 @@
 package mobile.slider.app.slider.ui;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -19,18 +17,19 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.ContentFragment;
 import mobile.slider.app.slider.content.InternetHandler;
 import mobile.slider.app.slider.content.animations.ZoomAnimation;
 import mobile.slider.app.slider.services.SystemOverlay;
-import mobile.slider.app.slider.settings.SettingsHandler;
+import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.AppTheme;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
@@ -68,11 +67,14 @@ public class UserInterface extends FragmentActivity {
         super.finish();
     }
     public void setupActivity() {
-        SettingsHandler.init(this);
-        SettingsHandler.refreshSettings();
-        CustomToast.makeToast("howdy");
+        SettingsWriter.init(this);
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                Util.log(SettingsUtil.getPerms() + " " + SettingsUtil.getWindowGravity());
+            }
+        },0,1000);
         if (!checkPermissions()) {
-            CustomToast.makeToast("no perms");
             return;
         }
         checkForServiceEnabled();
@@ -123,7 +125,10 @@ public class UserInterface extends FragmentActivity {
         }
     }
     public boolean checkPermissions() {
-        if (SettingsHandler.checkForPermissions()) {
+        if (SettingsUtil.getPerms() ) {
+            return true;
+        }else if (Build.VERSION.SDK_INT < 23) {
+            SettingsUtil.setPerms(true);
             return true;
         }else{
             Intent i = new Intent(this, PermissionsInterface.class);
