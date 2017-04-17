@@ -21,6 +21,7 @@ import mobile.slider.app.slider.settings.resources.SettingInflater;
 import mobile.slider.app.slider.settings.SettingPopup;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.SettingType;
+import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.Util;
 
 public class SettingsActivity extends Activity {
@@ -73,7 +74,7 @@ public class SettingsActivity extends Activity {
     public void backPressed() {
         finish();
         Intent i = new Intent(this, UserInterface.class);
-        i.putExtra("FromSettings", true);
+        i.putExtra(IntentExtra.FROM_SETTINGS, true);
         startActivity(i);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }

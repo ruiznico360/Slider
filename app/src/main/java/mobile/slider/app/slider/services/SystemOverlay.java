@@ -22,6 +22,7 @@ import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.SettingType;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.ui.UserInterface;
+import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.Util;
 
 public class SystemOverlay extends Service {
@@ -40,7 +41,7 @@ public class SystemOverlay extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getExtras() != null) {
-            if (intent.getExtras().containsKey("FromUI")) {
+            if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
                 createFloater(View.INVISIBLE);
             }else{
                 createFloater(View.VISIBLE);
@@ -62,12 +63,16 @@ public class SystemOverlay extends Service {
         final ImageView floater = new ImageView(getApplicationContext());
         final ImageView background = new ImageView(getApplicationContext());
 
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ALERT, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
-        params.height = SettingsUtil.getFloaterSize();
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);        params.height = SettingsUtil.getFloaterSize();
         params.y = SettingsUtil.getFloaterPos();
 
-        final WindowManager.LayoutParams backgroundParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ALERT, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, PixelFormat.TRANSLUCENT);
-        backgroundParams.height = SettingsUtil.getFloaterSize();
+        final WindowManager.LayoutParams backgroundParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);        backgroundParams.height = SettingsUtil.getFloaterSize();
         backgroundParams.y = SettingsUtil.getFloaterPos();
 
         if (overlayFloater != null) {

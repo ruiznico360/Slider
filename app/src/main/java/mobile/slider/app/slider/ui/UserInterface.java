@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -35,6 +36,7 @@ import mobile.slider.app.slider.settings.resources.AppTheme;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.settings.resources.WindowShader;
 import mobile.slider.app.slider.util.CustomToast;
+import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.Util;
 public class UserInterface extends FragmentActivity {
     private Navigator currentNavigator;
@@ -56,7 +58,7 @@ public class UserInterface extends FragmentActivity {
     @Override
     public void finish() {
         if (getIntent().getExtras() != null) {
-            if (!getIntent().getExtras().containsKey("Permissions")) {
+            if (!getIntent().getExtras().containsKey(IntentExtra.TO_PERMISSIONS_ACTIVITY)) {
                 SystemOverlay.overlayFloater.setVisibility(View.VISIBLE);
                 setAnimation();
             }
@@ -68,17 +70,20 @@ public class UserInterface extends FragmentActivity {
     }
     public void setupActivity() {
         SettingsWriter.init(this);
-        if (!checkPermissions()) {
-            return;
-        }
-        checkForServiceEnabled();
         if (getIntent().getExtras() != null) {
-            if (!getIntent().getExtras().containsKey("FromSettings")) {
+            if (!getIntent().getExtras().containsKey(IntentExtra.FROM_SETTINGS)) {
                 setAnimation();
             }
         }else{
             setAnimation();
         }
+        if (!SettingsUtil.checkPermissions(this)) {
+            Intent i = new Intent(this, PermissionsInterface.class);
+            getIntent().putExtra(IntentExtra.TO_PERMISSIONS_ACTIVITY, true);
+            startActivity(i);
+            return;
+        }
+        checkForServiceEnabled();
 
         initializeColors();
         setUpNavigator();
@@ -118,23 +123,10 @@ public class UserInterface extends FragmentActivity {
             }
         }
     }
-    public boolean checkPermissions() {
-        if (SettingsUtil.getPerms() ) {
-            return true;
-        }else if (Build.VERSION.SDK_INT < 23) {
-            SettingsUtil.setPerms(true);
-            return true;
-        }else{
-            Intent i = new Intent(this, PermissionsInterface.class);
-            getIntent().putExtra("Permissions", true);
-            startActivity(i);
-            return false;
-        }
-    }
     public void checkForServiceEnabled() {
         if (SystemOverlay.service == null) {
             Intent i = new Intent(this,SystemOverlay.class);
-            i.putExtra("FromUI",true);
+            i.putExtra(IntentExtra.FROM_UI,true);
             startService(i);
         }else{
             disableFloater();

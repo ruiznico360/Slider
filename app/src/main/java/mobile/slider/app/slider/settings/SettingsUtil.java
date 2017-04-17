@@ -1,8 +1,14 @@
 package mobile.slider.app.slider.settings;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
+import android.provider.Settings;
 
 import mobile.slider.app.slider.settings.resources.SettingType;
+import mobile.slider.app.slider.ui.PermissionsInterface;
+import mobile.slider.app.slider.util.IntentExtra;
 
 public class SettingsUtil {
     protected static String floaterGravity;
@@ -12,8 +18,16 @@ public class SettingsUtil {
     protected static String appTheme;
     protected static String floaterIcon;
     protected static int backgroundColor,windowSize, floaterSize,floaterPos;
-    protected static boolean autoSelectAppTheme,perms;
+    protected static boolean autoSelectAppTheme;
 
+    public static boolean checkPermissions(Context c) {
+        if (Build.VERSION.SDK_INT < 23) {
+            return true;
+        }else if (Settings.canDrawOverlays(c)) {
+            return true;
+        }
+        return false;
+    }
     public static int oppositeBackgroundShade(int color) {
         double darkness = 1-(0.299*Color.red(color) + 0.587*Color.green(color) + 0.114*Color.blue(color))/255;
         if(darkness<0.5){
@@ -64,14 +78,6 @@ public class SettingsUtil {
         return floaterIcon;
     }
 
-    public static boolean getPerms() {
-        return perms;
-    }
-
-    public static void setPerms(boolean perms) {
-        SettingsUtil.perms = perms;
-        SettingsWriter.setSetting(SettingType.PERMISSIONS, perms);
-    }
     public static void setFloaterGravity(String floaterGravity) {
         SettingsUtil.floaterGravity = floaterGravity;
         SettingsWriter.setSetting(SettingType.FLOATER_GRAVITY , floaterGravity);
