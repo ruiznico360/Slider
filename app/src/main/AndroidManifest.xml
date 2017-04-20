@@ -36,6 +36,11 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".services.Restarter">
+            <intent-filter>
+                <action android:name="RestartSensor" />
+            </intent-filter>
+        </receiver>
         <activity
             android:name=".ui.PermissionsInterface"
             android:taskAffinity=".ui.PermissionsInterface"

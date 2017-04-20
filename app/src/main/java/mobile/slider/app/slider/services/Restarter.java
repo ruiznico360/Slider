@@ -8,16 +8,11 @@ import android.content.Intent;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.SettingsWriter;
 
-public class BootReceiver extends BroadcastReceiver {
-    public BootReceiver() {
+public class Restarter extends BroadcastReceiver {
+    public Restarter() {
     }
     @Override
     public void onReceive(Context con, Intent intent) {
-        if (SystemOverlay.service == null) {
-            SettingsWriter.init(con);
-            if(SettingsUtil.checkPermissions(con)) {
-                SystemOverlay.start(con, null);
-            }
-        }
+        con.startService(new Intent(con, SystemOverlay.class));
     }
 }

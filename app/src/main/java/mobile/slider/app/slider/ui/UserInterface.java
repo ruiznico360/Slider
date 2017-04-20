@@ -1,6 +1,7 @@
 package mobile.slider.app.slider.ui;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -50,7 +51,6 @@ public class UserInterface extends FragmentActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_user_interface);
-
         setupActivity();
     }
     @Override
@@ -86,9 +86,9 @@ public class UserInterface extends FragmentActivity {
             startActivity(i);
             return;
         }
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(SettingsUtil.getLastUpdate());
-        CustomToast.makeToast(c.get(Calendar.MONTH) + " " + c.get(Calendar.DAY_OF_MONTH) + " " + c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND));
+//        Calendar c = Calendar.getInstance();
+//        c.setTimeInMillis(SettingsUtil.getLastUpdate());
+//        CustomToast.makeToast(c.get(Calendar.MONTH) + " " + c.get(Calendar.DAY_OF_MONTH) + " " + c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND));
         checkForServiceEnabled();
 
         initializeColors();
@@ -131,9 +131,7 @@ public class UserInterface extends FragmentActivity {
     }
     public void checkForServiceEnabled() {
         if (SystemOverlay.service == null) {
-            Intent i = new Intent(this,SystemOverlay.class);
-            i.putExtra(IntentExtra.FROM_UI,true);
-            startService(i);
+            SystemOverlay.start(this, IntentExtra.FROM_UI);
         }else{
             disableFloater();
         }

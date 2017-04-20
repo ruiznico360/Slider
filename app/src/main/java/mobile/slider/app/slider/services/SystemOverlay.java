@@ -1,5 +1,7 @@
 package mobile.slider.app.slider.services;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +27,7 @@ import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.SettingType;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.ui.UserInterface;
+import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.Util;
 
@@ -35,6 +38,13 @@ public class SystemOverlay extends Service {
     private boolean startSliding = false;
     private boolean invisibleIcon = false;
 
+    public static void start(Context c, String intent) {
+        Intent i = new Intent(c,SystemOverlay.class);
+        if (intent != null) {
+            i.putExtra(intent, true);
+        }
+        c.startService(i);
+    }
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -46,20 +56,43 @@ public class SystemOverlay extends Service {
         if (intent != null) {
             if (intent.getExtras() != null && intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
                 createFloater(View.INVISIBLE);
+                CustomToast.makeToast("Created invisible floater from UI");
             }else{
                 createFloater(View.VISIBLE);
-            }
+                CustomToast.makeToast("Created visible floater from intent with no extras");}
         }else{
             SettingsWriter.init(getApplicationContext());
+            CustomToast.makeToast("Created visible floater from null intent");
             createFloater(View.VISIBLE);
         }
-        new Timer().scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                SettingsUtil.setLastUpdate(System.currentTimeMillis());
-            }
-        },0, 1000);
+//        new Timer().scheduleAtFixedRate(new TimerTask() {
+//            @Override
+//            public void run() {
+//                SettingsUtil.setLastUpdate(System.currentTimeMillis());
+//            }
+//        },0, 1000);
         return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+//        final int TIME_TO_INVOKE = 5 * 1000;
+//
+//        AlarmManager alarms = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+//        Intent intent = new Intent(getApplicationContext(), SystemOverlay.class);
+//        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+//
+//        alarms.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() +
+//                TIME_TO_INVOKE, TIME_TO_INVOKE, pendingIntent)
+        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).removeView(overlayFloater);
+        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).removeView(backgroundFloater);
+        service = null;
+        overlayFloater = null;
+        backgroundFloater = null;
+//        start(getApplicationContext(), null);
+        Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        vib.vibrate(5000);
+        sendBroadcast(new Intent("RestartSensor"));
     }
 
     @Override
