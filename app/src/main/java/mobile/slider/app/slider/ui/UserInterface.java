@@ -20,7 +20,10 @@ import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -83,6 +86,9 @@ public class UserInterface extends FragmentActivity {
             startActivity(i);
             return;
         }
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(SettingsUtil.getLastUpdate());
+        CustomToast.makeToast(c.get(Calendar.MONTH) + " " + c.get(Calendar.DAY_OF_MONTH) + " " + c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND));
         checkForServiceEnabled();
 
         initializeColors();

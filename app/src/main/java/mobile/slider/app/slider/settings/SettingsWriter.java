@@ -39,6 +39,7 @@ public class SettingsWriter {
         SettingsUtil.floaterGravity = sharedPreferences.getString(SettingType.FLOATER_GRAVITY, SettingType.NULL);
         SettingsUtil.floaterPos = sharedPreferences.getInt(SettingType.FLOATER_POS, 0);
         SettingsUtil.floaterIcon = sharedPreferences.getString(SettingType.FLOATER_ICON,SettingType.NULL);
+        SettingsUtil.lastUpdate = sharedPreferences.getLong("LASTUPD", 0);
     }
     protected static void setSetting(String setting,int value) {
         SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
@@ -53,6 +54,15 @@ public class SettingsWriter {
         SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putFloat(setting, value);
+        boolean commited = editor.commit();
+        if (!commited) {
+            throw new RuntimeException("Editor did not commit for " + setting + " which was being set to " + value);
+        }
+    }
+    protected static void setSetting(String setting,long value) {
+        SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(setting, value);
         boolean commited = editor.commit();
         if (!commited) {
             throw new RuntimeException("Editor did not commit for " + setting + " which was being set to " + value);

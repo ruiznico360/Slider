@@ -15,6 +15,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.settings.SettingsUtil;
@@ -47,8 +50,15 @@ public class SystemOverlay extends Service {
                 createFloater(View.VISIBLE);
             }
         }else{
+            SettingsWriter.init(getApplicationContext());
             createFloater(View.VISIBLE);
         }
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                SettingsUtil.setLastUpdate(System.currentTimeMillis());
+            }
+        },0, 1000);
         return super.onStartCommand(intent, flags, startId);
     }
 
