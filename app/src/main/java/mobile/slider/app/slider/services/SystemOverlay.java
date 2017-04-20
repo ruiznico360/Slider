@@ -43,8 +43,8 @@ public class SystemOverlay extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && intent.getExtras() != null) {
-            if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
+        if (intent != null) {
+            if (intent.getExtras() != null && intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
                 createFloater(View.INVISIBLE);
             }else{
                 createFloater(View.VISIBLE);
@@ -59,7 +59,7 @@ public class SystemOverlay extends Service {
                 SettingsUtil.setLastUpdate(System.currentTimeMillis());
             }
         },0, 1000);
-        return START_REDELIVER_INTENT;
+        return START_STICKY;
     }
 
     @Override
