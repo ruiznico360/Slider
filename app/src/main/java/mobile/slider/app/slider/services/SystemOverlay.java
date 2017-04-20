@@ -59,7 +59,7 @@ public class SystemOverlay extends Service {
                 SettingsUtil.setLastUpdate(System.currentTimeMillis());
             }
         },0, 1000);
-        return super.onStartCommand(intent, flags, startId);
+        return START_REDELIVER_INTENT;
     }
 
     @Override
