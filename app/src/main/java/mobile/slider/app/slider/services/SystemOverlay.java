@@ -5,18 +5,21 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -54,17 +57,31 @@ public class SystemOverlay extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
-            if (intent.getExtras() != null && intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
-                createFloater(View.INVISIBLE);
-                CustomToast.makeToast("Created invisible floater from UI");
-            }else{
+            if (intent.getExtras() != null) {
+                if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
+                    createFloater(View.INVISIBLE);
+                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "View created invisible from UI");
+                }else if (intent.getExtras().containsKey(IntentExtra.SAFE_REBOOT_SERVICE)) {
+                    SettingsWriter.init(getApplicationContext());
+                    Util.sendNotification(getApplicationContext(), "Restarter", "Created visible");
+                    createFloater(View.VISIBLE);
+                }else{
+                    createFloater(View.VISIBLE);
+                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created visible from intent with no matching extras");
+                }
+            }else {
                 createFloater(View.VISIBLE);
-                CustomToast.makeToast("Created visible floater from intent with no extras");}
+                Util.sendNotification(getApplicationContext(), "SystemOverlay", "View created visible from intent with no extras");
+            }
         }else{
-            SettingsWriter.init(getApplicationContext());
-            CustomToast.makeToast("Created visible floater from null intent");
-            createFloater(View.VISIBLE);
+                SettingsWriter.init(getApplicationContext());
+                Util.sendNotification(getApplicationContext(), "SystemOverlay", "View created visible from null intent");
+                createFloater(View.VISIBLE);
         }
+        Intent i = new Intent(getApplicationContext(), Restarter.class);
+        PendingIntent pintent = PendingIntent.getService(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 60000, 60000, pintent);
 //        new Timer().scheduleAtFixedRate(new TimerTask() {
 //            @Override
 //            public void run() {
@@ -89,10 +106,8 @@ public class SystemOverlay extends Service {
         service = null;
         overlayFloater = null;
         backgroundFloater = null;
-//        start(getApplicationContext(), null);
-        Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        vib.vibrate(5000);
         sendBroadcast(new Intent("RestartSensor"));
+        Util.sendNotification(getApplicationContext(), "SystemOverlay", "Service Destroyed");
     }
 
     @Override
@@ -109,13 +124,15 @@ public class SystemOverlay extends Service {
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);        params.height = SettingsUtil.getFloaterSize();
+                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+        params.height = SettingsUtil.getFloaterSize();
         params.y = SettingsUtil.getFloaterPos();
 
         final WindowManager.LayoutParams backgroundParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);        backgroundParams.height = SettingsUtil.getFloaterSize();
+                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+        backgroundParams.height = SettingsUtil.getFloaterSize();
         backgroundParams.y = SettingsUtil.getFloaterPos();
 
         if (overlayFloater != null) {
@@ -173,16 +190,6 @@ public class SystemOverlay extends Service {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (startSliding) {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        initialY = params.y;
-                        initialTouchY = event.getRawY();
-                        if (invisibleIcon) {
-                            overlayFloater.setBackgroundColor(Color.parseColor("#50000000"));
-                        } else {
-                            background.setVisibility(View.VISIBLE);
-                        }
-                        return true;
-                    }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         startSliding = false;
                         if (invisibleIcon) {
@@ -201,10 +208,9 @@ public class SystemOverlay extends Service {
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
                         backgroundParams.y = initialY + (int) (event.getRawY() - initialTouchY);
 
-                        SettingsUtil.setFloaterPos(initialY + (int) (event.getRawY() - initialTouchY));
+                        SettingsUtil.setFloaterPos(params.y);
                         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(floater, params);
                         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
-
                         return true;
                     }
                     return false;

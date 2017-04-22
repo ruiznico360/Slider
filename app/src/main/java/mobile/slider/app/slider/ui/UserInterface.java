@@ -2,6 +2,7 @@ package mobile.slider.app.slider.ui;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -80,15 +81,13 @@ public class UserInterface extends FragmentActivity {
         }else{
             setAnimation();
         }
+        lockOrientation();
         if (!SettingsUtil.checkPermissions(this)) {
             Intent i = new Intent(this, PermissionsInterface.class);
             getIntent().putExtra(IntentExtra.TO_PERMISSIONS_ACTIVITY, true);
             startActivity(i);
             return;
         }
-//        Calendar c = Calendar.getInstance();
-//        c.setTimeInMillis(SettingsUtil.getLastUpdate());
-//        CustomToast.makeToast(c.get(Calendar.MONTH) + " " + c.get(Calendar.DAY_OF_MONTH) + " " + c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND));
         checkForServiceEnabled();
 
         initializeColors();
@@ -96,6 +95,15 @@ public class UserInterface extends FragmentActivity {
         setUpContentFragment();
         setUpWindow();
         setUpResizer();
+    }
+    public void lockOrientation() {
+        int orientation = getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        }
+        else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+        }
     }
     public void initializeColors() {
         findViewById(R.id.user_interface_main_layout).setBackgroundColor(SettingsUtil.getBackgroundColor());
