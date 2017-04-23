@@ -82,7 +82,7 @@ public class SystemOverlay extends Service {
         Intent i = new Intent(getApplicationContext(), Restarter.class);
         PendingIntent pintent = PendingIntent.getService(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 60000, 60000, pintent);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 60000, pintent);
 //        new Timer().scheduleAtFixedRate(new TimerTask() {
 //            @Override
 //            public void run() {
@@ -206,25 +206,12 @@ public class SystemOverlay extends Service {
                         } else {
                             background.setVisibility(View.INVISIBLE);
                         }
-//                        int i = new Random().nextInt(4);
-//                        if (i == 1) {
-//                            floater.setY(100);
-//                        }
-//                        if (i == 2) {
-//                            floater.setY(1000);
-//                        }
-//                        if (i == 3) {
-//                            floater.setY(1000);
-//                        }
-//                        if (i == 4) {
-                            floater.setY(900);
-//                        }
-//                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
-//                        backgroundParams.y = initialY + (int) (event.getRawY() - initialTouchY);
-//
-//                        SettingsUtil.setFloaterPos(params.y);
+                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        backgroundParams.y = initialY + (int) (event.getRawY() - initialTouchY);
+
+                        SettingsUtil.setFloaterPos(params.y);
                         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(floater, params);
-//                        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
+                        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
                         return true;
                     }
                     return false;
