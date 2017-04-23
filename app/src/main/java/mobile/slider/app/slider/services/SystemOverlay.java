@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import java.util.Calendar;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -205,12 +206,25 @@ public class SystemOverlay extends Service {
                         } else {
                             background.setVisibility(View.INVISIBLE);
                         }
-                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        backgroundParams.y = initialY + (int) (event.getRawY() - initialTouchY);
-
-                        SettingsUtil.setFloaterPos(params.y);
+//                        int i = new Random().nextInt(4);
+//                        if (i == 1) {
+//                            floater.setY(100);
+//                        }
+//                        if (i == 2) {
+//                            floater.setY(1000);
+//                        }
+//                        if (i == 3) {
+//                            floater.setY(1000);
+//                        }
+//                        if (i == 4) {
+                            floater.setY(900);
+//                        }
+//                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
+//                        backgroundParams.y = initialY + (int) (event.getRawY() - initialTouchY);
+//
+//                        SettingsUtil.setFloaterPos(params.y);
                         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(floater, params);
-                        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
+//                        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
                         return true;
                     }
                     return false;
