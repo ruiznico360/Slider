@@ -30,7 +30,9 @@
         </activity>
 
         <service android:name=".services.SystemOverlay" />
-
+        <service android:name=".services.RestarterJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true"/>
         <receiver android:name=".services.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

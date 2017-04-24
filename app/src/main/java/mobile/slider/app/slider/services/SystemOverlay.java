@@ -3,6 +3,9 @@ package mobile.slider.app.slider.services;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -79,36 +82,30 @@ public class SystemOverlay extends Service {
                 Util.sendNotification(getApplicationContext(), "SystemOverlay", "View created visible from null intent");
                 createFloater(View.VISIBLE);
         }
-        Intent i = new Intent(getApplicationContext(), Restarter.class);
-        PendingIntent pintent = PendingIntent.getService(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 60000, pintent);
-//        new Timer().scheduleAtFixedRate(new TimerTask() {
-//            @Override
-//            public void run() {
-//                SettingsUtil.setLastUpdate(System.currentTimeMillis());
-//            }
-//        },0, 1000);
+        if (Build.VERSION.SDK_INT >= 21) {
+            ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
+            JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
+            builder.setRequiresDeviceIdle(false); // device should be idle
+            builder.setPeriodic(5000);
+            builder.setRequiresCharging(false); // we don't care if the device is charging or not
+            JobScheduler jobScheduler = (JobScheduler) getApplication().getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            jobScheduler.schedule(builder.build());
+        }else {
+            Intent i = new Intent(getApplicationContext(), Restarter.class);
+            PendingIntent pintent = PendingIntent.getService(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5000, pintent);
+        }
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-//        final int TIME_TO_INVOKE = 5 * 1000;
-//
-//        AlarmManager alarms = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
-//        Intent intent = new Intent(getApplicationContext(), SystemOverlay.class);
-//        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-//
-//        alarms.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() +
-//                TIME_TO_INVOKE, TIME_TO_INVOKE, pendingIntent)
         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).removeView(overlayFloater);
         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).removeView(backgroundFloater);
         service = null;
         overlayFloater = null;
         backgroundFloater = null;
-        sendBroadcast(new Intent("RestartSensor"));
-        Util.sendNotification(getApplicationContext(), "SystemOverlay", "Service Destroyed");
     }
 
     @Override
@@ -125,14 +122,14 @@ public class SystemOverlay extends Service {
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT);
         params.height = SettingsUtil.getFloaterSize();
         params.y = SettingsUtil.getFloaterPos();
 
         final WindowManager.LayoutParams backgroundParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT);
         backgroundParams.height = SettingsUtil.getFloaterSize();
         backgroundParams.y = SettingsUtil.getFloaterPos();
 
