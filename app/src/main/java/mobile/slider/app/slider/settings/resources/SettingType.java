@@ -17,5 +17,6 @@ public class SettingType{
     public static final String FLOATER_GRAVITY = "FLOATER_GRAVITY";
     public static final String FLOATER_SIZE = "FLOATER_SIZE";
     public static final String FLOATER_ICON = "FLOATER_ICON";
+    public static final String LAST_FLOATER_UPDATE = "LAST_FLOATER_UPDATE";
     public static final String RESET_SETTINGS = "RESET_SETTINGS";
 }

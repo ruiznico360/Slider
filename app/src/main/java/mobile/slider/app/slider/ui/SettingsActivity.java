@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -34,13 +35,14 @@ public class SettingsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_settings);
 
         setupActivity();
     }
 
     public void setupActivity() {
-        SystemOverlay.overlayFloater.setVisibility(View.INVISIBLE);
+        SystemOverlay.hideFloater();
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         settingView = (RelativeLayout) findViewById(R.id.settings_scroll_view);
 

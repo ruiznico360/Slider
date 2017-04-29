@@ -17,7 +17,7 @@ public class SettingsUtil {
     protected static String language;
     protected static String appTheme;
     protected static String floaterIcon;
-    protected static long lastUpdate;
+    protected static String lastFloaterUpdate;
     protected static int backgroundColor,windowSize, floaterSize,floaterPos;
     protected static boolean autoSelectAppTheme;
 
@@ -43,6 +43,7 @@ public class SettingsUtil {
     public static int defaultBackgroundColor() {
         return Color.rgb(51,102,255);
     }
+
     public static String getLanguage() {
         return language;
     }
@@ -78,13 +79,13 @@ public class SettingsUtil {
     public static String getFloaterIcon() {
         return floaterIcon;
     }
-    public static long getLastUpdate() {
-        return lastUpdate;
+    public static String getLastFloaterUpdate() {
+        return lastFloaterUpdate;
     }
 
-    public static void setLastUpdate(long lastUpdate) {
-        SettingsUtil.lastUpdate = lastUpdate;
-        SettingsWriter.setSetting("LASTUPD", lastUpdate);
+    public static void setLastFloaterUpdate(String lastFloaterUpdate) {
+        SettingsUtil.lastFloaterUpdate = lastFloaterUpdate;
+        SettingsWriter.setSetting(SettingType.LAST_FLOATER_UPDATE , lastFloaterUpdate);
     }
     public static void setFloaterGravity(String floaterGravity) {
         SettingsUtil.floaterGravity = floaterGravity;

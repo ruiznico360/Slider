@@ -19,6 +19,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 import java.util.Random;
 
@@ -55,6 +56,16 @@ public class Util {
                 return true;
             }
         };
+    }
+    public static void setImageDrawable(ImageView view, int id) {
+        view.setImageDrawable(getDrawable(id));
+    }
+    public static void setBackground(View view, int id) {
+        if (Build.VERSION.SDK_INT >= 21) {
+            view.setBackground(getDrawable(id));
+        }else{
+            view.setBackgroundResource(id);
+        }
     }
     public static void log(String s) {
         Log.d("Slider", s);

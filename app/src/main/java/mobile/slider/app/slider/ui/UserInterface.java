@@ -1,5 +1,6 @@
 package mobile.slider.app.slider.ui;
 
+import android.app.KeyguardManager;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -50,7 +51,6 @@ public class UserInterface extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_user_interface);
         setupActivity();
     }
@@ -63,11 +63,11 @@ public class UserInterface extends FragmentActivity {
     public void finish() {
         if (getIntent().getExtras() != null) {
             if (!getIntent().getExtras().containsKey(IntentExtra.TO_PERMISSIONS_ACTIVITY)) {
-                SystemOverlay.overlayFloater.setVisibility(View.VISIBLE);
+                SystemOverlay.showFloater();
                 setAnimation();
             }
         }else{
-            SystemOverlay.overlayFloater.setVisibility(View.VISIBLE);
+            SystemOverlay.showFloater();
             setAnimation();
         }
         super.finish();
@@ -146,7 +146,7 @@ public class UserInterface extends FragmentActivity {
     }
     public void disableFloater() {
         if (SystemOverlay.service != null) {
-            SystemOverlay.overlayFloater.setVisibility(View.INVISIBLE);
+            SystemOverlay.hideFloater();
         }else{
 
         }

@@ -9,6 +9,7 @@ import java.util.Random;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.resources.AppTheme;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
+import mobile.slider.app.slider.settings.resources.FloaterUpdate;
 import mobile.slider.app.slider.settings.resources.Language;
 import mobile.slider.app.slider.settings.resources.SettingType;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
@@ -39,7 +40,8 @@ public class SettingsWriter {
         SettingsUtil.floaterGravity = sharedPreferences.getString(SettingType.FLOATER_GRAVITY, SettingType.NULL);
         SettingsUtil.floaterPos = sharedPreferences.getInt(SettingType.FLOATER_POS, 0);
         SettingsUtil.floaterIcon = sharedPreferences.getString(SettingType.FLOATER_ICON,SettingType.NULL);
-        SettingsUtil.lastUpdate = sharedPreferences.getLong("LASTUPD", 0);
+        SettingsUtil.lastFloaterUpdate = sharedPreferences.getString(SettingType.LAST_FLOATER_UPDATE,SettingType.NULL);
+
     }
     protected static void setSetting(String setting,int value) {
         SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);
@@ -102,6 +104,7 @@ public class SettingsWriter {
         editor.putInt(SettingType.FLOATER_POS, -1000);
         editor.putString(SettingType.FLOATER_GRAVITY, WindowGravity.RIGHT);
         editor.putString(SettingType.FLOATER_ICON, FloaterIcon.TRANSLUCENT);
+        editor.putString(SettingType.LAST_FLOATER_UPDATE, FloaterUpdate.PORTRAIT);
         boolean commited = editor.commit();
         if (!commited) {
             throw new RuntimeException("Editor did not commit for resetting");
