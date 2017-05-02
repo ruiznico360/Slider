@@ -13,10 +13,18 @@ public class BootReceiver extends BroadcastReceiver {
     }
     @Override
     public void onReceive(Context con, Intent intent) {
-        if (SystemOverlay.service == null) {
-            SettingsWriter.init(con);
-            if(SettingsUtil.checkPermissions(con)) {
-                SystemOverlay.start(con, null);
+        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
+            if (SystemOverlay.service == null) {
+                SettingsWriter.init(con);
+                if (SettingsUtil.checkPermissions(con)) {
+                    SystemOverlay.start(con, null);
+                }
+            }
+        }else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+            if (SystemOverlay.service != null) {
+                if (SystemOverlay.floaterMovement.inTouch) {
+                    SystemOverlay.floaterMovement.forceUp();
+                }
             }
         }
     }

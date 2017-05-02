@@ -51,13 +51,31 @@ public class UserInterface extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_user_interface);
         setupActivity();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Util.log("Resume");
+    }
+
     @Override
     public void onPause() {
         super.onPause();
-        finish();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        Intent openMainActivity= new Intent(this, UserInterface.class);
+        openMainActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivityIfNeeded(openMainActivity, 0);
+        Util.log("Paused");
     }
     @Override
     public void finish() {
@@ -141,6 +159,9 @@ public class UserInterface extends FragmentActivity {
         if (SystemOverlay.service == null) {
             SystemOverlay.start(this, IntentExtra.FROM_UI);
         }else{
+            if (SystemOverlay.floaterMovement.inTouch) {
+                SystemOverlay.floaterMovement.forceUp();
+            }
             disableFloater();
         }
     }

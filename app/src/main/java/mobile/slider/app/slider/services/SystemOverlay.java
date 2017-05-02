@@ -55,6 +55,7 @@ import mobile.slider.app.slider.util.Util;
 public class SystemOverlay extends Service {
     public static SystemOverlay service;
     public static ImageView overlayFloater;
+    public static FloaterController floaterMovement;
     private ImageView backgroundFloater;
     private boolean invisibleIcon = false;
 
@@ -211,128 +212,173 @@ public class SystemOverlay extends Service {
             ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).removeView(overlayFloater);
             ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).removeView(backgroundFloater);
         }
-        floater.setOnTouchListener(new View.OnTouchListener() {
-            Handler longPress;
-            Runnable startLongPress;
-            boolean startSliding = false;
-            int initialY, initialX;
-            float initialTouchY, initialTouchX;
-            float x1 = 0.0f;
-            float y1 = 0.0f;
-            int multiplier;
-            @Override
-            public boolean onTouch(View v, final MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    startLongPress = new Runnable() {
-                        @Override
-                        public void run() {
-                            Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                            vib.vibrate(50);
-                            startSliding = true;
-                            initialY = params.y;
-                            initialX = params.x;
-                            initialTouchX = event.getRawX();
-                            initialTouchY = event.getRawY();
-                            background.setAlpha(0f);
-                            if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                                multiplier = -1;
-                            }else {
-                                multiplier = 1;
-                            }
-                        }
-                    };
-                    longPress = new Handler();
-                    longPress.postDelayed(startLongPress, 500);
-                    x1 = event.getX();
-                    y1 = event.getY();
+        floaterMovement = new FloaterController(floater, background, params, backgroundParams, getApplicationContext());
+        overlayFloater = floater;
+        backgroundFloater = background;
+        floater.setVisibility(visibility);
+    }
+    public static void hideFloater() {
+        overlayFloater.setVisibility(View.INVISIBLE);
+    }
+    public static void showFloater() {
+        overlayFloater.setVisibility(View.VISIBLE);
+    }
+    public class FloaterController {
+        Handler longPress;
+        Runnable startLongPress;
+        boolean startSliding = false;
+        int initialY, initialX;
+        float initialTouchY, initialTouchX;
+        float x1 = 0.0f;
+        float y1 = 0.0f;
+        int multiplier;
+        public ImageView overlayFloater,background;
+        public WindowManager.LayoutParams params, backgroundParams;
+        public Context c;
+        public View.OnTouchListener touchListener;
+        public boolean inTouch = false;
+
+        public FloaterController(ImageView of, ImageView bg, WindowManager.LayoutParams pm, WindowManager.LayoutParams bp, Context con) {
+            this.overlayFloater = of;
+            this.background = bg;
+            this.params = pm;
+            this.backgroundParams = bp;
+            this.c = con;
+
+            touchListener = new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, final MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        down(event);
+                    }else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        up(event, false);
+                    }else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                        move(event);
+                    }
+                    return true;
+                }
+            };
+            overlayFloater.setOnTouchListener(touchListener);
+        }
+        public void down(final MotionEvent event) {
+            inTouch = true;
+            startLongPress = new Runnable() {
+                @Override
+                public void run() {
                     Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                     vib.vibrate(50);
-                    if (invisibleIcon) {
-                        overlayFloater.setBackgroundColor(Color.parseColor("#50000000"));
-                    } else {
-                        background.setAlpha(0.8f);
-                    }
-                }else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    longPress.removeCallbacks(startLongPress);
-                    if (startSliding) {
-                        if (invisibleIcon) {
-                            overlayFloater.setBackgroundColor(Color.TRANSPARENT);
-                        } else {
-                            background.setAlpha(0f);
-                        }
-                        params.x = 0;
-                        backgroundParams.x = 0;
-                        if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                            params.gravity = Gravity.RIGHT;
-                            backgroundParams.gravity = Gravity.RIGHT;
-                        }else if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                            params.gravity = Gravity.LEFT;
-                            backgroundParams.gravity = Gravity.LEFT;
-                        }
-                        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(floater, params);
-                        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
+                    startSliding = true;
+                    initialY = params.y;
+                    initialX = params.x;
+                    initialTouchX = event.getRawX();
+                    initialTouchY = event.getRawY();
+                    background.setAlpha(0f);
+                    if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
+                        multiplier = -1;
                     }else {
-                        float x2 = event.getX();
-                        float y2 = event.getY();
-                        float dx = x2 - x1;
-                        float dy = y2 - y1;
-                        if (Math.abs(dx) > Math.abs(dy)) {
-                            if (!(dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                                Intent in = new Intent(getApplicationContext(), UserInterface.class);
-                                in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                in.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                                getApplication().startActivity(in);
-                            } else if ((dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                                Intent in = new Intent(getApplicationContext(), UserInterface.class);
-                                in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                in.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                                getApplication().startActivity(in);
-                            }
-                        }
-                        if (invisibleIcon) {
-                            overlayFloater.setBackgroundColor(Color.TRANSPARENT);
-                        } else {
-                            background.setAlpha(0f);
-                        }
+                        multiplier = 1;
                     }
-                    startSliding = false;
-                }else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (startSliding) {
-                        if (invisibleIcon) {
-                            overlayFloater.setBackgroundColor(Color.parseColor("#50000000"));
-                        } else {
-                            background.setAlpha(0f);
-                        }
-                        params.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
-                        backgroundParams.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
-                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        backgroundParams.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        SettingsUtil.setFloaterPos(params.y);
-                        DisplayMetrics dm = new DisplayMetrics();
-                        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
-                        double width = dm.widthPixels / 2;
+                }
+            };
+            longPress = new Handler();
+            longPress.postDelayed(startLongPress, 500);
+            x1 = event.getX();
+            y1 = event.getY();
+            Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            vib.vibrate(50);
+            if (invisibleIcon) {
+                overlayFloater.setBackgroundColor(Color.parseColor("#50000000"));
+            } else {
+                background.setAlpha(0.8f);
+            }
+        }
+        public void forceUp() {
+            up(null, true);
+        }
+        public void up(final MotionEvent event, boolean force) {
+            inTouch = false;
+            longPress.removeCallbacks(startLongPress);
+            if (startSliding) {
+                if (invisibleIcon) {
+                    overlayFloater.setBackgroundColor(Color.TRANSPARENT);
+                } else {
+                    background.setAlpha(0f);
+                }
+                params.x = 0;
+                backgroundParams.x = 0;
+                if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
+                    params.gravity = Gravity.RIGHT;
+                    backgroundParams.gravity = Gravity.RIGHT;
+                }else if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+                    params.gravity = Gravity.LEFT;
+                    backgroundParams.gravity = Gravity.LEFT;
+                }
+                ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(overlayFloater, params);
+                ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
+            }else if (!force){
+                float x2 = event.getX();
+                float y2 = event.getY();
+                float dx = x2 - x1;
+                float dy = y2 - y1;
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    if (!(dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
+                        Intent in = new Intent(getApplicationContext(), UserInterface.class);
+                        in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        in.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                        getApplication().startActivity(in);
+                    } else if ((dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+                        Intent in = new Intent(getApplicationContext(), UserInterface.class);
+                        in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        in.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                        getApplication().startActivity(in);
+                    }
+                }
+                if (invisibleIcon) {
+                    overlayFloater.setBackgroundColor(Color.TRANSPARENT);
+                } else {
+                    background.setAlpha(0f);
+                }
+            }
+            startSliding = false;
+        }
 
-                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                            SettingsUtil.setLastFloaterUpdate(FloaterUpdate.LANDSCAPE);
-                        }else{
-                            SettingsUtil.setLastFloaterUpdate(FloaterUpdate.PORTRAIT);
-                        }
-                        if (event.getRawX() < width) {
-                            if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                                floater.setScaleX(-1);
-                                background.setScaleX(-1);
-                                SettingsUtil.setFloaterGravity(WindowGravity.LEFT);
-                            }
-                        }else  if (event.getRawX() >= width) {
-                            if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                                floater.setScaleX(1);
-                                background.setScaleX(1);
-                                SettingsUtil.setFloaterGravity(WindowGravity.RIGHT);
-                            }
-                        }
-                        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(floater, params);
-                        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
-                    }else{
+        public void move(final MotionEvent event) {
+            if (startSliding) {
+                if (invisibleIcon) {
+                    overlayFloater.setBackgroundColor(Color.parseColor("#50000000"));
+                } else {
+                    background.setAlpha(0f);
+                }
+                params.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
+                backgroundParams.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
+                params.y = initialY + (int) (event.getRawY() - initialTouchY);
+                backgroundParams.y = initialY + (int) (event.getRawY() - initialTouchY);
+                SettingsUtil.setFloaterPos(params.y);
+                DisplayMetrics dm = new DisplayMetrics();
+                ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
+                double width = dm.widthPixels / 2;
+
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    SettingsUtil.setLastFloaterUpdate(FloaterUpdate.LANDSCAPE);
+                }else{
+                    SettingsUtil.setLastFloaterUpdate(FloaterUpdate.PORTRAIT);
+                }
+                if (event.getRawX() < width) {
+                    if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+                        overlayFloater.setScaleX(-1);
+                        background.setScaleX(-1);
+                        SettingsUtil.setFloaterGravity(WindowGravity.LEFT);
+                    }
+                }else  if (event.getRawX() >= width) {
+                    if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
+                        overlayFloater.setScaleX(1);
+                        background.setScaleX(1);
+                        SettingsUtil.setFloaterGravity(WindowGravity.RIGHT);
+                    }
+                }
+                ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(overlayFloater, params);
+                ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
+            }else{
 //                        int rx = (int)event.getRawX();
 //                        int ry = (int)event.getRawY();
 //                        int[] l = new int[2];
@@ -349,19 +395,7 @@ public class SystemOverlay extends Service {
 //                            longPress.removeCallbacks(startLongPress);
 //                        }
 //                        Util.log(x + " " + y + " " + (x + w) + " " + (y + h) + " " + rx + " " + ry);
-                    }
-                }
-                return true;
             }
-        });
-        overlayFloater = floater;
-        backgroundFloater = background;
-        floater.setVisibility(visibility);
-    }
-    public static void hideFloater() {
-        overlayFloater.setVisibility(View.INVISIBLE);
-    }
-    public static void showFloater() {
-        overlayFloater.setVisibility(View.VISIBLE);
+        }
     }
 }
