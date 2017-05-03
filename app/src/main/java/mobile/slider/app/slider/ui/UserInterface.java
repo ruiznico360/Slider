@@ -68,17 +68,11 @@ public class UserInterface extends FragmentActivity {
     @Override
     public void onPause() {
         super.onPause();
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        Intent openMainActivity= new Intent(this, UserInterface.class);
-        openMainActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivityIfNeeded(openMainActivity, 0);
         Util.log("Paused");
     }
     @Override
     public void finish() {
+        super.finish();
         if (getIntent().getExtras() != null) {
             if (!getIntent().getExtras().containsKey(IntentExtra.TO_PERMISSIONS_ACTIVITY)) {
                 SystemOverlay.showFloater();
@@ -88,7 +82,6 @@ public class UserInterface extends FragmentActivity {
             SystemOverlay.showFloater();
             setAnimation();
         }
-        super.finish();
     }
     public void setupActivity() {
         SettingsWriter.init(this);
