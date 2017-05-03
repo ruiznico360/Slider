@@ -1,6 +1,7 @@
 package mobile.slider.app.slider.ui;
 
 import android.app.KeyguardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -58,33 +59,27 @@ public class UserInterface extends FragmentActivity {
         setContentView(R.layout.activity_user_interface);
         setupActivity();
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Util.log("Resume");
-    }
-
     @Override
     public void onPause() {
         super.onPause();
-        Util.log("Paused");
+        KeyguardManager myKM = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        if( myKM.inKeyguardRestrictedInputMode()) {
+        } else {
+            finish();
+        }
     }
     @Override
     public void finish() {
-        super.finish();
         if (getIntent().getExtras() != null) {
             if (!getIntent().getExtras().containsKey(IntentExtra.TO_PERMISSIONS_ACTIVITY)) {
-                Util.log("showing them");
                 SystemOverlay.showFloater();
                 setAnimation();
             }
         }else{
-            Util.log("showin them");
             SystemOverlay.showFloater();
             setAnimation();
         }
-        Util.log("howdy");
+        super.finish();
     }
     public void setupActivity() {
         SettingsWriter.init(this);

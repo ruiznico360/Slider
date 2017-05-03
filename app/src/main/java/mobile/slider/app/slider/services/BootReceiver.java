@@ -17,29 +17,10 @@ public class BootReceiver extends BroadcastReceiver {
     }
     @Override
     public void onReceive(Context con, Intent intent) {
-        Util.log(intent.getAction());
-        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            CustomToast.makeToast("startup");
-            if (SystemOverlay.service == null) {
-                SettingsWriter.init(con);
-                if (SettingsUtil.checkPermissions(con)) {
-                    SystemOverlay.start(con, null);
-                }
-            }
-        }else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-            Util.log("OFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFf");
-            ActivityManager manager = (ActivityManager) con.getSystemService(Context.ACTIVITY_SERVICE);
-            boolean running = false;
-            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-                if (SystemOverlay.class.getName().equals(service.service.getClassName())) {
-                    running = true;
-                }
-            }
-            if (running) {
-               CustomToast.makeToast("power off service running");
-                if (SystemOverlay.floaterMovement.inTouch) {
-                    SystemOverlay.floaterMovement.forceUp();
-                }
+        if (SystemOverlay.service == null) {
+            SettingsWriter.init(con);
+            if (SettingsUtil.checkPermissions(con)) {
+                SystemOverlay.start(con, null);
             }
         }
     }

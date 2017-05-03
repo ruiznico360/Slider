@@ -10,6 +10,7 @@ import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ConfigurationInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -54,6 +55,7 @@ import mobile.slider.app.slider.util.Util;
 
 public class SystemOverlay extends Service {
     public static SystemOverlay service;
+    public PowerReceiver powerReceiver;
     public static ImageView overlayFloater;
     public static FloaterController floaterMovement;
     private ImageView backgroundFloater;
@@ -96,6 +98,10 @@ public class SystemOverlay extends Service {
                 Util.sendNotification(getApplicationContext(), "SystemOverlay", "View created visible from null intent");
                 createFloater(View.VISIBLE);
         }
+        IntentFilter screenStateFilter = new IntentFilter();
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        powerReceiver = new PowerReceiver();
+        registerReceiver(powerReceiver, screenStateFilter);
         if (Build.VERSION.SDK_INT >= 21) {
             ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
             JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
@@ -120,6 +126,7 @@ public class SystemOverlay extends Service {
         service = null;
         overlayFloater = null;
         backgroundFloater = null;
+        unregisterReceiver(powerReceiver);
     }
 
     @Override
@@ -379,22 +386,24 @@ public class SystemOverlay extends Service {
                 ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(overlayFloater, params);
                 ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
             }else{
-//                        int rx = (int)event.getRawX();
-//                        int ry = (int)event.getRawY();
-//                        int[] l = new int[2];
-//                        background.getLocationOnScreen(l);
-//                        int x = l[0];
-//                        int y = l[1];
-//                        int w = background.getWidth();
-//                        int h = background.getHeight();
-//                        if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-//                            h = x;
-//                            x = 0;
-//                        }
-//                        if (rx < x || rx > x + w || ry < y || ry > y + h) {
-//                            longPress.removeCallbacks(startLongPress);
-//                        }
-//                        Util.log(x + " " + y + " " + (x + w) + " " + (y + h) + " " + rx + " " + ry);
+                int rx = (int)event.getRawX();
+                int ry = (int)event.getRawY();
+                int[] l = new int[2];
+                background.getLocationOnScreen(l);
+                int x = l[0];
+                int y = l[1];
+                int w = background.getWidth() * 2;
+                int h = background.getHeight();
+                if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+                    w = x;
+                    x = 0;
+                }else{
+                    x -= background.getWidth();
+                }
+                if (rx < x || rx > x + w || ry < y || ry > y + h) {
+                    longPress.removeCallbacks(startLongPress);
+                }
+                Util.log(x + " " + y + " " + " " + (x + w) + " " + (y + h) + " " + w + " " + h + " " + rx + " " + ry);
             }
         }
     }
