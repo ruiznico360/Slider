@@ -75,13 +75,16 @@ public class UserInterface extends FragmentActivity {
         super.finish();
         if (getIntent().getExtras() != null) {
             if (!getIntent().getExtras().containsKey(IntentExtra.TO_PERMISSIONS_ACTIVITY)) {
+                Util.log("showing them");
                 SystemOverlay.showFloater();
                 setAnimation();
             }
         }else{
+            Util.log("showin them");
             SystemOverlay.showFloater();
             setAnimation();
         }
+        Util.log("howdy");
     }
     public void setupActivity() {
         SettingsWriter.init(this);
