@@ -1,5 +1,6 @@
 package mobile.slider.app.slider.util;
 
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -95,5 +96,13 @@ public class Util {
         builder.setContentIntent(contentIntent);
         NotificationManager nManager = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(NOTIFICATION_ID, builder.build());
+    }
+    public static boolean isLocked(Context c) {
+        KeyguardManager myKM = (KeyguardManager) c.getSystemService(Context.KEYGUARD_SERVICE);
+        if( myKM.inKeyguardRestrictedInputMode()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

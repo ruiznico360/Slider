@@ -106,7 +106,7 @@ public class SystemOverlay extends Service {
             ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
             JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
             builder.setRequiresDeviceIdle(false); // device should be idle
-            builder.setPeriodic(5000);
+            builder.setPeriodic(2000);
             builder.setRequiresCharging(false); // we don't care if the device is charging or not
             JobScheduler jobScheduler = (JobScheduler) getApplication().getSystemService(Context.JOB_SCHEDULER_SERVICE);
             jobScheduler.schedule(builder.build());
@@ -114,7 +114,7 @@ public class SystemOverlay extends Service {
             Intent i = new Intent(getApplicationContext(), Restarter.class);
             PendingIntent pintent = PendingIntent.getService(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
             AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5000, pintent);
+            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 2000, pintent);
         }
         return START_STICKY;
     }

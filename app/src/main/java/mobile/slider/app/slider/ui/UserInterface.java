@@ -60,11 +60,26 @@ public class UserInterface extends FragmentActivity {
         setupActivity();
     }
     @Override
+    public void onResume() {
+        if (getIntent().getExtras() != null) {
+            if (getIntent().getExtras().containsKey(IntentExtra.KEEP_ACT)) {
+                getIntent().removeExtra(IntentExtra.KEEP_ACT);
+            }else{
+                getIntent().putExtra(IntentExtra.KEEP_ACT, true);
+            }
+        }else{
+            getIntent().putExtra(IntentExtra.KEEP_ACT, true);
+        }
+        super.onResume();
+    }
+    @Override
     public void onPause() {
         super.onPause();
-        KeyguardManager myKM = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-        if( myKM.inKeyguardRestrictedInputMode()) {
-        } else {
+        if (Util.isLocked(this)) {
+            if (getIntent().getExtras() == null || !getIntent().getExtras().containsKey(IntentExtra.KEEP_ACT)) {
+                finish();
+            }
+        }else{
             finish();
         }
     }
