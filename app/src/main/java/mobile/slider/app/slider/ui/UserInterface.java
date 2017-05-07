@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +16,8 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,9 +48,12 @@ import mobile.slider.app.slider.settings.resources.WindowShader;
 import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.Util;
+
 public class UserInterface extends FragmentActivity {
     private Navigator currentNavigator;
     private int widthPixels;
+    public static View ui;
+    public static boolean running = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,11 +62,13 @@ public class UserInterface extends FragmentActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        setContentView(R.layout.activity_user_interface);
+        ui = UILayout.init(this);
+        setContentView(ui);
         setupActivity();
     }
     @Override
     public void onResume() {
+        Util.log("resume");
         if (getIntent().getExtras() != null) {
             if (getIntent().getExtras().containsKey(IntentExtra.KEEP_ACT)) {
                 getIntent().removeExtra(IntentExtra.KEEP_ACT);
@@ -74,6 +82,7 @@ public class UserInterface extends FragmentActivity {
     }
     @Override
     public void onPause() {
+        Util.log("pause");
         super.onPause();
         if (Util.isLocked(this)) {
             if (getIntent().getExtras() == null || !getIntent().getExtras().containsKey(IntentExtra.KEEP_ACT)) {
@@ -83,8 +92,21 @@ public class UserInterface extends FragmentActivity {
             finish();
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        Util.log("back pressed");
+        super.onBackPressed();
+    }
+    public static void remove(Context c) {
+        UserInterface.running = false;
+        UserInterface.ui.setVisibility(View.INVISIBLE);
+        ((WindowManager) c.getApplicationContext().getSystemService(WINDOW_SERVICE)).removeView(UserInterface.ui);
+        UserInterface.ui = null;
+    }
     @Override
     public void finish() {
+        Util.log("finish");
         if (getIntent().getExtras() != null) {
             if (!getIntent().getExtras().containsKey(IntentExtra.TO_PERMISSIONS_ACTIVITY)) {
                 SystemOverlay.showFloater();
@@ -95,8 +117,10 @@ public class UserInterface extends FragmentActivity {
             setAnimation();
         }
         super.finish();
+        running = false;
     }
     public void setupActivity() {
+        running = true;
         SettingsWriter.init(this);
         if (getIntent().getExtras() != null) {
             if (!getIntent().getExtras().containsKey(IntentExtra.FROM_SETTINGS)) {
@@ -130,36 +154,35 @@ public class UserInterface extends FragmentActivity {
         }
     }
     public void initializeColors() {
-        findViewById(R.id.user_interface_main_layout).setBackgroundColor(SettingsUtil.getBackgroundColor());
-        if (SettingsUtil.getWindowShaders().equals(WindowShader.BOTH) || SettingsUtil.getWindowShaders().equals(WindowShader.TOP)) {
-            View backgroundHolder = findViewById(R.id.activty_user_interface_background_holder_top);
-            DisplayMetrics dm = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(dm);
-            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)backgroundHolder.getLayoutParams();
-            params.height = (int)(dm.heightPixels * .3);
-            backgroundHolder.setLayoutParams(params);
-
-            if (Build.VERSION.SDK_INT >= 21) {
-                backgroundHolder.setBackground(Util.backgroundGradientTop(backgroundHolder));
-            }else{
-                backgroundHolder.setBackgroundDrawable(Util.backgroundGradientTop(backgroundHolder));
-            }
-        }
-        if (SettingsUtil.getWindowShaders().equals(WindowShader.BOTH) || SettingsUtil.getWindowShaders().equals(WindowShader.BOTTOM)) {
-            View backgroundHolder = findViewById(R.id.activty_user_interface_background_holder_bottom);
-            DisplayMetrics dm = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(dm);
-            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)backgroundHolder.getLayoutParams();
-            params.height = (int)(dm.heightPixels * .3);
-            params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            backgroundHolder.setLayoutParams(params);
-
-            if (Build.VERSION.SDK_INT >= 21) {
-                backgroundHolder.setBackground(Util.backgroundGradientBottom(backgroundHolder));
-            }else{
-                backgroundHolder.setBackgroundDrawable(Util.backgroundGradientBottom(backgroundHolder));
-            }
-        }
+//        if (SettingsUtil.getWindowShaders().equals(WindowShader.BOTH) || SettingsUtil.getWindowShaders().equals(WindowShader.TOP)) {
+//            View backgroundHolder = findViewById(R.id.activty_user_interface_background_holder_top);
+//            DisplayMetrics dm = new DisplayMetrics();
+//            getWindowManager().getDefaultDisplay().getMetrics(dm);
+//            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)backgroundHolder.getLayoutParams();
+//            params.height = (int)(dm.heightPixels * .3);
+//            backgroundHolder.setLayoutParams(params);
+//
+//            if (Build.VERSION.SDK_INT >= 21) {
+//                backgroundHolder.setBackground(Util.backgroundGradientTop(backgroundHolder));
+//            }else{
+//                backgroundHolder.setBackgroundDrawable(Util.backgroundGradientTop(backgroundHolder));
+//            }
+//        }
+//        if (SettingsUtil.getWindowShaders().equals(WindowShader.BOTH) || SettingsUtil.getWindowShaders().equals(WindowShader.BOTTOM)) {
+//            View backgroundHolder = findViewById(R.id.activty_user_interface_background_holder_bottom);
+//            DisplayMetrics dm = new DisplayMetrics();
+//            getWindowManager().getDefaultDisplay().getMetrics(dm);
+//            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)backgroundHolder.getLayoutParams();
+//            params.height = (int)(dm.heightPixels * .3);
+//            params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+//            backgroundHolder.setLayoutParams(params);
+//
+//            if (Build.VERSION.SDK_INT >= 21) {
+//                backgroundHolder.setBackground(Util.backgroundGradientBottom(backgroundHolder));
+//            }else{
+//                backgroundHolder.setBackgroundDrawable(Util.backgroundGradientBottom(backgroundHolder));
+//            }
+//        }
     }
     public void checkForServiceEnabled() {
         if (SystemOverlay.service == null) {
@@ -179,77 +202,77 @@ public class UserInterface extends FragmentActivity {
         }
     }
     public void setUpNavigator() {
-        currentNavigator = new Navigator();
-        currentNavigator.setUp();
-        currentNavigator.setSelected(0);
+//        currentNavigator = new Navigator();
+//        currentNavigator.setUp();
+//        currentNavigator.setSelected(0);
     }
     public void setUpResizer() {
-        findViewById(R.id.user_interface_resizer_layout).setSoundEffectsEnabled(false);
-        findViewById(R.id.user_interface_resizer_layout).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-        final ImageView resizer = (ImageView) findViewById(R.id.user_interface_resize_icon);
-        resizer.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    DisplayMetrics dm = new DisplayMetrics();
-                    getWindowManager().getDefaultDisplay().getMetrics(dm);
-                    System.out.println(widthPixels + " " + event.getRawX());
-                    getWindow().setLayout((int)(widthPixels - event.getRawX()),dm.heightPixels);
-                    return true;
-                }
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    DisplayMetrics dm = new DisplayMetrics();
-                    getWindowManager().getDefaultDisplay().getMetrics(dm);
-                    System.out.println(widthPixels + " " + event.getRawX());
-                    getWindow().setLayout((int)(widthPixels - event.getRawX()),dm.heightPixels);
-                    return true;
-                }
-                if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    DisplayMetrics dm = new DisplayMetrics();
-                    getWindowManager().getDefaultDisplay().getMetrics(dm);
-                    System.out.println(widthPixels + " " + event.getRawX());
-                    getWindow().setLayout((int)(widthPixels - event.getRawX()),dm.heightPixels);
-                    return true;
-                }
-                return false;
-            }
-        });
+//        findViewById(R.id.user_interface_resizer_layout).setSoundEffectsEnabled(false);
+//        findViewById(R.id.user_interface_resizer_layout).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                finish();
+//            }
+//        });
+//        final ImageView resizer = (ImageView) findViewById(R.id.user_interface_resize_icon);
+//        resizer.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                    DisplayMetrics dm = new DisplayMetrics();
+//                    getWindowManager().getDefaultDisplay().getMetrics(dm);
+//                    System.out.println(widthPixels + " " + event.getRawX());
+//                    getWindow().setLayout((int)(widthPixels - event.getRawX()),dm.heightPixels);
+//                    return true;
+//                }
+//                if (event.getAction() == MotionEvent.ACTION_UP) {
+//                    DisplayMetrics dm = new DisplayMetrics();
+//                    getWindowManager().getDefaultDisplay().getMetrics(dm);
+//                    System.out.println(widthPixels + " " + event.getRawX());
+//                    getWindow().setLayout((int)(widthPixels - event.getRawX()),dm.heightPixels);
+//                    return true;
+//                }
+//                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+//                    DisplayMetrics dm = new DisplayMetrics();
+//                    getWindowManager().getDefaultDisplay().getMetrics(dm);
+//                    System.out.println(widthPixels + " " + event.getRawX());
+//                    getWindow().setLayout((int)(widthPixels - event.getRawX()),dm.heightPixels);
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
     }
 
     public void setUpContentFragment() {
-        final List<ContentFragment> frags = getLayoutResources();
-        final ViewPager pager = (ViewPager) findViewById(R.id.content_layout_in_activity);
-        pager.setPageTransformer(true, new ZoomAnimation());
-        PagerAdapter adapter = new ContentFragment.ContentFragmentAdapter(getSupportFragmentManager(),frags);
-        pager.setAdapter(adapter);
-        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                if (position == 1) {
-                    getNavigator().setSelected(1);
-                    new InternetHandler(UserInterface.this, frags.get(1));
-                } else if (position == 3) {
-                    pager.setCurrentItem(2, false);
-                    getNavigator().setSelected(3);
-                    startActivity(new Intent(UserInterface.this, SettingsActivity.class));
-                } else {
-                    getNavigator().setSelected(position);
-                }
-            }
-        });
+//        final List<ContentFragment> frags = getLayoutResources();
+//        final ViewPager pager = (ViewPager) findViewById(R.id.content_layout_in_activity);
+//        pager.setPageTransformer(true, new ZoomAnimation());
+//        PagerAdapter adapter = new ContentFragment.ContentFragmentAdapter(getSupportFragmentManager(),frags);
+//        pager.setAdapter(adapter);
+//        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            @Override
+//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int state) {
+//            }
+//
+//            @Override
+//            public void onPageSelected(int position) {
+//                if (position == 1) {
+//                    getNavigator().setSelected(1);
+//                    new InternetHandler(UserInterface.this, frags.get(1));
+//                } else if (position == 3) {
+//                    pager.setCurrentItem(2, false);
+//                    getNavigator().setSelected(3);
+//                    startActivity(new Intent(UserInterface.this, SettingsActivity.class));
+//                } else {
+//                    getNavigator().setSelected(position);
+//                }
+//            }
+//        });
     }
     public void setUpWindow() {
         DisplayMetrics dm = new DisplayMetrics();
@@ -257,7 +280,7 @@ public class UserInterface extends FragmentActivity {
         int width = dm.widthPixels;
         int height = dm.heightPixels;
 
-        getWindow().setLayout((int) (width * ((double) SettingsUtil.getWindowSize() / 100)), height);
+        getWindow().setLayout((width / 5), height);
 
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             getWindow().setGravity(Gravity.RIGHT | Gravity.TOP);

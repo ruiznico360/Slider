@@ -24,9 +24,11 @@ import android.support.annotation.AnimatorRes;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
@@ -48,6 +50,7 @@ import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.FloaterUpdate;
 import mobile.slider.app.slider.settings.resources.SettingType;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
+import mobile.slider.app.slider.ui.UILayout;
 import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.IntentExtra;
@@ -100,6 +103,7 @@ public class SystemOverlay extends Service {
         }
         IntentFilter screenStateFilter = new IntentFilter();
         screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        screenStateFilter.addAction(Intent.ACTION_USER_PRESENT);
         powerReceiver = new PowerReceiver();
         registerReceiver(powerReceiver, screenStateFilter);
         if (Build.VERSION.SDK_INT >= 21) {
@@ -230,6 +234,61 @@ public class SystemOverlay extends Service {
     public static void showFloater() {
         overlayFloater.setVisibility(View.VISIBLE);
     }
+
+    public void launchUI() {
+        if (Util.isLocked(getApplicationContext())) {
+            final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                        + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, PixelFormat.TRANSLUCENT);
+            RelativeLayout ui = new UILayout.LockedActivityView(getApplicationContext());
+            View inner = UILayout.init(getApplicationContext());
+            ui.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        int rx = (int)event.getRawX();
+                        int ry = (int)event.getRawY();
+                        int[] l = new int[2];
+                        v.getLocationOnScreen(l);
+                        int x = l[0];
+                        int y = l[1];
+                        int w = v.getWidth();
+                        int h = v.getHeight();
+                        if (rx < x || rx > x + w || ry < y || ry > y + h) {
+                            UserInterface.remove(getApplicationContext());
+                            Util.log("upers");
+                        }
+                    }
+                    return true;
+                }
+            });
+            DisplayMetrics dm = new DisplayMetrics();
+            ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
+            int width = dm.widthPixels;
+
+            params.width = (width / 5);
+            params.height = 2560;
+
+            if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+                params.gravity = Gravity.RIGHT | Gravity.TOP;
+            }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
+                params.gravity = Gravity.LEFT | Gravity.TOP;
+            }
+            ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).addView(ui, params);
+            ui.addView(inner);
+            inner.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            UserInterface.ui = ui;
+            UserInterface.running = true;
+            Util.log("created locked");
+        }else {
+            Intent in = new Intent(getApplicationContext(), UserInterface.class);
+            in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            in.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            getApplication().startActivity(in);
+        }
+    }
+
     public class FloaterController {
         Handler longPress;
         Runnable startLongPress;
@@ -329,15 +388,9 @@ public class SystemOverlay extends Service {
                 float dy = y2 - y1;
                 if (Math.abs(dx) > Math.abs(dy)) {
                     if (!(dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                        Intent in = new Intent(getApplicationContext(), UserInterface.class);
-                        in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        in.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                        getApplication().startActivity(in);
+                        launchUI();
                     } else if ((dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                        Intent in = new Intent(getApplicationContext(), UserInterface.class);
-                        in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        in.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                        getApplication().startActivity(in);
+                        launchUI();
                     }
                 }
                 if (invisibleIcon) {
