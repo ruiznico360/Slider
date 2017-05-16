@@ -19,7 +19,7 @@ public class PowerReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context con, Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
-            if (UserInterface.running && Util.isLocked(con)) {
+            if (UserInterface.running) {
                 UserInterface.remove(con);
             }
         }else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {

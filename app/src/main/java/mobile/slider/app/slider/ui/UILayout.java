@@ -28,9 +28,10 @@ public class UILayout {
 
         @Override
         public boolean dispatchKeyEvent(KeyEvent event) {
-            if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) || (event.getKeyCode() == KeyEvent.KEYCODE_HOME) || (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH)) {
-                Util.log("one of em");
-                UserInterface.remove(c);
+            if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) && event.getAction() == KeyEvent.ACTION_UP) {
+                if (UserInterface.running) {
+                    UserInterface.remove(c);
+                }
                 return true;
             }
             return super.dispatchKeyEvent(event);

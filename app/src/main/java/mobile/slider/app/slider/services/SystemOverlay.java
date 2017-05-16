@@ -385,6 +385,7 @@ public class SystemOverlay extends Service {
                 createFloater(overlayFloater.getVisibility());
             }else if (!force){
                 float x2 = event.getX();
+
                 float y2 = event.getY();
                 float dx = x2 - x1;
                 float dy = y2 - y1;
