@@ -109,8 +109,8 @@ public class SystemOverlay extends Service {
         if (Build.VERSION.SDK_INT >= 21) {
             ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
             JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
-            builder.setRequiresDeviceIdle(false); // device should be idle
-            builder.setPeriodic(2000);
+            builder.setMinimumLatency(2000);
+            builder.setOverrideDeadline((long) (2000 * 1.05));
             builder.setRequiresCharging(false); // we don't care if the device is charging or not
             JobScheduler jobScheduler = (JobScheduler) getApplication().getSystemService(Context.JOB_SCHEDULER_SERVICE);
             jobScheduler.schedule(builder.build());
@@ -162,14 +162,16 @@ public class SystemOverlay extends Service {
     }
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
+        if (UserInterface.running) {
+            UserInterface.remove(getApplicationContext());
+        }
         createFloater(overlayFloater.getVisibility());
+        super.onConfigurationChanged(newConfig);
     }
     public void createFloater(int visibility) {
         super.onCreate();
         final ImageView floater = new ImageView(getApplicationContext());
         final ImageView background = new ImageView(getApplicationContext());
-
         int floaterPos = floaterPos();
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
@@ -177,14 +179,21 @@ public class SystemOverlay extends Service {
                         + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT);
         params.height = SettingsUtil.getFloaterSize();
         params.y = floaterPos;
-
         final WindowManager.LayoutParams backgroundParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                         + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT);
         backgroundParams.height = (int)(SettingsUtil.getFloaterSize() * 1.2);
         backgroundParams.y = floaterPos;
-
+        if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
+            params.gravity = Gravity.RIGHT | Gravity.TOP;
+            backgroundParams.gravity = Gravity.RIGHT | Gravity.TOP;
+        }else if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+            params.gravity = Gravity.LEFT | Gravity.TOP;
+            backgroundParams.gravity = Gravity.LEFT | Gravity.TOP;
+            floater.setScaleX(-1);
+            background.setScaleX(-1);
+        }
         if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.DOTS)) {
             params.width = (int)((params.height / (200 / 50)) * 1.5);
             floater.setAlpha(0.85f);
@@ -204,15 +213,6 @@ public class SystemOverlay extends Service {
             invisibleIcon = true;
         }
         floater.setScaleType(ImageView.ScaleType.FIT_END);
-        if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-            params.gravity = Gravity.RIGHT;
-            backgroundParams.gravity = Gravity.RIGHT;
-        }else if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-            params.gravity = Gravity.LEFT;
-            backgroundParams.gravity = Gravity.LEFT;
-            floater.setScaleX(-1);
-            background.setScaleX(-1);
-        }
         background.setAlpha(0.8f);
         floater.setLayoutParams(params);
         background.setLayoutParams(backgroundParams);
@@ -256,8 +256,9 @@ public class SystemOverlay extends Service {
                         int w = v.getWidth();
                         int h = v.getHeight();
                         if (rx < x || rx > x + w || ry < y || ry > y + h) {
-                            UserInterface.remove(getApplicationContext());
-                            Util.log("upers");
+                            if (UserInterface.running) {
+                                UserInterface.remove(getApplicationContext());
+                            }
                         }
                     }
                     return true;
@@ -279,12 +280,19 @@ public class SystemOverlay extends Service {
             ui.addView(inner);
             inner.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             UserInterface.ui = ui;
+            Animation a;
+            if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+                a = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.from_right_to_middle);
+            }else {
+                a = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.from_left_to_middle);
+            }
+            inner.startAnimation(a);
             UserInterface.running = true;
-            Util.log("created locked");
         }else {
             Intent in = new Intent(getApplicationContext(), UserInterface.class);
             in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             in.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            in.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             getApplication().startActivity(in);
         }
     }
@@ -303,6 +311,7 @@ public class SystemOverlay extends Service {
         public Context c;
         public View.OnTouchListener touchListener;
         public boolean inTouch = false;
+        public float yOffset = 0;
 
         public FloaterController(ImageView of, ImageView bg, WindowManager.LayoutParams pm, WindowManager.LayoutParams bp, Context con) {
             this.overlayFloater = of;
@@ -338,6 +347,9 @@ public class SystemOverlay extends Service {
                     initialX = params.x;
                     initialTouchX = event.getRawX();
                     initialTouchY = event.getRawY();
+                    int[] l = new int[2];
+                    background.getLocationOnScreen(l);
+                    yOffset = event.getRawY() - l[1];
                     background.setAlpha(0f);
                     if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                         multiplier = -1;
@@ -370,17 +382,7 @@ public class SystemOverlay extends Service {
                 } else {
                     background.setAlpha(0f);
                 }
-                params.x = 0;
-                backgroundParams.x = 0;
-                if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                    params.gravity = Gravity.RIGHT;
-                    backgroundParams.gravity = Gravity.RIGHT;
-                }else if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                    params.gravity = Gravity.LEFT;
-                    backgroundParams.gravity = Gravity.LEFT;
-                }
-                ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(overlayFloater, params);
-                ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
+                createFloater(overlayFloater.getVisibility());
             }else if (!force){
                 float x2 = event.getX();
                 float y2 = event.getY();
@@ -409,18 +411,26 @@ public class SystemOverlay extends Service {
                 } else {
                     background.setAlpha(0f);
                 }
-                params.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
-                backgroundParams.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
-                params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                backgroundParams.y = initialY + (int) (event.getRawY() - initialTouchY);
-                SettingsUtil.setFloaterPos(params.y);
                 DisplayMetrics dm = new DisplayMetrics();
                 ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
                 double width = dm.widthPixels / 2;
+                float rawY = event.getRawY() - yOffset;
+                if (rawY + overlayFloater.getHeight() > (dm.heightPixels - (dm.heightPixels / 20))) {
+                    rawY = ((dm.heightPixels - (dm.heightPixels / 20)) - overlayFloater.getHeight());
+                }
+                else if (rawY < dm.heightPixels / 20) {
+                    rawY = ((dm.heightPixels / 20));
+                }
+                params.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
+                backgroundParams.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
+                params.y = (int) (rawY);
+                backgroundParams.y = (int) (rawY);
+                SettingsUtil.setFloaterPos(params.y);
+
 
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     SettingsUtil.setLastFloaterUpdate(FloaterUpdate.LANDSCAPE);
-                }else{
+                } else {
                     SettingsUtil.setLastFloaterUpdate(FloaterUpdate.PORTRAIT);
                 }
                 if (event.getRawX() < width) {
@@ -429,7 +439,7 @@ public class SystemOverlay extends Service {
                         background.setScaleX(-1);
                         SettingsUtil.setFloaterGravity(WindowGravity.LEFT);
                     }
-                }else  if (event.getRawX() >= width) {
+                } else if (event.getRawX() >= width) {
                     if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                         overlayFloater.setScaleX(1);
                         background.setScaleX(1);
@@ -438,6 +448,7 @@ public class SystemOverlay extends Service {
                 }
                 ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(overlayFloater, params);
                 ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
+
             }else{
                 int rx = (int)event.getRawX();
                 int ry = (int)event.getRawY();
@@ -456,7 +467,6 @@ public class SystemOverlay extends Service {
                 if (rx < x || rx > x + w || ry < y || ry > y + h) {
                     longPress.removeCallbacks(startLongPress);
                 }
-                Util.log(x + " " + y + " " + " " + (x + w) + " " + (y + h) + " " + w + " " + h + " " + rx + " " + ry);
             }
         }
     }
