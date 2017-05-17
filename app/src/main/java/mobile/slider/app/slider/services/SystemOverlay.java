@@ -184,7 +184,7 @@ public class SystemOverlay extends Service {
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                         + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT);
         backgroundParams.height = (int)(SettingsUtil.getFloaterSize() * 1.2);
-        backgroundParams.y = floaterPos;
+        backgroundParams.y = (int)(floaterPos - (((SettingsUtil.getFloaterSize() * 1.2) - SettingsUtil.getFloaterSize()) / 2));
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
             params.gravity = Gravity.RIGHT | Gravity.TOP;
             backgroundParams.gravity = Gravity.RIGHT | Gravity.TOP;
@@ -289,11 +289,19 @@ public class SystemOverlay extends Service {
             inner.startAnimation(a);
             UserInterface.running = true;
         }else {
-            Intent in = new Intent(getApplicationContext(), UserInterface.class);
-            in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            in.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-            in.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            getApplication().startActivity(in);
+            if (SystemOverlay.floaterMovement.inTouch) {
+                SystemOverlay.floaterMovement.forceUp();
+            }
+            SystemOverlay.hideFloater();
+            Intent intent = new Intent(this, UserInterface.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            PendingIntent pendingIntent =
+                    PendingIntent.getActivity(this, 0, intent, 0);
+            try {
+                pendingIntent.send();
+            } catch (PendingIntent.CanceledException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -423,9 +431,7 @@ public class SystemOverlay extends Service {
                     rawY = ((dm.heightPixels / 20));
                 }
                 params.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
-                backgroundParams.x = multiplier * (initialX + (int) (event.getRawX() - initialTouchX));
                 params.y = (int) (rawY);
-                backgroundParams.y = (int) (rawY);
                 SettingsUtil.setFloaterPos(params.y);
 
 
@@ -437,19 +443,15 @@ public class SystemOverlay extends Service {
                 if (event.getRawX() < width) {
                     if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
                         overlayFloater.setScaleX(-1);
-                        background.setScaleX(-1);
                         SettingsUtil.setFloaterGravity(WindowGravity.LEFT);
                     }
                 } else if (event.getRawX() >= width) {
                     if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                         overlayFloater.setScaleX(1);
-                        background.setScaleX(1);
                         SettingsUtil.setFloaterGravity(WindowGravity.RIGHT);
                     }
                 }
                 ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(overlayFloater, params);
-                ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(background, backgroundParams);
-
             }else{
                 int rx = (int)event.getRawX();
                 int ry = (int)event.getRawY();

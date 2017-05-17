@@ -58,14 +58,12 @@ public class UserInterface extends FragmentActivity {
     private int widthPixels;
     public static View ui;
     public static boolean running = false;
+    String toast = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         ui = UILayout.init(this);
         setContentView(ui);
         setupActivity();
@@ -73,11 +71,14 @@ public class UserInterface extends FragmentActivity {
     @Override
     public void onResume() {
         super.onResume();
+
     }
     @Override
     public void onPause() {
         super.onPause();
+
         finish();
+
     }
 
     @Override
@@ -119,7 +120,6 @@ public class UserInterface extends FragmentActivity {
     }
     @Override
     public void finish() {
-        super.finish();
         if (getIntent().getExtras() != null) {
             if (!getIntent().getExtras().containsKey(IntentExtra.TO_PERMISSIONS_ACTIVITY)) {
                 SystemOverlay.showFloater();
@@ -130,10 +130,11 @@ public class UserInterface extends FragmentActivity {
             setAnimation();
         }
         running = false;
+        super.finish();
     }
     public void setupActivity() {
         running = true;
-        overridePendingTransition(0,0);
+        overridePendingTransition(0, 0);
         SettingsWriter.init(this);
 
 //        if (getIntent().getExtras() != null) {
@@ -208,11 +209,6 @@ public class UserInterface extends FragmentActivity {
     public void checkForServiceEnabled() {
         if (SystemOverlay.service == null) {
             SystemOverlay.start(this, IntentExtra.FROM_UI);
-        }else{
-            if (SystemOverlay.floaterMovement.inTouch) {
-                SystemOverlay.floaterMovement.forceUp();
-            }
-            disableFloater();
         }
     }
     public void disableFloater() {
@@ -325,11 +321,10 @@ public class UserInterface extends FragmentActivity {
         return currentNavigator;
     }
     public void setAnimation() {
-        CustomToast.makeToast("finished with anim");
-        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-            overridePendingTransition(R.anim.from_right_to_middle, R.anim.from_middle_to_right);
-        }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
+        if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
             overridePendingTransition(R.anim.from_left_to_middle, R.anim.from_middle_to_left);
+        }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+            overridePendingTransition(R.anim.from_right_to_middle, R.anim.from_middle_to_right);
         }
     }
 
