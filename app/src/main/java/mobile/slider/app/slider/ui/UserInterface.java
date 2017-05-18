@@ -87,6 +87,7 @@ public class UserInterface extends FragmentActivity {
     }
     public static void remove(final Context c) {
         UserInterface.running = false;
+        SystemOverlay.showFloater();
         int dir = 0;
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             dir = 1440;
@@ -291,6 +292,7 @@ public class UserInterface extends FragmentActivity {
 //            }
 //        });
     }
+
     public void setUpWindow() {
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);

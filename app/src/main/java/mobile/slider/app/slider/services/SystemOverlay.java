@@ -237,6 +237,10 @@ public class SystemOverlay extends Service {
 
     public void launchUI() {
         if (Util.isLocked(getApplicationContext())) {
+            if (SystemOverlay.floaterMovement.inTouch) {
+                SystemOverlay.floaterMovement.forceUp();
+            }
+            SystemOverlay.hideFloater();
             final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
