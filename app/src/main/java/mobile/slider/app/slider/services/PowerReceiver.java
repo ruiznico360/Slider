@@ -8,6 +8,7 @@ import android.view.WindowManager;
 
 import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.CustomToast;
+import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.Util;
 
 import static android.content.Context.WINDOW_SERVICE;
@@ -22,20 +23,8 @@ public class PowerReceiver extends BroadcastReceiver {
             if (UserInterface.running) {
                 UserInterface.remove(con);
             }
-        }else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-            ActivityManager manager = (ActivityManager) con.getSystemService(Context.ACTIVITY_SERVICE);
-            boolean running = false;
-            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-                if (SystemOverlay.class.getName().equals(service.service.getClassName())) {
-                    running = true;
-                }
-            }
-            if (running) {
-                CustomToast.makeToast("power off service running");
-                if (SystemOverlay.floaterMovement.inTouch) {
-                    SystemOverlay.floaterMovement.forceUp();
-                }
-            }
+        }
+        else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
             if (UserInterface.running && Util.isLocked(con)) {
                 UserInterface.remove(con);
             }

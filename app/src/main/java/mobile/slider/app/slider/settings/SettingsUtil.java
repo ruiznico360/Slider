@@ -18,7 +18,8 @@ public class SettingsUtil {
     protected static String appTheme;
     protected static String floaterIcon;
     protected static String lastFloaterUpdate;
-    protected static int backgroundColor,windowSize, floaterSize,floaterPos;
+    protected static int backgroundColor,windowSize, floaterSize;
+    protected static float floaterPos;
     protected static boolean autoSelectAppTheme;
 
     public static boolean checkPermissions(Context c) {
@@ -73,7 +74,7 @@ public class SettingsUtil {
     public static String getFloaterGravity() {
         return floaterGravity;
     }
-    public static int getFloaterPos() {
+    public static float getFloaterPos() {
         return floaterPos;
     }
     public static String getFloaterIcon() {
@@ -140,7 +141,7 @@ public class SettingsUtil {
 
     }
 
-    public static void setFloaterPos(int floaterPos) {
+    public static void setFloaterPos(float floaterPos) {
         SettingsUtil.floaterPos = floaterPos;
         SettingsWriter.setSetting(SettingType.FLOATER_POS , floaterPos);
 

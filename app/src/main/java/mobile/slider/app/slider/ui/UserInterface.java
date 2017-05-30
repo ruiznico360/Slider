@@ -137,6 +137,7 @@ public class UserInterface extends FragmentActivity {
         running = true;
         overridePendingTransition(0, 0);
         SettingsWriter.init(this);
+        checkForServiceEnabled();
 
 //        if (getIntent().getExtras() != null) {
 //            if (!getIntent().getExtras().containsKey(IntentExtra.FROM_SETTINGS)) {
@@ -160,7 +161,6 @@ public class UserInterface extends FragmentActivity {
             startActivity(i);
             return;
         }
-        checkForServiceEnabled();
 
         initializeColors();
         setUpNavigator();
@@ -210,6 +210,10 @@ public class UserInterface extends FragmentActivity {
     public void checkForServiceEnabled() {
         if (SystemOverlay.service == null) {
             SystemOverlay.start(this, IntentExtra.FROM_UI);
+        }else{
+            if (SystemOverlay.overlayFloater.getVisibility() == View.VISIBLE) {
+                SystemOverlay.hideFloater();
+            }
         }
     }
     public void disableFloater() {

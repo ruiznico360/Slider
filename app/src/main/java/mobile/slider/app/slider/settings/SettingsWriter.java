@@ -22,6 +22,7 @@ public class SettingsWriter {
 
     public static void init(Context c) {
         appContext = c;
+        SettingsUtil.setFloaterPos(50.0f);
         refreshSettings();
     }
     protected static void refreshSettings() {
@@ -38,7 +39,7 @@ public class SettingsWriter {
         SettingsUtil.windowShaders = sharedPreferences.getString(SettingType.WINDOW_SHADERS, SettingType.NULL);
         SettingsUtil.floaterSize = sharedPreferences.getInt(SettingType.FLOATER_SIZE, 0);
         SettingsUtil.floaterGravity = sharedPreferences.getString(SettingType.FLOATER_GRAVITY, SettingType.NULL);
-        SettingsUtil.floaterPos = sharedPreferences.getInt(SettingType.FLOATER_POS, 0);
+        SettingsUtil.floaterPos = sharedPreferences.getFloat(SettingType.FLOATER_POS, 0);
         SettingsUtil.floaterIcon = sharedPreferences.getString(SettingType.FLOATER_ICON,SettingType.NULL);
         SettingsUtil.lastFloaterUpdate = sharedPreferences.getString(SettingType.LAST_FLOATER_UPDATE,SettingType.NULL);
 

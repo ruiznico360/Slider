@@ -24,6 +24,12 @@ public class UILayout {
         public LockedActivityView(Context c){
             super(c);
             this.c = c;
+            this.setOnFocusChangeListener(new OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    Util.log("focus changed " + hasFocus);
+                }
+            });
         }
 
         @Override

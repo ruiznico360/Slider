@@ -17,6 +17,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
+import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.Util;
