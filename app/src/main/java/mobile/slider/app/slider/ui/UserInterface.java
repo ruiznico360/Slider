@@ -11,6 +11,7 @@ import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.PagerAdapter;
@@ -58,33 +59,62 @@ public class UserInterface extends FragmentActivity {
     private int widthPixels;
     public static View ui;
     public static boolean running = false;
+    public static Handler finish;
     String toast = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        ui = UILayout.init(this);
-        setContentView(ui);
+//        ui = UILayout.init(this);
+//        setContentView(ui);
         setupActivity();
+        toast = "create";
+        Util.log("create");
+        CustomToast.makeToast(toast);
+        finish();
+
     }
     @Override
     public void onResume() {
+//        toast += "resume";
+//        Util.log("resume");
+//        CustomToast.makeToast(toast);
         super.onResume();
-
+//        if (getIntent().getExtras() != null && getIntent().hasExtra(IntentExtra.CON_FIN)) {
+//            getIntent().removeExtra(IntentExtra.CON_FIN);
+//        }
     }
     @Override
     public void onPause() {
+//        toast += "pause";
+//        CustomToast.makeToast(toast);
+//        Util.log("pause");
         super.onPause();
-
-        finish();
-
+//        if (getIntent().getExtras() != null && getIntent().hasExtra(IntentExtra.CON_FIN)) {
+//            Util.log("consumed");
+//        }else {
+//            Util.log("restarting class");
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Intent openMainActivity = new Intent(SystemOverlay.service.getApplicationContext(), UserInterface.class);
+//                            startActivity(openMainActivity);
+//                        }
+//                    });
+//                }
+//            },1);
+//
+//        }
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        finish();
     }
+
     public static void remove(final Context c) {
         UserInterface.running = false;
         SystemOverlay.showFloater();
@@ -119,18 +149,24 @@ public class UserInterface extends FragmentActivity {
         });
 
     }
+    public void finishAct() {
+//        toast += "finish";
+//        Util.log("finish");
+//        CustomToast.makeToast(toast);
+//        if (getIntent().getExtras() != null) {
+//            if (!getIntent().getExtras().containsKey(IntentExtra.TO_PERMISSIONS_ACTIVITY)) {
+//                SystemOverlay.showFloater();
+//                setAnimation();
+//            }
+//        }else{
+//            SystemOverlay.showFloater();
+//            setAnimation();
+//        }
+//        getIntent().putExtra(IntentExtra.CON_FIN,  true);
+    }
     @Override
     public void finish() {
-        if (getIntent().getExtras() != null) {
-            if (!getIntent().getExtras().containsKey(IntentExtra.TO_PERMISSIONS_ACTIVITY)) {
-                SystemOverlay.showFloater();
-                setAnimation();
-            }
-        }else{
-            SystemOverlay.showFloater();
-            setAnimation();
-        }
-        running = false;
+        finishAct();
         super.finish();
     }
     public void setupActivity() {
@@ -146,26 +182,19 @@ public class UserInterface extends FragmentActivity {
 //        }else{
 //            setAnimation();
 //        }
-        Animation a;
-        setUpWindow();
-        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-            a = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.from_right_to_middle);
-        }else {
-            a = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.from_left_to_middle);
-        }
-        ui.findViewById(R.id.ui_main_layout).startAnimation(a);
-        lockOrientation();
-        if (!SettingsUtil.checkPermissions(this)) {
-            Intent i = new Intent(this, PermissionsInterface.class);
-            getIntent().putExtra(IntentExtra.TO_PERMISSIONS_ACTIVITY, true);
-            startActivity(i);
-            return;
-        }
-
-        initializeColors();
-        setUpNavigator();
-        setUpContentFragment();
-        setUpResizer();
+//        setUpWindow();
+//        lockOrientation();
+//        if (!SettingsUtil.checkPermissions(this)) {
+//            Intent i = new Intent(this, PermissionsInterface.class);
+//            getIntent().putExtra(IntentExtra.TO_PERMISSIONS_ACTIVITY, true);
+//            startActivity(i);
+//            return;
+//        }
+//
+//        initializeColors();
+//        setUpNavigator();
+//        setUpContentFragment();
+//        setUpResizer();
     }
     public void lockOrientation() {
         int orientation = getResources().getConfiguration().orientation;
@@ -211,9 +240,9 @@ public class UserInterface extends FragmentActivity {
         if (SystemOverlay.service == null) {
             SystemOverlay.start(this, IntentExtra.FROM_UI);
         }else{
-            if (SystemOverlay.overlayFloater.getVisibility() == View.VISIBLE) {
-                SystemOverlay.hideFloater();
-            }
+//            if (SystemOverlay.overlayFloater.getVisibility() == View.VISIBLE) {
+//                SystemOverlay.hideFloater();
+//            }
         }
     }
     public void disableFloater() {

@@ -22,7 +22,6 @@ public class SettingsWriter {
 
     public static void init(Context c) {
         appContext = c;
-        SettingsUtil.setFloaterPos(50.0f);
         refreshSettings();
     }
     protected static void refreshSettings() {

@@ -24,17 +24,10 @@ public class UILayout {
         public LockedActivityView(Context c){
             super(c);
             this.c = c;
-            this.setOnFocusChangeListener(new OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    Util.log("focus changed " + hasFocus);
-                }
-            });
         }
-
         @Override
         public boolean dispatchKeyEvent(KeyEvent event) {
-            if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) && event.getAction() == KeyEvent.ACTION_UP) {
+            if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) || (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) || (event.getKeyCode() == KeyEvent.KEYCODE_HOME)) {
                 if (UserInterface.running) {
                     UserInterface.remove(c);
                 }

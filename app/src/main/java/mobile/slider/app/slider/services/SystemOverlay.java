@@ -84,23 +84,18 @@ public class SystemOverlay extends Service {
         if (intent != null) {
             if (intent.getExtras() != null) {
                 if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
-                    createFloater(View.INVISIBLE);
-                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "View created invisible from UI");
+                    createFloater(View.VISIBLE);
                 }else if (intent.getExtras().containsKey(IntentExtra.SAFE_REBOOT_SERVICE)) {
                     SettingsWriter.init(getApplicationContext());
-                    Util.sendNotification(getApplicationContext(), "Restarter", "Created visible");
                     createFloater(View.VISIBLE);
                 }else{
                     createFloater(View.VISIBLE);
-                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created visible from intent with no matching extras");
                 }
             }else {
                 createFloater(View.VISIBLE);
-                Util.sendNotification(getApplicationContext(), "SystemOverlay", "View created visible from intent with no extras");
             }
         }else{
                 SettingsWriter.init(getApplicationContext());
-                Util.sendNotification(getApplicationContext(), "SystemOverlay", "View created visible from null intent");
                 createFloater(View.VISIBLE);
         }
         IntentFilter screenStateFilter = new IntentFilter();
@@ -166,7 +161,6 @@ public class SystemOverlay extends Service {
         }else if (floaterPos + (SettingsUtil.getFloaterSize() * 1.2) > height - FloaterController.BORDER) {
             floaterPos = height - FloaterController.BORDER - (SettingsUtil.getFloaterSize() * 1.2);
         }
-
         return (int)floaterPos;
     }
     @Override
@@ -273,7 +267,7 @@ public class SystemOverlay extends Service {
     }
 
     public void launchUI() {
-        if (Util.isLocked(getApplicationContext())) {
+//        if (Util.isLocked(getApplicationContext())) {
             if (SystemOverlay.floaterMovement.inTouch) {
                 SystemOverlay.floaterMovement.forceUp();
             }
@@ -282,7 +276,7 @@ public class SystemOverlay extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                         + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, PixelFormat.TRANSLUCENT);
-            RelativeLayout ui = new UILayout.LockedActivityView(getApplicationContext());
+            RelativeLayout ui = new UILayout.LockedActivityView(this);
             View inner = UILayout.init(getApplicationContext());
             ui.setOnTouchListener(new View.OnTouchListener() {
                 @Override
@@ -329,21 +323,21 @@ public class SystemOverlay extends Service {
             }
             inner.startAnimation(a);
             UserInterface.running = true;
-        }else {
-            if (SystemOverlay.floaterMovement.inTouch) {
-                SystemOverlay.floaterMovement.forceUp();
-            }
-            SystemOverlay.hideFloater();
-            Intent intent = new Intent(this, UserInterface.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-            PendingIntent pendingIntent =
-                    PendingIntent.getActivity(this, 0, intent, 0);
-            try {
-                pendingIntent.send();
-            } catch (PendingIntent.CanceledException e) {
-                e.printStackTrace();
-            }
-        }
+//        }else {
+//            if (SystemOverlay.floaterMovement.inTouch) {
+//                SystemOverlay.floaterMovement.forceUp();
+//            }
+//            SystemOverlay.hideFloater();
+//            Intent intent = new Intent(this, UserInterface.class);
+//            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+//            PendingIntent pendingIntent =
+//                    PendingIntent.getActivity(this, 0, intent, 0);
+//            try {
+//                pendingIntent.send();
+//            } catch (PendingIntent.CanceledException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     public class FloaterController {
