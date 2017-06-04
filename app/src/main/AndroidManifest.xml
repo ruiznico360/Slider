@@ -17,7 +17,7 @@
         android:name=".util.SliderApplication"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.UserInterface"
+            android:name=".ui.Slider"
             android:autoRemoveFromRecents="true"
             android:showOnLockScreen="true"
             android:excludeFromRecents="true"

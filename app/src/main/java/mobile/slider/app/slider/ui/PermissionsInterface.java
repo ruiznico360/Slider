@@ -11,11 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.SettingsWriter;
-import mobile.slider.app.slider.settings.resources.SettingType;
-import mobile.slider.app.slider.util.IntentExtra;
-import mobile.slider.app.slider.util.Util;
 
 public class PermissionsInterface extends AppCompatActivity {
     public static final int SYSTEM_ALERT_WINDOW_CODE = 1;
@@ -46,7 +42,7 @@ public class PermissionsInterface extends AppCompatActivity {
             if (requestCode == SYSTEM_ALERT_WINDOW_CODE) {
                 if (Settings.canDrawOverlays(this)) {
                     finish();
-                    Intent i = new Intent(this, UserInterface.class);
+                    Intent i = new Intent(this, Slider.class);
                     startActivity(i);
                 } else {
                     retryButton.setVisibility(View.VISIBLE);

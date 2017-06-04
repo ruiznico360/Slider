@@ -19,10 +19,12 @@ import mobile.slider.app.slider.util.CustomToast;
 public class SettingsWriter {
     public static Context appContext;
     protected static final String SETTINGS = "SETTINGS";
+    public static boolean running = false;
 
     public static void init(Context c) {
         appContext = c;
         refreshSettings();
+        running = true;
     }
     protected static void refreshSettings() {
         SharedPreferences sharedPreferences = appContext.getSharedPreferences(SETTINGS, Context.MODE_PRIVATE);

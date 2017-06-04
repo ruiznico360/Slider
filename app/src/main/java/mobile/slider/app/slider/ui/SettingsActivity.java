@@ -75,7 +75,7 @@ public class SettingsActivity extends Activity {
 
     public void backPressed() {
         finish();
-        Intent i = new Intent(this, UserInterface.class);
+        Intent i = new Intent(this, Slider.class);
         i.putExtra(IntentExtra.FROM_SETTINGS, true);
         startActivity(i);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);

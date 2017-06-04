@@ -26,13 +26,7 @@ public class Restarter extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        boolean running = false;
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (SystemOverlay.class.getName().equals(service.service.getClassName())) {
-                running = true;
-            }
-        }
-        if (!running) {
+        if (SystemOverlay.service == null) {
             Intent i = new Intent(getApplicationContext(),SystemOverlay.class);
             i.putExtra(IntentExtra.SAFE_REBOOT_SERVICE, true);
             startService(i);
