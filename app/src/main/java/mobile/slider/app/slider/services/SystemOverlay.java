@@ -11,6 +11,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ConfigurationInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -118,6 +119,7 @@ public class SystemOverlay extends Service {
             AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 2000, pintent);
         }
+        launchUI();
         return START_STICKY;
     }
 
@@ -165,11 +167,8 @@ public class SystemOverlay extends Service {
     }
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        if (UserInterface.running) {
-            UserInterface.remove(getApplicationContext());
-        }
-        createFloater(overlayFloater.getVisibility());
         super.onConfigurationChanged(newConfig);
+        createFloater(overlayFloater.getVisibility());
     }
     public void createFloater(int visibility) {
         super.onCreate();
@@ -237,7 +236,6 @@ public class SystemOverlay extends Service {
         }else{
             hideFloater();
         }
-
     }
     public static void hideFloater() {
         floaterMovement.enableTouch(false);
@@ -267,62 +265,75 @@ public class SystemOverlay extends Service {
     }
 
     public void launchUI() {
-//        if (Util.isLocked(getApplicationContext())) {
-            if (SystemOverlay.floaterMovement.inTouch) {
-                SystemOverlay.floaterMovement.forceUp();
-            }
-            SystemOverlay.hideFloater();
-            final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+        if (SystemOverlay.floaterMovement.inTouch) {
+            SystemOverlay.floaterMovement.forceUp();
+        }
+        SystemOverlay.hideFloater();
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, PixelFormat.TRANSLUCENT);
-            RelativeLayout ui = new UILayout.LockedActivityView(this);
-            View inner = UILayout.init(getApplicationContext());
-            ui.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        int rx = (int)event.getRawX();
-                        int ry = (int)event.getRawY();
-                        int[] l = new int[2];
-                        v.getLocationOnScreen(l);
-                        int x = l[0];
-                        int y = l[1];
-                        int w = v.getWidth();
-                        int h = v.getHeight();
-                        if (rx < x || rx > x + w || ry < y || ry > y + h) {
-                            if (UserInterface.running) {
-                                UserInterface.remove(getApplicationContext());
-                            }
+                        + WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, PixelFormat.TRANSLUCENT);
+        RelativeLayout ui = new UILayout.LockedActivityView(this);
+        View inner = UILayout.init(getApplicationContext());
+        ui.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    int rx = (int)event.getRawX();
+                    int ry = (int)event.getRawY();
+                    int[] l = new int[2];
+                    v.getLocationOnScreen(l);
+                    int x = l[0];
+                    int y = l[1];
+                    int w = v.getWidth();
+                    int h = v.getHeight();
+                    if (rx < x || rx > x + w || ry < y || ry > y + h) {
+                        if (UserInterface.running) {
+                            UserInterface.remove(getApplicationContext());
                         }
                     }
-                    return true;
                 }
-            });
-            DisplayMetrics dm = new DisplayMetrics();
-            ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
-            int width = dm.widthPixels;
-
-            params.width = (width / 5);
-            params.height = 2560;
-
-            if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-                params.gravity = Gravity.RIGHT | Gravity.TOP;
-            }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
-                params.gravity = Gravity.LEFT | Gravity.TOP;
+                return true;
             }
-            ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).addView(ui, params);
-            ui.addView(inner);
-            inner.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            UserInterface.ui = ui;
-            Animation a;
-            if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-                a = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.from_right_to_middle);
-            }else {
-                a = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.from_left_to_middle);
-            }
-            inner.startAnimation(a);
-            UserInterface.running = true;
+        });
+        DisplayMetrics dm = new DisplayMetrics();
+        ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
+        int width = dm.widthPixels;
+        int height = dm.heightPixels;
+        int size;
+        if (height > width) {
+            size = width / 5;
+        }else{
+            size = height / 5;
+        }
+        int orientation;
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        }else {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+        }
+        params.screenOrientation = orientation;
+        params.width = (size);
+
+        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+            params.gravity = Gravity.RIGHT | Gravity.TOP;
+        }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
+            params.gravity = Gravity.LEFT | Gravity.TOP;
+        }
+        ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).addView(ui, params);
+        ui.addView(inner);
+        inner.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        UserInterface.ui = ui;
+        Animation a;
+        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+            a = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.from_right_to_middle);
+        }else {
+            a = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.from_left_to_middle);
+        }
+        inner.startAnimation(a);
+        UserInterface.running = true;
+//        if (Util.isLocked(getApplicationContext())) {
+
 //        }else {
 //            if (SystemOverlay.floaterMovement.inTouch) {
 //                SystemOverlay.floaterMovement.forceUp();

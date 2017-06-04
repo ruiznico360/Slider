@@ -68,9 +68,9 @@ public class UserInterface extends FragmentActivity {
 //        ui = UILayout.init(this);
 //        setContentView(ui);
         setupActivity();
-        toast = "create";
-        Util.log("create");
-        CustomToast.makeToast(toast);
+//        toast = "create";
+//        Util.log("create");
+//        CustomToast.makeToast(toast);
         finish();
 
     }
@@ -240,9 +240,7 @@ public class UserInterface extends FragmentActivity {
         if (SystemOverlay.service == null) {
             SystemOverlay.start(this, IntentExtra.FROM_UI);
         }else{
-//            if (SystemOverlay.overlayFloater.getVisibility() == View.VISIBLE) {
-//                SystemOverlay.hideFloater();
-//            }
+            SystemOverlay.service.launchUI();
         }
     }
     public void disableFloater() {
