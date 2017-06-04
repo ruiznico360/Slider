@@ -426,7 +426,7 @@ public class SystemOverlay extends Service {
                 if (Math.abs(dx) > Math.abs(dy)) {
                     if (!(dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                         launchUI();
-                    } else if ((dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+                    } else if ((dx < 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
                         launchUI();
                     }
                 }
