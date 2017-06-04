@@ -324,7 +324,7 @@ public class SystemOverlay extends Service {
         Handler longPress;
         Runnable startLongPress;
         boolean startSliding = false;
-        float initialX,initialTouchX;
+        float initialX,initialTouchX,x1,y1;
         int multiplier;
         public RelativeLayout container;
         public ImageView overlayFloater,background;
@@ -392,6 +392,8 @@ public class SystemOverlay extends Service {
                     }
                 }
             };
+            x1 = event.getX();
+            y1 = event.getY();
             longPress = new Handler();
             longPress.postDelayed(startLongPress, 500);
             Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -416,14 +418,15 @@ public class SystemOverlay extends Service {
                 }
                 createFloater(overlayFloater.getVisibility());
             }else if (!force){
-                int[] location = new int[2];
-                container.getLocationOnScreen(location);
-                if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                    if (event.getRawX() <= location[0] - 25) {
+                float x2 = event.getX();
+
+                float y2 = event.getY();
+                float dx = x2 - x1;
+                float dy = y2 - y1;
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    if (!(dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                         launchUI();
-                    }
-                } else if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                    if (event.getRawX() >= location[0] + container.getWidth() + 25) {
+                    } else if ((dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
                         launchUI();
                     }
                 }
