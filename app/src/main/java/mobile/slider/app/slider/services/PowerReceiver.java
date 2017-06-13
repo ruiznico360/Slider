@@ -3,6 +3,7 @@ package mobile.slider.app.slider.services;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.view.View;
 
 import mobile.slider.app.slider.ui.UI;
 
@@ -16,11 +17,15 @@ public class PowerReceiver extends BroadcastReceiver {
             if (UI.running) {
                 UI.remove(con);
             }
-        }
-        else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+        }else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+            if (UI.running) {
+                UI.remove(con);
+            }
+        }else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
             if (UI.running) {
                 UI.remove(con);
             }
         }
+
     }
 }

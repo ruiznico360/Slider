@@ -69,7 +69,7 @@ public class SettingsActivity extends Activity {
         if (currentPopup != null && currentPopup.isVisible()) {
             currentPopup.remove();
         }
-        SystemOverlay.service.createFloater(View.VISIBLE);
+//        SystemOverlay.service.createFloater(View.VISIBLE);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 

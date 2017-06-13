@@ -27,6 +27,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.settings.SettingsWriter;
@@ -41,12 +42,7 @@ import mobile.slider.app.slider.util.Util;
 
 public class SystemOverlay extends Service {
     public static SystemOverlay service;
-    public PowerReceiver powerReceiver;
-    public static RelativeLayout container;
-    public static ImageView overlayFloater;
-    public static FloaterController floaterMovement;
-    private ImageView backgroundFloater;
-    private boolean invisibleIcon = false;
+    public static Floater floater;
 
     public static void start(Context c, String intent) {
         Intent i = new Intent(c,SystemOverlay.class);
@@ -64,6 +60,7 @@ public class SystemOverlay extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         processIntent(intent);
+        startReceiver();
         startJob();
         return START_STICKY;
     }
@@ -76,7 +73,14 @@ public class SystemOverlay extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        createFloater(overlayFloater.getVisibility());
+        createFloater(floater.getVisibility());
+    }
+    public void startReceiver() {
+        IntentFilter screenStateFilter = new IntentFilter();
+        screenStateFilter.addAction(Intent.ACTION_USER_PRESENT);
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        PowerReceiver powerReceiver = new PowerReceiver();
+        registerReceiver(powerReceiver, screenStateFilter);
     }
     public void processIntent(Intent intent) {
         if (!SettingsWriter.running) {
@@ -100,11 +104,6 @@ public class SystemOverlay extends Service {
         }
     }
     public void startJob() {
-        IntentFilter screenStateFilter = new IntentFilter();
-        screenStateFilter.addAction(Intent.ACTION_USER_PRESENT);
-        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        powerReceiver = new PowerReceiver();
-        registerReceiver(powerReceiver, screenStateFilter);
         if (Build.VERSION.SDK_INT >= 21) {
             ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
             JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
@@ -163,16 +162,13 @@ public class SystemOverlay extends Service {
             Util.setImageDrawable(floater, R.drawable.floater_dots);
             Util.setBackground(background, R.drawable.floater_background);
             floater.setAlpha(0.85f);
-            invisibleIcon = false;
         }else if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.TRANSLUCENT)) {
             width = (int)((SettingsUtil.getFloaterSize() / (515 / 50)) * 2.2);
             Util.setImageDrawable(background, R.drawable.floater_background);
             Util.setImageDrawable(floater, R.drawable.floater_translucent);
-            invisibleIcon = false;
             floater.setAlpha(0.7f);
         }else if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.INVISIBLE)) {
             width = (SettingsUtil.getFloaterSize() / 5);
-            invisibleIcon = true;
         }
         container.setGravity(RelativeLayout.CENTER_VERTICAL);
         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).addView(container, params);
@@ -180,8 +176,8 @@ public class SystemOverlay extends Service {
         floater.setScaleType(ImageView.ScaleType.FIT_END);
         background.setAlpha(0.8f);
         background.setAlpha(0f);
-        if (SystemOverlay.container != null) {
-            ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).removeView(SystemOverlay.container);
+        if (SystemOverlay.floater != null) {
+            ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).removeView(SystemOverlay.floater.container);
         }
         container.addView(background);
         container.addView(floater);
@@ -191,18 +187,20 @@ public class SystemOverlay extends Service {
         floaterParams.addRule(gravity);
         floaterParams.height = SettingsUtil.getFloaterSize() - (SettingsUtil.getFloaterSize() / 5);
         container.updateViewLayout(floater, floaterParams);
-        SystemOverlay.container = container;
-        floaterMovement = new FloaterController(SystemOverlay.container, floater, background, params, getApplicationContext());
-        overlayFloater = floater;
-        backgroundFloater = background;
+        FloaterController floaterMovement = new FloaterController(container, floater, background, params, getApplicationContext());
+        SystemOverlay.floater = new Floater(container, floater, floaterMovement, background, visibility);
         if (visibility == View.VISIBLE) {
             showFloater();
         }else{
             hideFloater();
         }
     }
+    public static void disableFloater() {
+        ((WindowManager)service.getSystemService(WINDOW_SERVICE)).removeView(floater.container);
+        floater = null;
+    }
     public static void hideFloater() {
-        floaterMovement.enableTouch(false);
+        floater.floaterMovement.enableTouch(false);
         Animation a = AnimationUtils.loadAnimation(service.getApplicationContext(), R.anim.fade_out);
         a.setAnimationListener(new Animation.AnimationListener() {
             @Override
@@ -212,7 +210,7 @@ public class SystemOverlay extends Service {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                overlayFloater.setVisibility(View.INVISIBLE);
+                floater.setVisibility(View.INVISIBLE);
             }
 
             @Override
@@ -220,17 +218,17 @@ public class SystemOverlay extends Service {
 
             }
         });
-        overlayFloater.startAnimation(a);
+        floater.overlayFloater.startAnimation(a);
     }
     public static void showFloater() {
-        overlayFloater.setVisibility(View.VISIBLE);
-        floaterMovement.enableTouch(true);
-        overlayFloater.startAnimation(AnimationUtils.loadAnimation(service.getApplicationContext(), R.anim.fade_in));
+        floater.setVisibility(View.VISIBLE);
+        floater.floaterMovement.enableTouch(true);
+        floater.overlayFloater.startAnimation(AnimationUtils.loadAnimation(service.getApplicationContext(), R.anim.fade_in));
     }
 
     public void launchUI() {
-        if (SystemOverlay.floaterMovement.inTouch) {
-            SystemOverlay.floaterMovement.forceUp();
+        if (floater.floaterMovement.inTouch) {
+            floater.floaterMovement.forceUp();
         }
         SystemOverlay.hideFloater();
 
@@ -319,6 +317,30 @@ public class SystemOverlay extends Service {
         inner.startAnimation(a);
     }
 
+    public class Floater {
+        public RelativeLayout container;
+        public ImageView overlayFloater;
+        public FloaterController floaterMovement;
+        public ImageView backgroundFloater;
+        private int visibility;
+
+        public Floater(RelativeLayout container, ImageView overlayFloater, FloaterController floaterController,  ImageView backgroundFloater, int visibility) {
+            this.container = container;
+            this.overlayFloater = overlayFloater;
+            this.floaterMovement = floaterController;
+            this.backgroundFloater = backgroundFloater;
+            this.visibility = visibility;
+            container.setVisibility(visibility);
+        }
+        public void setVisibility(int visibility) {
+            this.visibility = visibility;
+            container.setVisibility(visibility);
+        }
+        public int getVisibility() {
+            return visibility;
+        }
+    }
+
     public class FloaterController {
         public static final int BORDER = 200;
         Handler longPress;
@@ -398,7 +420,7 @@ public class SystemOverlay extends Service {
             longPress.postDelayed(startLongPress, 500);
             Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             vib.vibrate(25);
-            if (invisibleIcon) {
+            if (SettingsUtil.getFloaterIcon() == FloaterIcon.INVISIBLE) {
                 overlayFloater.setBackgroundColor(Color.parseColor("#50000000"));
             } else {
                 background.setAlpha(0.8f);
@@ -411,7 +433,7 @@ public class SystemOverlay extends Service {
             inTouch = false;
             longPress.removeCallbacks(startLongPress);
             if (startSliding) {
-                if (invisibleIcon) {
+                if (SettingsUtil.getFloaterIcon() == FloaterIcon.INVISIBLE) {
                     overlayFloater.setBackgroundColor(Color.TRANSPARENT);
                 } else {
                     background.setAlpha(0f);
@@ -430,7 +452,7 @@ public class SystemOverlay extends Service {
                         launchUI();
                     }
                 }
-                if (invisibleIcon) {
+                if (SettingsUtil.getFloaterIcon() == FloaterIcon.INVISIBLE) {
                     overlayFloater.setBackgroundColor(Color.TRANSPARENT);
                 } else {
                     background.setAlpha(0f);
@@ -441,7 +463,7 @@ public class SystemOverlay extends Service {
 
         public void move(final MotionEvent event) {
             if (startSliding) {
-                if (invisibleIcon) {
+                if (SettingsUtil.getFloaterIcon() == FloaterIcon.INVISIBLE) {
                     overlayFloater.setBackgroundColor(Color.parseColor("#50000000"));
                 } else {
                     background.setAlpha(0f);
