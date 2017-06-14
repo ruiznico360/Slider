@@ -60,7 +60,6 @@ public class SystemOverlay extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         processIntent(intent);
-        startReceiver();
         startJob();
         return START_STICKY;
     }
@@ -73,14 +72,7 @@ public class SystemOverlay extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        createFloater(floater.getVisibility());
-    }
-    public void startReceiver() {
-        IntentFilter screenStateFilter = new IntentFilter();
-        screenStateFilter.addAction(Intent.ACTION_USER_PRESENT);
-        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        PowerReceiver powerReceiver = new PowerReceiver();
-        registerReceiver(powerReceiver, screenStateFilter);
+        updateFloater();
     }
     public void processIntent(Intent intent) {
         if (!SettingsWriter.running) {
@@ -107,8 +99,8 @@ public class SystemOverlay extends Service {
         if (Build.VERSION.SDK_INT >= 21) {
             ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
             JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
-            builder.setMinimumLatency(2000);
-            builder.setOverrideDeadline((long) (2000 * 1.05));
+            builder.setMinimumLatency(30000);
+            builder.setOverrideDeadline((long) (30000 * 1.05));
             builder.setRequiresDeviceIdle(false);
             builder.setRequiresCharging(false); // we don't care if the device is charging or not
             JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
@@ -117,7 +109,7 @@ public class SystemOverlay extends Service {
             Intent i = new Intent(getApplicationContext(), Restarter.class);
             PendingIntent pintent = PendingIntent.getService(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
             AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 2000, pintent);
+            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 30000, pintent);
         }
     }
     public int floaterPos() {
@@ -132,6 +124,12 @@ public class SystemOverlay extends Service {
         return (int)floaterPos;
     }
 
+    public void updateFloater() {
+        WindowManager.LayoutParams params = (WindowManager.LayoutParams) floater.container.getLayoutParams();
+        params.y = floaterPos();
+        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(floater.container, params);
+
+    }
     public void createFloater(int visibility) {
         super.onCreate();
         final ImageView floater = new ImageView(getApplicationContext());

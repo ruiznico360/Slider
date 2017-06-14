@@ -24,7 +24,9 @@ public class RestarterJobService extends JobService {
                 running = true;
             }
         }
-        if (!running) {
+        if (running) {
+
+        }else {
             Intent i = new Intent(getApplicationContext(),SystemOverlay.class);
             i.putExtra(IntentExtra.SAFE_REBOOT_SERVICE, true);
             startService(i);
@@ -32,8 +34,8 @@ public class RestarterJobService extends JobService {
         jobFinished(params, true);
         ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
         JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
-        builder.setMinimumLatency(2000);
-        builder.setOverrideDeadline((long)(2000 * 1.05));
+        builder.setMinimumLatency(30000);
+        builder.setOverrideDeadline((long)(30000 * 1.05));
         builder.setRequiresCharging(false); // we don't care if the device is charging or not
         JobScheduler jobScheduler = (JobScheduler) getApplication().getSystemService(Context.JOB_SCHEDULER_SERVICE);
         jobScheduler.schedule(builder.build());
