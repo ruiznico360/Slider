@@ -17,14 +17,7 @@
         android:name=".util.SliderApplication"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.Slider"
-            android:autoRemoveFromRecents="true"
-            android:showOnLockScreen="true"
-            android:excludeFromRecents="true"
-            android:finishOnCloseSystemDialogs="true"
-            android:noHistory="true"
-            android:taskAffinity=".ui.UserInterface"
-            android:theme="@style/AppTheme.UIStyle">
+            android:name=".ui.Slider">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

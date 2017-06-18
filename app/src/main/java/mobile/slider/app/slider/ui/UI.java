@@ -58,8 +58,7 @@ public class UI {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                ((WindowManager) c.getApplicationContext().getSystemService(WINDOW_SERVICE)).removeView(uiLayout);
-                uiLayout = null;
+                uiLayout.setVisibility(View.INVISIBLE);
             }
 
             @Override

@@ -35,6 +35,7 @@ public class RestarterJobService extends JobService {
         ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
         JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
         builder.setMinimumLatency(30000);
+        builder.setPersisted(true);
         builder.setOverrideDeadline((long)(30000 * 1.05));
         builder.setRequiresCharging(false); // we don't care if the device is charging or not
         JobScheduler jobScheduler = (JobScheduler) getApplication().getSystemService(Context.JOB_SCHEDULER_SERVICE);

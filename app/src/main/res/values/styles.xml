@@ -4,15 +4,6 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
     </style>
 
-    <style name="AppTheme.UIStyle" parent="android:Theme.NoDisplay">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowCloseOnTouchOutside">true</item>
-        <item name="android:windowActionBar">false</item>
-        <item name="android:windowTitleSize">0dp</item>
-        <item name="android:backgroundDimAmount">1</item>
-        <item name="android:fitsSystemWindows">true</item>
-    </style>
     <style name="AppTheme.SettingsStyle" >
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
