@@ -105,21 +105,36 @@ public class SystemOverlay extends IntentService {
         if (intent != null) {
             if (intent.getExtras() != null) {
                 if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
+                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from UI");
                     createFloater(View.INVISIBLE);
                     launchUI();
                 }else if (intent.getExtras().containsKey(IntentExtra.SAFE_REBOOT_SERVICE)) {
+                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from Reboot");
                     createFloater(View.VISIBLE);
                 }else{
+                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from intent with no extras");
                     createFloater(View.VISIBLE);
                 }
             }else {
+                Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from intent with null extras");
                 createFloater(View.VISIBLE);
             }
         }else{
+            Util.sendNotification(getApplicationContext(), "SystxemOverlay", "Created from null intent");
             createFloater(View.VISIBLE);
         }
     }
     public void startJob() {
+        final Handler h = new Handler();
+        h.postDelayed(new Runnable() {
+            int i = 0;
+            @Override
+            public void run() {
+                i++;
+                System.out.println(i + "");
+                h.postDelayed(this,1000);
+            }
+        }, 1000);
 //        if (Build.VERSION.SDK_INT >= 21) {
 //            ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
 //            JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
