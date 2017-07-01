@@ -21,7 +21,10 @@ public class BootReceiver extends BroadcastReceiver {
         if (SystemOverlay.service == null) {
             SettingsWriter.init(con);
             if (Slider.canUseOverlay(con)) {
-                con.startActivity(new Intent(con, Slider.class));
+                Intent i = new Intent(con, Slider.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                i.putExtra(IntentExtra.SAFE_REBOOT_SERVICE,true);
+                con.startActivity(i);
             }
         }
     }

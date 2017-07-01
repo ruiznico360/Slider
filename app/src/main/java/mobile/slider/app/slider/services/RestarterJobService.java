@@ -9,11 +9,18 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PixelFormat;
+import android.view.WindowManager;
+import android.widget.RelativeLayout;
 
+import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.util.IntentExtra;
+import mobile.slider.app.slider.util.Util;
 
 @TargetApi(21)
 public class RestarterJobService extends JobService {
+    public RelativeLayout layout;
 
     @Override
     public boolean onStartJob(JobParameters params) {
@@ -25,7 +32,6 @@ public class RestarterJobService extends JobService {
             }
         }
         if (running) {
-
         }else {
             Intent i = new Intent(getApplicationContext(),SystemOverlay.class);
             i.putExtra(IntentExtra.SAFE_REBOOT_SERVICE, true);
@@ -34,9 +40,9 @@ public class RestarterJobService extends JobService {
         jobFinished(params, true);
         ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
         JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
-        builder.setMinimumLatency(30000);
+        builder.setMinimumLatency(10000);
         builder.setPersisted(true);
-        builder.setOverrideDeadline((long)(30000 * 1.05));
+        builder.setOverrideDeadline((long)(10000 * 1.05));
         builder.setRequiresCharging(false); // we don't care if the device is charging or not
         JobScheduler jobScheduler = (JobScheduler) getApplication().getSystemService(Context.JOB_SCHEDULER_SERVICE);
         jobScheduler.schedule(builder.build());

@@ -78,6 +78,13 @@ public class Util {
             view.setBackgroundResource(id);
         }
     }
+    public static void setBackground(View view, Drawable d) {
+        if (Build.VERSION.SDK_INT >= 21) {
+            view.setBackground(d);
+        }else{
+            view.setBackgroundDrawable(d);
+        }
+    }
     public static void log(String s) {
         Log.d("Slider", s);
     }

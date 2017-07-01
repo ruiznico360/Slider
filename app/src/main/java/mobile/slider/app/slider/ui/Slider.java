@@ -92,7 +92,11 @@ public class Slider extends Activity {
     }
     public void checkForServiceEnabled() {
         if (SystemOverlay.service == null) {
-            SystemOverlay.start(getBaseContext(), IntentExtra.FROM_UI);
+            if (getIntent().getExtras() != null && getIntent().hasExtra(IntentExtra.SAFE_REBOOT_SERVICE)) {
+                SystemOverlay.start(getBaseContext(), IntentExtra.SAFE_REBOOT_SERVICE);
+            }else {
+                SystemOverlay.start(getBaseContext(), IntentExtra.FROM_UI);
+            }
         } else {
             SystemOverlay.service.launchUI();
         }

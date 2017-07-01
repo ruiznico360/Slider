@@ -1,37 +1,35 @@
 package mobile.slider.app.slider.services;
 
+import android.app.ActivityManager;
 import android.app.AlarmManager;
-import android.app.IntentService;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.PixelFormat;
-import android.os.Build;
+import android.graphics.Rect;
+import android.graphics.Shader;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RectShape;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.os.Vibrator;
-import android.support.annotation.Nullable;
+import android.support.v7.widget.AppCompatImageView;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.settings.SettingsWriter;
@@ -45,17 +43,11 @@ import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.Util;
 
-public class SystemOverlay extends IntentService {
+public class SystemOverlay extends Service {
     public static SystemOverlay service;
     public static Floater floater;
+    public int innn = 0;
 
-    public SystemOverlay() {
-        super("SystemOverlay");
-    }
-    @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-
-    }
 
     public static void start(Context c, String intent) {
         Intent i = new Intent(c,SystemOverlay.class);
@@ -64,9 +56,9 @@ public class SystemOverlay extends IntentService {
         }
         new ContextWrapper(c).startService(i);
     }
-    @Nullable
+
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(Intent arg0) {
         return null;
     }
 
@@ -82,15 +74,31 @@ public class SystemOverlay extends IntentService {
     }
 
     @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Intent restartService = new Intent(getApplicationContext(),
+                this.getClass());
+        restartService.setPackage(getPackageName());
+        PendingIntent restartServicePI = PendingIntent.getService(
+                getApplicationContext(), 1, restartService,
+                PendingIntent.FLAG_ONE_SHOT);
+
+        AlarmManager alarmService = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() +100, restartServicePI);
+
+    }
+    @Override
     public void onCreate() {
-        super.onCreate();
         service = this;
     }
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        updateFloater();
+        if (newConfig.orientation != floater.currentOrientation) {
+            updateFloater();
+        }
+        floater.currentOrientation = newConfig.orientation;
     }
+
     public void processIntent(Intent intent) {
         if (Util.screenHeight() > Util.screenWidth()) {
             FloaterController.BORDER = Util.screenWidth() / 10;
@@ -101,7 +109,6 @@ public class SystemOverlay extends IntentService {
         if (!SettingsWriter.running) {
             SettingsWriter.init(getApplicationContext());
         }
-        createUI();
         if (intent != null) {
             if (intent.getExtras() != null) {
                 if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
@@ -120,21 +127,11 @@ public class SystemOverlay extends IntentService {
                 createFloater(View.VISIBLE);
             }
         }else{
-            Util.sendNotification(getApplicationContext(), "SystxemOverlay", "Created from null intent");
+            Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from null intent");
             createFloater(View.VISIBLE);
         }
     }
     public void startJob() {
-        final Handler h = new Handler();
-        h.postDelayed(new Runnable() {
-            int i = 0;
-            @Override
-            public void run() {
-                i++;
-                System.out.println(i + "");
-                h.postDelayed(this,1000);
-            }
-        }, 1000);
 //        if (Build.VERSION.SDK_INT >= 21) {
 //            ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
 //            JobInfo.Builder builder = new JobInfo.Builder(0, mServiceComponent);
@@ -149,7 +146,7 @@ public class SystemOverlay extends IntentService {
             Intent i = new Intent(getApplicationContext(), Restarter.class);
             PendingIntent pintent = PendingIntent.getService(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
             AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 60000, pintent);
+            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 30000, pintent);
 //        }
     }
 
@@ -186,7 +183,7 @@ public class SystemOverlay extends IntentService {
     }
     public void createFloater(int visibility) {
         super.onCreate();
-        final ImageView floater = new ImageView(getApplicationContext());
+        final ImageView floater = new AppCompatImageView(getApplicationContext());
         final ImageView background = new ImageView(getApplicationContext());
         final RelativeLayout container = new RelativeLayout(getApplicationContext());
 
@@ -210,13 +207,13 @@ public class SystemOverlay extends IntentService {
         }
         int width = 0;
         if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.DOTS)) {
-            width = (int)((SettingsUtil.getFloaterSize() / (200 / 50)) * 1.5);
+            width = (int)((SettingsUtil.getFloaterSize() / (200 / 50)));
             params.width =  (SettingsUtil.getFloaterSize()) / (100 / 50);
             Util.setImageDrawable(floater, R.drawable.floater_dots);
             Util.setBackground(background, R.drawable.floater_background);
             floater.setAlpha(0.85f);
         }else if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.TRANSLUCENT)) {
-            width = (int)((SettingsUtil.getFloaterSize() / (515 / 50)) * 2.2);
+            width = (int)((SettingsUtil.getFloaterSize() / (515 / 50)));
             Util.setImageDrawable(background, R.drawable.floater_background);
             Util.setImageDrawable(floater, R.drawable.floater_translucent);
             floater.setAlpha(0.7f);
@@ -279,7 +276,7 @@ public class SystemOverlay extends IntentService {
         floater.overlayFloater.startAnimation(AnimationUtils.loadAnimation(service.getApplicationContext(), R.anim.fade_in));
     }
 
-    public void createUI() {
+    public void launchUI() {
         int size;
         if (Util.screenHeight() > Util.screenWidth()) {
             size = Util.screenWidth() / 5;
@@ -287,10 +284,38 @@ public class SystemOverlay extends IntentService {
             size = Util.screenHeight() / 5;
         }
 
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(size,
-                WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        + WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, PixelFormat.TRANSLUCENT);
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        params.width = size;
+        params.height = WindowManager.LayoutParams.MATCH_PARENT;
+        params.format = PixelFormat.TRANSLUCENT;
+        params.flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD + WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+
+        if (Util.isLocked(getApplicationContext())) {
+            if (params.type != WindowManager.LayoutParams.TYPE_SYSTEM_ERROR) {
+                params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
+            }
+        }else{
+            if (params.type != WindowManager.LayoutParams.TYPE_PHONE) {
+                params.type = WindowManager.LayoutParams.TYPE_PHONE;
+            }
+        }
+        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+            params.gravity = Gravity.RIGHT | Gravity.TOP;
+        }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
+            params.gravity = Gravity.LEFT | Gravity.TOP;
+        }
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            if (params.screenOrientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+            }
+        }else{
+            if (params.screenOrientation != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
+                params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+            }
+        }
+
+
         UI.UILayout uiLayout = new UI.UILayout(this);
         View inner = UI.userInterface(getApplicationContext());
         uiLayout.setOnTouchListener(new View.OnTouchListener() {
@@ -318,48 +343,32 @@ public class SystemOverlay extends IntentService {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    CustomToast.makeToast("don't touch me");
+                    String s = "";
+                    ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                    for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                        s += service.foreground + "\n";
+                        s += service.started  + "\n";
+                        s += service.activeSince  + "\n";
+                        s += service.process  + "\n";
+                    }
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("text/html");
+                    intent.putExtra(Intent.EXTRA_EMAIL, "emailaddress@emailaddress.com");
+                    intent.putExtra(Intent.EXTRA_SUBJECT, s);
+                    intent.putExtra(Intent.EXTRA_TEXT, "I'm email body.");
+                    startActivity(Intent.createChooser(intent, "Send Email"));
                 }
                 return true;
             }
         });
-
-        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-            params.gravity = Gravity.RIGHT | Gravity.TOP;
-        }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
-            params.gravity = Gravity.LEFT | Gravity.TOP;
-        }
         ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).addView(uiLayout, params);
-        uiLayout.setVisibility(View.INVISIBLE);
         uiLayout.addView(inner);
         inner.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         UI.uiLayout = uiLayout;
-    }
-    public void launchUI() {
         if (floater.floaterMovement.inTouch) {
             floater.floaterMovement.forceUp();
         }
         SystemOverlay.hideFloater();
-
-        WindowManager.LayoutParams params = (WindowManager.LayoutParams) UI.uiLayout.getLayoutParams();
-        int orientation;
-        boolean updateReq = false;
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            if (params.screenOrientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                updateReq = true;
-            }
-            orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        }else{
-            if (params.screenOrientation != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
-                updateReq = true;
-            }
-            orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-        }
-
-        if (updateReq) {
-            params.screenOrientation = orientation;
-            ((WindowManager) getSystemService(WINDOW_SERVICE)).updateViewLayout(UI.uiLayout, params);
-        }
 
         UI.uiLayout.setVisibility(View.VISIBLE);
         Animation a;
@@ -384,6 +393,19 @@ public class SystemOverlay extends IntentService {
             }
         });
         UI.uiLayout.getChildAt(0).startAnimation(a);
+        final boolean phoneStatus = Util.isLocked(getApplicationContext());
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (UI.running) {
+                    if (phoneStatus != Util.isLocked(getApplicationContext())) {
+                        UI.remove(getApplicationContext());
+                    }else {
+                        new Handler().postDelayed(this, 500);
+                    }
+                }
+            }
+        }, 500);
     }
 
     public class Floater {
@@ -391,6 +413,7 @@ public class SystemOverlay extends IntentService {
         public ImageView overlayFloater;
         public FloaterController floaterMovement;
         public ImageView backgroundFloater;
+        public int currentOrientation;
         private int visibility;
 
         public Floater(RelativeLayout container, ImageView overlayFloater, FloaterController floaterController,  ImageView backgroundFloater, int visibility) {
@@ -400,6 +423,7 @@ public class SystemOverlay extends IntentService {
             this.backgroundFloater = backgroundFloater;
             this.visibility = visibility;
             container.setVisibility(visibility);
+            currentOrientation = getResources().getConfiguration().orientation;
         }
         public void setVisibility(int visibility) {
             this.visibility = visibility;
@@ -412,18 +436,18 @@ public class SystemOverlay extends IntentService {
 
     public static class FloaterController {
         public static int BORDER;
-        Handler longPress;
-        Runnable startLongPress;
-        boolean startSliding = false;
-        float initialX,initialTouchX,x1,y1;
-        int multiplier;
+        public Handler longPress;
+        public Runnable startLongPress;
+        public boolean startSliding = false, inTouch = false;
+        public float initialX,initialTouchX,x1,y1,yOffset = 0, originalY;
+        public int multiplier;
         public RelativeLayout container;
         public ImageView overlayFloater,background;
         public WindowManager.LayoutParams params;
         public Context c;
         public View.OnTouchListener touchListener;
-        public boolean inTouch = false;
-        public float yOffset = 0;
+        public Garbage garbage;
+        public String originalLastFloaterUpdate, originalGravity;
 
         public FloaterController(RelativeLayout container, ImageView of, ImageView bg, WindowManager.LayoutParams params, Context con) {
             this.overlayFloater = of;
@@ -445,7 +469,7 @@ public class SystemOverlay extends IntentService {
                     return true;
                 }
             };
-            overlayFloater.setOnTouchListener(touchListener);
+            container.setOnTouchListener(touchListener);
         }
         public void enableTouch(boolean enable) {
             if (enable) {
@@ -481,6 +505,43 @@ public class SystemOverlay extends IntentService {
                     }else {
                         multiplier = 1;
                     }
+                    originalGravity = SettingsUtil.getFloaterGravity();
+                    originalY = SettingsUtil.getFloaterPos();
+                    originalLastFloaterUpdate = SettingsUtil.getLastFloaterUpdate();
+
+                    RelativeLayout background = new RelativeLayout(c);
+                    final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,
+                            SettingsUtil.getFloaterSize() * 2, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD, PixelFormat.TRANSLUCENT);
+                    params.gravity = Gravity.BOTTOM;
+                    ((WindowManager) c.getSystemService(WINDOW_SERVICE)).addView(background, params);
+                    ShapeDrawable d = new ShapeDrawable(new RectShape());
+                    d.getPaint().setShader(new LinearGradient(0,0,0,params.height, Color.TRANSPARENT, Color.BLACK, Shader.TileMode.REPEAT));
+                    RelativeLayout gradient = new RelativeLayout(c);
+                    ImageView trash = new ImageView(c);
+                    trash.setScaleType(ImageView.ScaleType.FIT_XY);
+                    trash.setAdjustViewBounds(true);
+                    Util.setBackground(gradient, d);
+                    Util.setImageDrawable(trash, R.drawable.garbage);
+                    background.addView(gradient);
+                    gradient.addView(trash);
+
+                    RelativeLayout.LayoutParams gradientParams = (RelativeLayout.LayoutParams) gradient.getLayoutParams();
+                    gradientParams.width = params.width;
+                    gradientParams.height = params.height;
+                    gradientParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                    background.updateViewLayout(gradient, gradientParams);
+
+                    RelativeLayout.LayoutParams trashParams = (RelativeLayout.LayoutParams) trash.getLayoutParams();
+                    trashParams.height = (int)(SettingsUtil.getFloaterSize() / 1.3);
+                    trashParams.width = trashParams.height;
+                    trashParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                    gradient.updateViewLayout(trash, trashParams);
+
+                    gradient.startAnimation(AnimationUtils.loadAnimation(c, R.anim.fade_in));
+
+                    garbage = new Garbage(background, gradient , trash);
+
                 }
             };
             x1 = event.getX();
@@ -507,7 +568,19 @@ public class SystemOverlay extends IntentService {
                 } else {
                     background.setAlpha(0f);
                 }
-                service.createFloater(overlayFloater.getVisibility());
+
+                if (garbage.trash.getHeight() == SettingsUtil.getFloaterSize()) {
+                    hideFloater();
+                    SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
+                    SettingsUtil.setFloaterPos(originalY);
+                    SettingsUtil.setFloaterGravity(originalGravity);
+                    service.createFloater(View.INVISIBLE);
+                    CustomToast.makeToast("Hiding Floater. Reopen Slider to activate");
+                }else{
+                    service.createFloater(overlayFloater.getVisibility());
+                }
+
+                ((WindowManager)c.getSystemService(WINDOW_SERVICE)).removeView(garbage.background);
             }else if (!force){
                 float x2 = event.getX();
 
@@ -568,6 +641,31 @@ public class SystemOverlay extends IntentService {
                     }
                 }
                 ((WindowManager) service.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(container, params);
+
+                int[] floaterLoc = new int[2];
+                int[] trashLoc = new int[2];
+                overlayFloater.getLocationOnScreen(floaterLoc);
+                garbage.trash.getLocationOnScreen(trashLoc);
+                Rect cRect = new Rect(floaterLoc[0], floaterLoc[1], floaterLoc[0] + overlayFloater.getWidth(), floaterLoc[1] + overlayFloater.getHeight());
+                Rect tRect = new Rect();
+
+                if (cRect.intersects(trashLoc[0], trashLoc[1], trashLoc[0] + garbage.trash.getWidth(), trashLoc[1] + garbage.trash.getHeight())) {
+                    if (garbage.trash.getHeight() != SettingsUtil.getFloaterSize()) {
+                        RelativeLayout.LayoutParams trashParams = (RelativeLayout.LayoutParams) garbage.trash.getLayoutParams();
+                        trashParams.height = (int) (SettingsUtil.getFloaterSize());
+                        trashParams.width = trashParams.height;
+                        garbage.gradient.updateViewLayout(garbage.trash, trashParams);
+                    }
+                }else{
+                    if (garbage.trash.getHeight() != SettingsUtil.getFloaterSize() / 1.3) {
+                        RelativeLayout.LayoutParams trashParams = (RelativeLayout.LayoutParams) garbage.trash.getLayoutParams();
+                        trashParams.height = (int) (SettingsUtil.getFloaterSize() / 1.3);
+                        trashParams.width = trashParams.height;
+                        garbage.gradient.updateViewLayout(garbage.trash, trashParams);
+                    }
+                }
+
+
             }else{
                 int rx = (int)event.getRawX();
                 int ry = (int)event.getRawY();
@@ -588,5 +686,15 @@ public class SystemOverlay extends IntentService {
                 }
             }
         }
+        public class Garbage {
+            public RelativeLayout background, gradient;
+            public ImageView trash;
+            public Garbage(RelativeLayout background, RelativeLayout gradient, ImageView trash) {
+                this.background = background;
+                this.gradient = gradient;
+                this.trash = trash;
+            }
+        }
     }
+
 }
