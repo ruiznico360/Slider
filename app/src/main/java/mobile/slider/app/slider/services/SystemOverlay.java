@@ -70,6 +70,15 @@ public class SystemOverlay extends Service {
         }else{
             stopSelf();
         }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent i = new Intent();
+                i.setAction("howdy");
+                sendBroadcast(i);
+                new Handler().postDelayed(this,500);
+            }
+        },500);
         return START_STICKY;
     }
 
@@ -344,19 +353,7 @@ public class SystemOverlay extends Service {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     String s = "";
-                    ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                    for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-                        s += service.foreground + "\n";
-                        s += service.started  + "\n";
-                        s += service.activeSince  + "\n";
-                        s += service.process  + "\n";
-                    }
-                    Intent intent = new Intent(Intent.ACTION_SEND);
-                    intent.setType("text/html");
-                    intent.putExtra(Intent.EXTRA_EMAIL, "emailaddress@emailaddress.com");
-                    intent.putExtra(Intent.EXTRA_SUBJECT, s);
-                    intent.putExtra(Intent.EXTRA_TEXT, "I'm email body.");
-                    startActivity(Intent.createChooser(intent, "Send Email"));
+                    CustomToast.makeToast(test.i + "");
                 }
                 return true;
             }

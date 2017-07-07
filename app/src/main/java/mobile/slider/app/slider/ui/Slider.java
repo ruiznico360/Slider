@@ -80,6 +80,7 @@ public class Slider extends Activity {
 
     }
 
+
     public static boolean canUseOverlay(Context c) {
         if (Build.VERSION.SDK_INT >= 23) {
             if (Settings.canDrawOverlays(c)) {
