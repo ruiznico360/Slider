@@ -25,13 +25,7 @@ import mobile.slider.app.slider.settings.SettingPopup;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.settings.ViewIdGenerator;
-import mobile.slider.app.slider.settings.resources.AppTheme;
-import mobile.slider.app.slider.settings.resources.FloaterIcon;
-import mobile.slider.app.slider.settings.resources.SettingType;
-import mobile.slider.app.slider.settings.resources.WindowGravity;
-import mobile.slider.app.slider.settings.resources.WindowShader;
 import mobile.slider.app.slider.ui.SettingsActivity;
-import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.Util;
 
 public class SettingInflater {
@@ -130,7 +124,6 @@ public class SettingInflater {
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomToast.makeToast("More Languages coming soon!");
             }
         });
         addToSettingView(v);

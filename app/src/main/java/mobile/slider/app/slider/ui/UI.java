@@ -43,13 +43,13 @@ public class UI {
     }
     public static void remove(final Context c) {
         running = false;
-        SystemOverlay.showFloater();
         Animation a;
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             a = AnimationUtils.loadAnimation(c, R.anim.from_middle_to_right);
         }else {
             a = AnimationUtils.loadAnimation(c, R.anim.from_middle_to_left);
         }
+        final View uiLayout = UI.uiLayout;
         a.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -59,7 +59,8 @@ public class UI {
             @Override
             public void onAnimationEnd(Animation animation) {
                 ((WindowManager)c.getSystemService(WINDOW_SERVICE)).removeView(uiLayout);
-                uiLayout = null;
+                UI.uiLayout = null;
+                SystemOverlay.showFloater();
             }
 
             @Override

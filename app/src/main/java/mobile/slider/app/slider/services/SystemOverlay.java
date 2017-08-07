@@ -1,7 +1,7 @@
 package mobile.slider.app.slider.services;
 
-import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -16,10 +16,14 @@ import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.os.Vibrator;
+import android.provider.Settings;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -30,8 +34,10 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.RemoteViews;
 
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
@@ -39,8 +45,8 @@ import mobile.slider.app.slider.settings.resources.FloaterUpdate;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.ui.Slider;
 import mobile.slider.app.slider.ui.UI;
-import mobile.slider.app.slider.util.CustomToast;
 import mobile.slider.app.slider.util.IntentExtra;
+import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
 public class SystemOverlay extends Service {
@@ -66,22 +72,13 @@ public class SystemOverlay extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (Slider.canUseOverlay(this)) {
             processIntent(intent);
+            startInForeground();
             startJob();
         }else{
             stopSelf();
         }
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent i = new Intent();
-                i.setAction("howdy");
-                sendBroadcast(i);
-                new Handler().postDelayed(this,500);
-            }
-        },500);
         return START_STICKY;
     }
-
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         Intent restartService = new Intent(getApplicationContext(),
@@ -106,6 +103,12 @@ public class SystemOverlay extends Service {
             updateFloater();
         }
         floater.currentOrientation = newConfig.orientation;
+        if (ToastMessage.currentToast != null) {
+            ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(ToastMessage.currentToast);
+            ToastMessage.currentToast.removeCallbacks(ToastMessage.remove);
+            ToastMessage.currentToast = null;
+
+        }
     }
 
     public void processIntent(Intent intent) {
@@ -140,6 +143,30 @@ public class SystemOverlay extends Service {
             createFloater(View.VISIBLE);
         }
     }
+    public void startInForeground() {
+        Intent pi = new Intent();
+        if(android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1){
+            pi.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+            pi.putExtra("android.provider.extra.APP_PACKAGE", getPackageName());
+        }else if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            pi.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+            pi.putExtra("app_package", getPackageName());
+            pi.putExtra("app_uid", getApplicationInfo().uid);
+        }else {
+            pi.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            pi.addCategory(Intent.CATEGORY_DEFAULT);
+            pi.setData(Uri.parse("package:" + getPackageName()));
+        }
+        RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_layout);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                pi, 0);
+        Notification notification = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.app_icon_status)
+                .setContent(contentView)
+                .setContentIntent(pendingIntent).build();
+
+        this.startForeground(1234567, notification);
+    }
     public void startJob() {
 //        if (Build.VERSION.SDK_INT >= 21) {
 //            ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);
@@ -152,24 +179,21 @@ public class SystemOverlay extends Service {
 //            JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
 //            jobScheduler.schedule(builder.build());
 //        }else {
-            Intent i = new Intent(getApplicationContext(), Restarter.class);
-            PendingIntent pintent = PendingIntent.getService(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
-            AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 30000, pintent);
+//            Intent i = new Intent(getApplicationContext(), Restarter.class);
+//            PendingIntent pintent = PendingIntent.getService(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+//            AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 30000, pintent);
 //        }
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        CustomToast.makeToast("Low Mem");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        CustomToast.makeToast("destroyed");
-
     }
 
     public int floaterPos() {
@@ -254,10 +278,6 @@ public class SystemOverlay extends Service {
             hideFloater();
         }
     }
-    public static void disableFloater() {
-        ((WindowManager)service.getSystemService(WINDOW_SERVICE)).removeView(floater.container);
-        floater = null;
-    }
     public static void hideFloater() {
         floater.floaterMovement.enableTouch(false);
         Animation a = AnimationUtils.loadAnimation(service.getApplicationContext(), R.anim.fade_out);
@@ -281,11 +301,34 @@ public class SystemOverlay extends Service {
     }
     public static void showFloater() {
         floater.setVisibility(View.VISIBLE);
-        floater.floaterMovement.enableTouch(true);
-        floater.overlayFloater.startAnimation(AnimationUtils.loadAnimation(service.getApplicationContext(), R.anim.fade_in));
+        Animation a = AnimationUtils.loadAnimation(service.getApplicationContext(), R.anim.fade_in);
+        a.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                floater.floaterMovement.enableTouch(true);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        floater.overlayFloater.startAnimation(a);
     }
 
     public void launchUI() {
+        if (UI.running) {
+            return;
+        }
+        if (floater.floaterMovement.inTouch) {
+            floater.floaterMovement.forceUp();
+        }
+        SystemOverlay.hideFloater();
         int size;
         if (Util.screenHeight() > Util.screenWidth()) {
             size = Util.screenWidth() / 5;
@@ -297,7 +340,7 @@ public class SystemOverlay extends Service {
         params.width = size;
         params.height = WindowManager.LayoutParams.MATCH_PARENT;
         params.format = PixelFormat.TRANSLUCENT;
-        params.flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD + WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+        params.flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD + WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 
         if (Util.isLocked(getApplicationContext())) {
             if (params.type != WindowManager.LayoutParams.TYPE_SYSTEM_ERROR) {
@@ -309,9 +352,9 @@ public class SystemOverlay extends Service {
             }
         }
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-            params.gravity = Gravity.RIGHT | Gravity.TOP;
+            params.gravity = Gravity.RIGHT | Gravity.BOTTOM;
         }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
-            params.gravity = Gravity.LEFT | Gravity.TOP;
+            params.gravity = Gravity.LEFT | Gravity.BOTTOM;
         }
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -325,7 +368,7 @@ public class SystemOverlay extends Service {
         }
 
 
-        UI.UILayout uiLayout = new UI.UILayout(this);
+        final UI.UILayout uiLayout = new UI.UILayout(this);
         View inner = UI.userInterface(getApplicationContext());
         uiLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -352,8 +395,7 @@ public class SystemOverlay extends Service {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    String s = "";
-                    CustomToast.makeToast(test.i + "");
+                    new Window(service).create();
                 }
                 return true;
             }
@@ -365,7 +407,6 @@ public class SystemOverlay extends Service {
         if (floater.floaterMovement.inTouch) {
             floater.floaterMovement.forceUp();
         }
-        SystemOverlay.hideFloater();
 
         UI.uiLayout.setVisibility(View.VISIBLE);
         Animation a;
@@ -396,6 +437,8 @@ public class SystemOverlay extends Service {
             public void run() {
                 if (UI.running) {
                     if (phoneStatus != Util.isLocked(getApplicationContext())) {
+                        UI.remove(getApplicationContext());
+                    }else if (!Util.isScreenOn(getApplicationContext())) {
                         UI.remove(getApplicationContext());
                     }else {
                         new Handler().postDelayed(this, 500);
@@ -435,7 +478,7 @@ public class SystemOverlay extends Service {
         public static int BORDER;
         public Handler longPress;
         public Runnable startLongPress;
-        public boolean startSliding = false, inTouch = false;
+        public boolean startSliding = false, inTouch = false, enabled = true;
         public float initialX,initialTouchX,x1,y1,yOffset = 0, originalY;
         public int multiplier;
         public RelativeLayout container;
@@ -456,12 +499,14 @@ public class SystemOverlay extends Service {
             touchListener = new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, final MotionEvent event) {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        down(event);
-                    }else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                        up(event, false);
-                    }else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                        move(event);
+                    if (enabled) {
+                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                            down(event);
+                        } else if ((event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) && inTouch) {
+                            up(event, false);
+                        } else if ((event.getAction() == MotionEvent.ACTION_MOVE) && inTouch) {
+                            move(event);
+                        }
                     }
                     return true;
                 }
@@ -469,16 +514,7 @@ public class SystemOverlay extends Service {
             container.setOnTouchListener(touchListener);
         }
         public void enableTouch(boolean enable) {
-            if (enable) {
-                overlayFloater.setOnTouchListener(touchListener);
-            }else{
-                overlayFloater.setOnTouchListener(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        return false;
-                    }
-                });
-            }
+            this.enabled = enable;
         }
         public void down(final MotionEvent event) {
             inTouch = true;
@@ -572,23 +608,25 @@ public class SystemOverlay extends Service {
                     SettingsUtil.setFloaterPos(originalY);
                     SettingsUtil.setFloaterGravity(originalGravity);
                     service.createFloater(View.INVISIBLE);
-                    CustomToast.makeToast("Hiding Floater. Reopen Slider to activate");
+                    ToastMessage.toast(service, ToastMessage.HIDING_FLOATER);
                 }else{
                     service.createFloater(overlayFloater.getVisibility());
                 }
 
                 ((WindowManager)c.getSystemService(WINDOW_SERVICE)).removeView(garbage.background);
-            }else if (!force){
-                float x2 = event.getX();
+            }else{
+                if (!force) {
+                    float x2 = event.getX();
 
-                float y2 = event.getY();
-                float dx = x2 - x1;
-                float dy = y2 - y1;
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    if (!(dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                        service.launchUI();
-                    } else if ((dx < 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                        service.launchUI();
+                    float y2 = event.getY();
+                    float dx = x2 - x1;
+                    float dy = y2 - y1;
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        if (!(dx > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
+                            service.launchUI();
+                        } else if ((dx < 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+                            service.launchUI();
+                        }
                     }
                 }
                 if (SettingsUtil.getFloaterIcon() == FloaterIcon.INVISIBLE) {
@@ -644,7 +682,6 @@ public class SystemOverlay extends Service {
                 overlayFloater.getLocationOnScreen(floaterLoc);
                 garbage.trash.getLocationOnScreen(trashLoc);
                 Rect cRect = new Rect(floaterLoc[0], floaterLoc[1], floaterLoc[0] + overlayFloater.getWidth(), floaterLoc[1] + overlayFloater.getHeight());
-                Rect tRect = new Rect();
 
                 if (cRect.intersects(trashLoc[0], trashLoc[1], trashLoc[0] + garbage.trash.getWidth(), trashLoc[1] + garbage.trash.getHeight())) {
                     if (garbage.trash.getHeight() != SettingsUtil.getFloaterSize()) {

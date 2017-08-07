@@ -7,27 +7,40 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
+import android.hardware.display.DisplayManager;
 import android.media.RingtoneManager;
 import android.os.Build;
+import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.ui.Slider;
+
+import static android.content.Context.POWER_SERVICE;
 
 public class Util {
     public static View.OnTouchListener darkenAsPressed(final Runnable onClick) {
@@ -120,6 +133,39 @@ public class Util {
             return true;
         } else {
             return false;
+        }
+    }
+    public static boolean isScreenOn(Context c) {
+        if (Build.VERSION.SDK_INT >= 20) {
+            DisplayManager dm = (DisplayManager)  c.getSystemService(Context.DISPLAY_SERVICE);
+            for (Display display : dm.getDisplays()) {
+                if (display.getState() != Display.STATE_OFF) {
+                    return true;
+                }
+            }
+            return false;
+        }else{
+            PowerManager powerManager = (PowerManager)  c.getSystemService(POWER_SERVICE);
+            if (powerManager.isScreenOn()) return true;
+            return false;
+        }
+    }
+    public static void generateViewId(View v) {
+        AtomicInteger sNextGeneratedId = new AtomicInteger(1);
+        int result;
+        for (;;) {
+            result = sNextGeneratedId.get();
+            // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
+            int newValue = result + 1;
+            if (newValue > 0x00FFFFFF) newValue = 1; // Roll over to 1, not 0.
+            if (sNextGeneratedId.compareAndSet(result, newValue)) {
+                break;
+            }
+        }
+        if (Build.VERSION.SDK_INT >= 17) {
+            v.setId(View.generateViewId());
+        }else{
+            v.setId(result);
         }
     }
 }

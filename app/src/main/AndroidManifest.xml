@@ -4,20 +4,20 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
+        android:name=".util.SliderApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/app_icon"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:name=".util.SliderApplication"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".ui.Slider">
+        <activity android:name=".ui.Slider"
+            android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,17 +25,20 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".services.SystemOverlay"/>
-        <service android:name=".services.RestarterJobService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="true"/>
+        <service android:name=".services.SystemOverlay" />
+        <service
+            android:name=".services.RestarterJobService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <receiver android:name=".services.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <service android:name=".services.Restarter"/>
+
+        <service android:name=".services.Restarter" />
+
         <activity
             android:name=".ui.PermissionsInterface"
             android:taskAffinity=".ui.PermissionsInterface"
@@ -48,6 +51,7 @@
             android:noHistory="true"
             android:taskAffinity=".ui.SettingsActivity"
             android:theme="@style/AppTheme.SettingsStyle" />
+        <activity android:name=".ui.Setup"></activity>
     </application>
 
 </manifest>

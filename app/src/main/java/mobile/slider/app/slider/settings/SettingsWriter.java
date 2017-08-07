@@ -2,11 +2,7 @@ package mobile.slider.app.slider.settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.widget.Toast;
 
-import java.util.Random;
-
-import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.resources.AppTheme;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.FloaterUpdate;
@@ -14,7 +10,6 @@ import mobile.slider.app.slider.settings.resources.Language;
 import mobile.slider.app.slider.settings.resources.SettingType;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.settings.resources.WindowShader;
-import mobile.slider.app.slider.util.CustomToast;
 
 public class SettingsWriter {
     public static Context appContext;
@@ -103,9 +98,9 @@ public class SettingsWriter {
         editor.putString(SettingType.WINDOW_SHADERS, WindowShader.BOTH);
         editor.putInt(SettingType.FLOATER_SIZE, 400);
         editor.putInt(SettingType.FLOATER_GRAVITY, -1000);
-        editor.putInt(SettingType.FLOATER_POS, -1000);
+        editor.putFloat(SettingType.FLOATER_POS, -1000);
         editor.putString(SettingType.FLOATER_GRAVITY, WindowGravity.RIGHT);
-        editor.putString(SettingType.FLOATER_ICON, FloaterIcon.TRANSLUCENT);
+        editor.putString(SettingType.FLOATER_ICON, FloaterIcon.DOTS);
         editor.putString(SettingType.LAST_FLOATER_UPDATE, FloaterUpdate.PORTRAIT);
         boolean commited = editor.commit();
         if (!commited) {

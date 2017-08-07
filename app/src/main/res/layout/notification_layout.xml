@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="10dp" >
+    <ImageView
+        android:src="@mipmap/app_icon"
+        android:id="@+id/notification_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true" />
+    <TextView
+        android:textColor="#000"
+        android:textSize="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="10dp"
+        android:text="Slider is running"
+        android:id="@+id/notification_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/notification_image"
+        />
+    <TextView
+        android:layout_marginLeft="10dp"
+        android:textColor="#494949"
+        android:text="Click here to disable notification"
+        android:id="@+id/notification_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/notification_image"
+        android:layout_below="@id/notification_title"
+        />
+</RelativeLayout>
