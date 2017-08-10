@@ -109,6 +109,11 @@ public class SystemOverlay extends Service {
             ToastMessage.currentToast = null;
 
         }
+        if (Window.hasOpenWindows()) {
+            for (Window w : Window.openWindows) {
+                w.configurationChange();
+            }
+        }
     }
 
     public void processIntent(Intent intent) {
@@ -396,6 +401,7 @@ public class SystemOverlay extends Service {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     new Window(service).create();
+                    UI.remove(getApplicationContext());
                 }
                 return true;
             }
