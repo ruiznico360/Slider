@@ -124,9 +124,9 @@ public class SettingsActivity extends Activity {
         settings.put(SettingType.WINDOW_SIZE, new Setting("Window Size", "Change what percent of the screen is covered by the application", SettingsUtil.getWindowSize() + "%"));
         settings.put(SettingType.WINDOW_GRAVITY, new Setting("Window Gravity", "Change which side of your screen the window will be on", SettingsUtil.getWindowGravity().toLowerCase()));
         settings.put(SettingType.WINDOW_SHADERS, new Setting("Window Shaders", "Select how the shaders will be displayed (recommended to leave top shader as lighter backgrounds may hide the status bar)", SettingsUtil.getWindowShaders().toLowerCase()));
-        settings.put(SettingType.FLOATER_SIZE,new Setting("Floater Size", "Change the size of the floater on your screen", SettingsUtil.getFloaterSize() + " px"));
+        settings.put(SettingType.FLOATER_SIZE,new Setting("Floater Size", "Change the windowSize of the floater on your screen", SettingsUtil.getFloaterSize() + " px"));
         settings.put(SettingType.FLOATER_GRAVITY,new Setting("Floater Gravity", "Change which side of your screen the floater will be on", SettingsUtil.getFloaterGravity().toLowerCase()));
-        settings.put(SettingType.FLOATER_ICON,new Setting("Floater icon", "Set the icon for the floater which is shown on your screen",SettingsUtil.getFloaterIcon()));
+        settings.put(SettingType.FLOATER_ICON,new Setting("Floater minimizedIcon", "Set the minimizedIcon for the floater which is shown on your screen",SettingsUtil.getFloaterIcon()));
         settings.put(SettingType.RESET_SETTINGS,new Setting("Reset Settings", "Reset the default settings for the application on this device", null));
 
 

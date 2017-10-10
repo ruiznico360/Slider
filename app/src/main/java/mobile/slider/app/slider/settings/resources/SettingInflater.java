@@ -241,7 +241,7 @@ public class SettingInflater {
                 seekBar.getBackground().setColorFilter(new PorterDuffColorFilter(SettingsUtil.oppositeBackgroundColor(SettingsUtil.getBackgroundColor()), PorterDuff.Mode.MULTIPLY));
                 seekBar.setMax(50);
                 seekBar.setProgress(SettingsUtil.getWindowSize() - 50);
-                percentage.setText("Window size: " + (seekBar.getProgress() + 50) + "%");
+                percentage.setText("Window windowSize: " + (seekBar.getProgress() + 50) + "%");
                 seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
@@ -253,7 +253,7 @@ public class SettingInflater {
 
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        percentage.setText("Window size: " + (progress + 50) + "%");
+                        percentage.setText("Window windowSize: " + (progress + 50) + "%");
                     }
                 });
                 p.enableNeutralButton("Default", new Runnable() {
@@ -384,7 +384,7 @@ public class SettingInflater {
                 seekBar.getBackground().setColorFilter(new PorterDuffColorFilter(SettingsUtil.oppositeBackgroundColor(SettingsUtil.getBackgroundColor()), PorterDuff.Mode.MULTIPLY));
                 seekBar.setMax(50);
                 seekBar.setProgress(SettingsUtil.getFloaterSize() / 10);
-                percentage.setText("Floater size: " + (seekBar.getProgress() * 10) + " px");
+                percentage.setText("Floater windowSize: " + (seekBar.getProgress() * 10) + " px");
                 seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
@@ -396,7 +396,7 @@ public class SettingInflater {
 
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        percentage.setText("Floater size: " + (progress * 10) + " px");
+                        percentage.setText("Floater windowSize: " + (progress * 10) + " px");
                     }
                 });
                 p.enableNeutralButton("Default", new Runnable() {
@@ -441,7 +441,7 @@ public class SettingInflater {
 
             @Override
             public void onClick(View v) {
-                final SettingPopup p = makeNewSettingPopup("Select floater icon");
+                final SettingPopup p = makeNewSettingPopup("Select floater minimizedIcon");
 
                 final LinearLayout ly = new LinearLayout(act);
                 final ImageView dots = new ImageView(act);

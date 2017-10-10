@@ -111,7 +111,7 @@ public class SystemOverlay extends Service {
         }
         if (Window.hasOpenWindows()) {
             for (Window w : Window.openWindows) {
-                w.configurationChange();
+                w.windowContainer.configurationChange();
             }
         }
     }
