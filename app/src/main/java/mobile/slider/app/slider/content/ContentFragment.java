@@ -25,6 +25,7 @@ public class ContentFragment extends Fragment {
         f.layoutResourceView = v;
         return f;
     }
+    //hi there
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v;
