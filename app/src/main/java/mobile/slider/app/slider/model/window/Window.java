@@ -11,7 +11,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.Interpolator;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -51,7 +56,7 @@ public class Window {
         public RelativeLayout window, innerWindow,content,statusBar, resizeAreaInnerContainer;
         public ImageView exitButton, minimizeButton, resizeButton, resizeArea, minimizedIcon;
         public int windowSize, defaultSize;
-        public float minimizedWidth, minimizedHeight, minimizedX, minimizedY;
+        public float minimizedX, minimizedY;
         public boolean touchEnabled = true, minimizeIconTouchEnabled = false;
         public Listener listener;
 
@@ -166,59 +171,66 @@ public class Window {
                 final float shrinkSizeY;
                 final float speed = 5;
 
+                AnimationSet a = new AnimationSet(true);
+                a.addAnimation(AnimationUtils.loadAnimation(c, R.anim.shrink));
+                a.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
 
-                if (minimizedIconParams.x - windowParams.x == 0) {
-                    distanceX = 1;
-                }else{
-                    distanceX = (minimizedIconParams.x - windowParams.x) / speed;
-                }
+                    }
 
-                if (minimizedIconParams.y - windowParams.y == 0) {
-                    distanceY = 1;
-                }else{
-                    distanceY = (minimizedIconParams.y - windowParams.y) / speed;
-                }
-                if (windowParams.width - minimizedIconParams.width == 0) {
-                    shrinkSizeX = 1;
-                }else{
-                    shrinkSizeX = (windowParams.width - minimizedIconParams.width) / speed;
-                }
-                if (windowParams.height - minimizedIconParams.height == 0) {
-                    shrinkSizeY = 1;
-                }else{
-                    shrinkSizeY = (windowParams.height - minimizedIconParams.height) / speed;
-                }
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        window.setVisibility(View.INVISIBLE);
+                        minimizedIcon.setVisibility(View.VISIBLE);
+                        minimizeIconTouchEnabled = true;
+                    }
 
-                minimizedWidth = windowParams.width;
-                minimizedHeight = windowParams.height;
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                innerWindow.startAnimation(a);
                 minimizedX = windowParams.x;
                 minimizedY = windowParams.y;
 
-                final Handler shrink = new Handler();
-                shrink.postDelayed(new Runnable() {
-                    int count = 0;
-                    @Override
-                    public void run() {
-                        count++;
-                        RelativeLayout.LayoutParams innerWindowParams = (RelativeLayout.LayoutParams) innerWindow.getLayoutParams();
-                        innerWindowParams.width = (int)(innerWindowParams.width - shrinkSizeX);
-                        innerWindowParams.height = (int)(innerWindowParams.height - shrinkSizeY);
-                        windowParams.x = (int)(windowParams.x + distanceX);
-                        windowParams.y = (int)(windowParams.y + distanceY);
-                        window.setAlpha(window.getAlpha() - (1 / speed));
+//                if (minimizedIconParams.x - windowParams.x == 0) {
+//                    distanceX = 1;
+//                }else{
+//                    distanceX = (minimizedIconParams.x - windowParams.x) / speed;
+//                }
+//
+//                if (minimizedIconParams.y - windowParams.y == 0) {
+//                    distanceY = 1;
+//                }else{
+//                    distanceY = (minimizedIconParams.y - windowParams.y) / speed;
+//                }
 
-                        ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(window, windowParams);
-                        window.updateViewLayout(innerWindow, innerWindowParams);
-
-                        if (count == speed) {
-                            window.setVisibility(View.INVISIBLE);
-                            minimizedIcon.setVisibility(View.VISIBLE);
-                            minimizeIconTouchEnabled = true;
-                        }else{
-                            shrink.postDelayed(this, 1);
-                        }
-                    }
-                },1);
+//
+//                final Handler shrink = new Handler();
+//                shrink.postDelayed(new Runnable() {
+//                    int count = 0;
+//                    @Override
+//                    public void run() {
+//                        count++;
+//                        RelativeLayout.LayoutParams innerWindowParams = (RelativeLayout.LayoutParams) innerWindow.getLayoutParams();
+//                        windowParams.x = (int)(windowParams.x + distanceX);
+//                        windowParams.y = (int)(windowParams.y + distanceY);
+//                        window.setAlpha(window.getAlpha() - (1 / speed));
+//
+//                        ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(window, windowParams);
+//                        window.updateViewLayout(innerWindow, innerWindowParams);
+//
+//                        if (count == speed) {
+//                            window.setVisibility(View.INVISIBLE);
+//                            minimizedIcon.setVisibility(View.VISIBLE);
+//                            minimizeIconTouchEnabled = true;
+//                        }else{
+//                            shrink.postDelayed(this, 1);
+//                        }
+//                    }
+//                },1);
             }else{
                 minimizeIconTouchEnabled = false;
                 window.setVisibility(View.VISIBLE);
@@ -233,52 +245,68 @@ public class Window {
                 final float growSizeY;
                 final float speed = 5;
 
-                if (windowParams.x - minimizedX == 0) {
-                    distanceX = 1;
-                }else{
-                    distanceX = (windowParams.x - minimizedX) / speed;
-                }
+                windowParams.x = (int) (minimizedX);
+                windowParams.y = (int)(minimizedY);
+                ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(window, windowParams);
 
-                if (windowParams.y - minimizedY == 0) {
-                    distanceY = 1;
-                }else{
-                    distanceY = (windowParams.y - minimizedY) / speed;
-                }
-                if (minimizedWidth - minimizedIconParams.width == 0) {
-                    growSizeX = 1;
-                }else{
-                    growSizeX = (minimizedWidth - minimizedIconParams.width) / speed;
-                }
-                if (minimizedHeight - minimizedIconParams.height == 0) {
-                    growSizeY = 1;
-                }else{
-                    growSizeY = (minimizedHeight - minimizedIconParams.height) / speed;
-                }
-
-                final Handler grow = new Handler();
-                grow.postDelayed(new Runnable() {
-                    int count = 0;
+                AnimationSet a = new AnimationSet(true);
+                a.addAnimation(AnimationUtils.loadAnimation(c, R.anim.grow));
+                a.setAnimationListener(new Animation.AnimationListener() {
                     @Override
-                    public void run() {
-                        count++;
-                        RelativeLayout.LayoutParams innerWindowParams = (RelativeLayout.LayoutParams) innerWindow.getLayoutParams();
-                        innerWindowParams.width = (int)(innerWindowParams.width + growSizeX);
-                        innerWindowParams.height = (int)(innerWindowParams.height + growSizeY);
-                        windowParams.x = (int)(windowParams.x - distanceX);
-                        windowParams.y = (int)(windowParams.y - distanceY);
+                    public void onAnimationStart(Animation animation) {
 
-                        window.setAlpha(window.getAlpha() + (1 / speed));
-                        window.updateViewLayout(innerWindow, innerWindowParams);
-                        ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(window, windowParams);
-
-                        if (count == speed) {
-                            touchEnabled = true;
-                            resizeButton.setVisibility(View.VISIBLE);
-                        }else{
-                            grow.postDelayed(this, 1);
-                        }
                     }
-                },1);
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        touchEnabled = true;
+                        resizeButton.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+
+
+                innerWindow.startAnimation(a);
+
+//                if (windowParams.x - minimizedX == 0) {
+//                    distanceX = 1;
+//                }else{
+//                    distanceX = (windowParams.x - minimizedX) / speed;
+//                }
+//
+//                if (windowParams.y - minimizedY == 0) {
+//                    distanceY = 1;
+//                }else{
+//                    distanceY = (windowParams.y - minimizedY) / speed;
+//                }
+//
+//                final Handler grow = new Handler();
+//                grow.postDelayed(new Runnable() {
+//                    int count = 0;
+//                    @Override
+//                    public void run() {
+//                        count++;
+//                        RelativeLayout.LayoutParams innerWindowParams = (RelativeLayout.LayoutParams) innerWindow.getLayoutParams();
+//                        windowParams.x = (int)(windowParams.x - distanceX);
+//                        windowParams.y = (int)(windowParams.y - distanceY);
+//
+//                        window.setAlpha(window.getAlpha() + (1 / speed));
+//                        window.updateViewLayout(innerWindow, innerWindowParams);
+//                        ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(window, windowParams);
+//
+//                        if (count == speed) {
+//                            touchEnabled = true;
+//                            resizeButton.setVisibility(View.VISIBLE);
+//                        }else{
+//                            grow.postDelayed(this, 1);
+//                        }
+//                    }
+//                },1);
             }
         }
 
