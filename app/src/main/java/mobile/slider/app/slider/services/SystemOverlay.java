@@ -52,8 +52,6 @@ import mobile.slider.app.slider.util.Util;
 public class SystemOverlay extends Service {
     public static SystemOverlay service;
     public static Floater floater;
-    public int innn = 0;
-
 
     public static void start(Context c, String intent) {
         Intent i = new Intent(c,SystemOverlay.class);
@@ -73,7 +71,7 @@ public class SystemOverlay extends Service {
         if (Slider.canUseOverlay(this)) {
             processIntent(intent);
             startInForeground();
-            startJob();
+//            startJob();
         }else{
             stopSelf();
         }
