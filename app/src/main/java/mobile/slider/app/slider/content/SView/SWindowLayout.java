@@ -1,31 +1,44 @@
 package mobile.slider.app.slider.content.SView;
 
 import android.content.Context;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import mobile.slider.app.slider.services.SystemOverlay;
+import mobile.slider.app.slider.ui.UI;
 
-public class SLayout {
+public class SWindowLayout {
     public RelativeLayout layout;
     public WindowManager.LayoutParams params;
     public int x, y, width, height;
 
-    private SLayout(RelativeLayout layout) {
+    public SWindowLayout(RelativeLayout layout) {
         this.layout = layout;
     }
 
-    public void plot(int x, int y, int width, int height, int type, int flags, int format) {
+    public void plot(WindowManager.LayoutParams params) {
+        plot(params.x, params.y,params.width,params.height,params.type,params.flags,params.format,params.gravity,params.screenOrientation);
+    }
+    public void plot(int x, int y, int width, int height, int type, int flags, int format, int gravity, int orientation) {
         params = new WindowManager.LayoutParams(width, height, x, y, type, flags, format);
+        params.gravity = gravity;
+        params.screenOrientation = orientation;
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).addView(layout, params);
     }
 
-    public SLayout.Layout openLayout() {
-        return new SLayout.Layout();
+    public SWindowLayout.Layout openLayout() {
+        return new SWindowLayout.Layout();
     }
 
     public class Layout {
         private float toX, toY, toWidth, toHeight;
+
+        public void setGravity(int gravity) {
+            params.gravity = gravity;
+        }
+
+        public void setOrientation(int orientation) {
+            params.screenOrientation = orientation;
+        }
 
         public void setX(float toX) {
             this.toX = toX;

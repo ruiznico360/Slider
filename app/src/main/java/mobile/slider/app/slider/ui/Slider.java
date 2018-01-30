@@ -46,7 +46,7 @@ public class Slider extends Activity {
                 SystemOverlay.start(getBaseContext(), IntentExtra.FROM_UI);
             }
         } else {
-            SystemOverlay.service.launchUI();
+            UI.launchUI();
         }
     }
 }

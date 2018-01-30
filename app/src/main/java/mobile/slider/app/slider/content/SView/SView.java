@@ -14,7 +14,7 @@ public class SView {
     public RelativeLayout.LayoutParams params;
     public int x,y,width,height;
 
-    private SView(View view, RelativeLayout container) {
+    public SView(View view, RelativeLayout container) {
         this.view = view;
         this.container = container;
     }
