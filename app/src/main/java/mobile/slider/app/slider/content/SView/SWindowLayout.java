@@ -3,6 +3,8 @@ package mobile.slider.app.slider.content.SView;
 import android.content.Context;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
+
+import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.ui.UI;
 
@@ -16,16 +18,25 @@ public class SWindowLayout {
     }
 
     public void plot(WindowManager.LayoutParams params) {
-        plot(params.x, params.y,params.width,params.height,params.type,params.flags,params.format,params.gravity,params.screenOrientation);
+        plot(params.x, params.y,params.width,params.height,params.type,params.flags,params.format,params.gravity);
     }
-    public void plot(int x, int y, int width, int height, int type, int flags, int format, int gravity, int orientation) {
+    public void plot(int x, int y, int width, int height, int type, int flags, int format, int gravity) {
         params = new WindowManager.LayoutParams(width, height, x, y, type, flags, format);
         params.gravity = gravity;
-        params.screenOrientation = orientation;
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).addView(layout, params);
-    }
 
+        int[] loc = new int[2];
+        layout.getLocationOnScreen(loc);
+        this.x = loc[0];
+        this.y = loc[1];
+        this.width = layout.getWidth();
+        this.height = layout.getHeight();
+    }
+    public void remove() {
+        ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).removeView(layout);
+    }
     public SWindowLayout.Layout openLayout() {
+        params = (WindowManager.LayoutParams) layout.getLayoutParams();
         return new SWindowLayout.Layout();
     }
 
@@ -61,6 +72,7 @@ public class SWindowLayout {
             params.y = (int) toY;
             params.width = (int) toWidth;
             params.height = (int) toHeight;
+            layout.setLayoutParams(params);
             ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(layout, params);
             {
                 int[] loc = new int[2];

@@ -71,6 +71,7 @@ public class SystemOverlay extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (Slider.canUseOverlay(this)) {
+            super.onCreate();
             processIntent(intent);
             startInForeground();
 //            startJob();
@@ -99,7 +100,7 @@ public class SystemOverlay extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (newConfig.orientation != floater.floaterContainer.params.screenOrientation) {
+        if (newConfig.orientation != floater.currentOrientation) {
             floater.updateFloater();
         }
         floater.currentOrientation = newConfig.orientation;
@@ -117,8 +118,6 @@ public class SystemOverlay extends Service {
     }
 
     public void processIntent(Intent intent) {
-
-
         if (!SettingsWriter.running) {
             SettingsWriter.init(getApplicationContext());
         }
@@ -126,22 +125,22 @@ public class SystemOverlay extends Service {
             if (intent.getExtras() != null) {
                 if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
                     Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from UI");
-                    createFloater(View.INVISIBLE);
+                    Floater.createFloater(View.INVISIBLE);
                     UI.launchUI();
                 }else if (intent.getExtras().containsKey(IntentExtra.SAFE_REBOOT_SERVICE)) {
                     Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from Reboot");
-                    createFloater(View.VISIBLE);
+                    Floater.createFloater(View.VISIBLE);
                 }else{
                     Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from intent with no extras");
-                    createFloater(View.VISIBLE);
+                    Floater.createFloater(View.VISIBLE);
                 }
             }else {
                 Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from intent with null extras");
-                createFloater(View.VISIBLE);
+                Floater.createFloater(View.VISIBLE);
             }
         }else{
             Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from null intent");
-            createFloater(View.VISIBLE);
+            Floater.createFloater(View.VISIBLE);
         }
     }
     public void startInForeground() {

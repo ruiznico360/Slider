@@ -10,16 +10,16 @@ import mobile.slider.app.slider.services.SystemOverlay;
 
 public class SView {
     public View view;
-    public RelativeLayout container;
+    public SWindowLayout container;
     public RelativeLayout.LayoutParams params;
     public int x,y,width,height;
 
-    public SView(View view, RelativeLayout container) {
+    public SView(View view, SWindowLayout container) {
         this.view = view;
         this.container = container;
     }
     public void plot() {
-        container.addView(view);
+        container.layout.addView(view);
         params = (RelativeLayout.LayoutParams) view.getLayoutParams();
         int[] loc = new int[2];
         view.getLocationOnScreen(loc);
@@ -28,8 +28,8 @@ public class SView {
         width = view.getWidth();
         height = view.getHeight();
     }
-
     public Layout openLayout() {
+        params = (RelativeLayout.LayoutParams) view.getLayoutParams();
         return new Layout();
     }
 
@@ -47,7 +47,8 @@ public class SView {
         public void save() {
             params.width = (int)toWidth;
             params.height = (int)toHeight;
-            container.updateViewLayout(view, params);
+            view.setLayoutParams(params);
+            container.layout.updateViewLayout(view, params);
             int[] loc = new int[2];
             view.getLocationOnScreen(loc);
             x = loc[0];

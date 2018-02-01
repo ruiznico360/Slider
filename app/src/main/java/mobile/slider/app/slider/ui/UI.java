@@ -55,10 +55,10 @@ public class UI {
         if (UI.running) {
             return;
         }
-        if (SystemOverlay.service.floater.floaterMovement.inTouch) {
+        if (SystemOverlay.service.floater.floaterMovement.currentlyInTouch) {
             SystemOverlay.service.floater.floaterMovement.forceUp();
         }
-        SystemOverlay.hideFloater();
+        SystemOverlay.floater.hideFloater();
         int size;
         if (Util.screenHeight() > Util.screenWidth()) {
             size = Util.screenWidth() / 5;
@@ -137,7 +137,7 @@ public class UI {
         uiLayout.setVisibility(View.VISIBLE);
 
         uiLayout.updateViewLayout(inner, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        if (SystemOverlay.service.floater.floaterMovement.inTouch) {
+        if (SystemOverlay.service.floater.floaterMovement.currentlyInTouch) {
             SystemOverlay.service.floater.floaterMovement.forceUp();
         }
 
@@ -198,7 +198,7 @@ public class UI {
             public void onAnimationEnd(Animation animation) {
                 ((WindowManager)c.getSystemService(WINDOW_SERVICE)).removeView(uiLayout);
                 UI.uiLayout = null;
-                SystemOverlay.showFloater();
+                SystemOverlay.floater.showFloater();
             }
 
             @Override
