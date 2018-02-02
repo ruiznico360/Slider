@@ -7,6 +7,7 @@ import android.widget.RelativeLayout;
 import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.ui.UI;
+import mobile.slider.app.slider.util.Util;
 
 public class SWindowLayout {
     public RelativeLayout layout;
@@ -25,19 +26,21 @@ public class SWindowLayout {
         params.gravity = gravity;
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).addView(layout, params);
 
-        int[] loc = new int[2];
-        layout.getLocationOnScreen(loc);
-        this.x = loc[0];
-        this.y = loc[1];
-        this.width = layout.getWidth();
-        this.height = layout.getHeight();
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
     }
     public void remove() {
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).removeView(layout);
     }
     public SWindowLayout.Layout openLayout() {
-        params = (WindowManager.LayoutParams) layout.getLayoutParams();
-        return new SWindowLayout.Layout();
+        SWindowLayout.Layout l = new SWindowLayout.Layout();
+        l.toX = x;
+        l.toY = y;
+        l.toWidth = width;
+        l.toHeight = height;
+        return l;
     }
 
     public class Layout {
@@ -68,20 +71,17 @@ public class SWindowLayout {
         }
 
         public void save() {
+            params = (WindowManager.LayoutParams) layout.getLayoutParams();
             params.x = (int) toX;
             params.y = (int) toY;
             params.width = (int) toWidth;
             params.height = (int) toHeight;
-            layout.setLayoutParams(params);
             ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(layout, params);
-            {
-                int[] loc = new int[2];
-                layout.getLocationOnScreen(loc);
-                x = loc[0];
-                y = loc[1];
-                width = layout.getWidth();
-                height = layout.getHeight();
-            }
+
+            x = (int) toX;
+            y = (int) toY;
+            width = (int) toWidth;
+            height = (int) toHeight;
         }
     }
 }

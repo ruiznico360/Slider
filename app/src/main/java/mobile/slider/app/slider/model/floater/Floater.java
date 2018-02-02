@@ -50,9 +50,10 @@ public class Floater extends SView {
         double height = Util.screenHeight();
         int border = SystemOverlay.getOverlayBorder();
         floaterPos = SettingsUtil.getFloaterPos() * height;
+
         if (floaterPos < border) {
             floaterPos = border;
-        }else if (floaterPos + (SettingsUtil.getFloaterSize()) > height - border) {
+        }else if ((floaterPos + SettingsUtil.getFloaterSize()) > height - border) {
             floaterPos = height - border - (SettingsUtil.getFloaterSize());
         }
         return (int)floaterPos;
@@ -197,7 +198,7 @@ public class Floater extends SView {
             currentlyInTouch = false;
             longPressListener.removeCallbacks(longPressRunnable);
             if (floaterRelocate) {
-                if (garbage.trash.height == SettingsUtil.getFloaterSize()) {
+                if (garbage.trash.height() == SettingsUtil.getFloaterSize()) {
                     hideFloater();
                     SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
                     SettingsUtil.setFloaterPos(originalY);
@@ -210,15 +211,17 @@ public class Floater extends SView {
                 garbage.container.remove();
             }else{
                 if (!force) {
-                    float finalX = event.getX();
+                    float fX = event.getRawX();
+                    float fY = event.getRawY();
+                    int w = container.width / 2;
+                    int h = container.height / 2;
 
-                    float finalY = event.getY();
-                    float xDifference = finalX - initialTouchX;
-                    float yDifference = finalY - initialTouchY;
-                    if (Math.abs(xDifference) > Math.abs(yDifference)) {
-                        if (!(xDifference > 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
+                    if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+                        if (fX - initialTouchX >= w && Math.abs(fY - initialTouchY) <= h) {
                             UI.launchUI();
-                        } else if ((xDifference < 0) && SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+                        }
+                    }else{
+                        if (initialTouchX - fX >= w && Math.abs(fY - initialTouchY) <= h) {
                             UI.launchUI();
                         }
                     }
@@ -243,7 +246,6 @@ public class Floater extends SView {
                 }
                 editor.setX(xValueMultiplier * (initialX + (int) (event.getRawX() - initialTouchX)));
                 editor.setY(rawY);
-
                 SettingsUtil.setFloaterPos((rawY) / (height));
 
                 if (c.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -264,17 +266,17 @@ public class Floater extends SView {
                 }
                 editor.save();
 
-                Rect cRect = new Rect(Floater.this.x, Floater.this.y, Floater.this.x + Floater.this.width, Floater.this.y + Floater.this.height);
+                Rect cRect = new Rect(Floater.this.x(), Floater.this.y(), Floater.this.x() + Floater.this.width(), Floater.this.y() + Floater.this.height());
 
-                if (cRect.intersects(garbage.trash.x, garbage.trash.y, garbage.trash.x + garbage.trash.width, garbage.trash.y + garbage.trash.height)) {
-                    if (garbage.trash.height != SettingsUtil.getFloaterSize()) {
+                if (cRect.intersects(garbage.trash.x(), garbage.trash.y(), garbage.trash.x() + garbage.trash.width(), garbage.trash.y() + garbage.trash.height())) {
+                    if (garbage.trash.height() != SettingsUtil.getFloaterSize()) {
                         SView.Layout tEdit = garbage.trash.openLayout();
                         tEdit.setHeight(SettingsUtil.getFloaterSize());
                         tEdit.setWidth(SettingsUtil.getFloaterSize());
                         tEdit.save();
                     }
                 }else{
-                    if (garbage.trash.height != SettingsUtil.getFloaterSize() / 1.3) {
+                    if (garbage.trash.height() != SettingsUtil.getFloaterSize() / 1.3) {
                         SView.Layout tEdit = garbage.trash.openLayout();
                         tEdit.setHeight(SettingsUtil.getFloaterSize() / 1.3f);
                         tEdit.setWidth(SettingsUtil.getFloaterSize() / 1.3f);
@@ -288,11 +290,9 @@ public class Floater extends SView {
                 int y = container.y;
                 int w = container.width * 2;
                 int h = container.height;
-                if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                    w = x;
-                    x = 0;
-                }else{
-//                    x -= container.width;
+                if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
+                   x = Util.screenWidth() - w;
+                   w = Util.screenWidth();
                 }
                 if (rx < x || rx > x + w || ry < y || ry > y + h) {
                     longPressListener.removeCallbacks(longPressRunnable);

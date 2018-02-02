@@ -98,8 +98,15 @@ public class Util {
             view.setBackgroundDrawable(d);
         }
     }
-    public static void log(String s) {
-        Log.d("Slider", s);
+    public static void logM(Object... args) {
+        String s = "MULTI-LOG";
+        for (Object j : args) {
+            s = s + " " + j.toString();
+        }
+        Util.log(s);
+    }
+    public static void log(Object s) {
+        Log.d("Slider", s + "");
     }
     public static ShapeDrawable backgroundGradientTop(View container) {
         ShapeDrawable d = new ShapeDrawable(new RectShape());

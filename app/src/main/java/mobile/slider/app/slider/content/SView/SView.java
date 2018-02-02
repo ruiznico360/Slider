@@ -12,7 +12,22 @@ public class SView {
     public View view;
     public SWindowLayout container;
     public RelativeLayout.LayoutParams params;
-    public int x,y,width,height;
+    public int x() {
+        int[] loc = new int[2];
+        view.getLocationOnScreen(loc);
+        return loc[0];
+    }
+    public int y() {
+        int[] loc = new int[2];
+        view.getLocationOnScreen(loc);
+        return loc[1];
+    }
+    public int width() {
+        return params.width;
+    }
+    public int height() {
+        return params.height;
+    }
 
     public SView(View view, SWindowLayout container) {
         this.view = view;
@@ -21,16 +36,13 @@ public class SView {
     public void plot() {
         container.layout.addView(view);
         params = (RelativeLayout.LayoutParams) view.getLayoutParams();
-        int[] loc = new int[2];
-        view.getLocationOnScreen(loc);
-        x = loc[0];
-        y = loc[1];
-        width = view.getWidth();
-        height = view.getHeight();
     }
     public Layout openLayout() {
         params = (RelativeLayout.LayoutParams) view.getLayoutParams();
-        return new Layout();
+        SView.Layout l = new Layout();
+        l.toHeight = height();
+        l.toWidth = width();
+        return l;
     }
 
     public class Layout {
@@ -49,12 +61,6 @@ public class SView {
             params.height = (int)toHeight;
             view.setLayoutParams(params);
             container.layout.updateViewLayout(view, params);
-            int[] loc = new int[2];
-            view.getLocationOnScreen(loc);
-            x = loc[0];
-            y = loc[1];
-            width = view.getWidth();
-            height = view.getHeight();
         }
     }
 }
