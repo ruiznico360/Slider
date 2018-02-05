@@ -12,7 +12,23 @@ import mobile.slider.app.slider.util.Util;
 public class SWindowLayout {
     public RelativeLayout layout;
     public WindowManager.LayoutParams params;
-    public int x, y, width, height;
+
+    public int x() {
+        int[] loc = new int[2];
+        layout.getLocationOnScreen(loc);
+        return loc[0];
+    }
+    public int y() {
+        int[] loc = new int[2];
+        layout.getLocationOnScreen(loc);
+        return loc[1];
+    }
+    public int width() {
+        return layout.getWidth();
+    }
+    public int height() {
+        return layout.getHeight();
+    }
 
     public SWindowLayout(RelativeLayout layout) {
         this.layout = layout;
@@ -25,21 +41,16 @@ public class SWindowLayout {
         params = new WindowManager.LayoutParams(width, height, x, y, type, flags, format);
         params.gravity = gravity;
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).addView(layout, params);
-
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
     }
     public void remove() {
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).removeView(layout);
     }
     public SWindowLayout.Layout openLayout() {
         SWindowLayout.Layout l = new SWindowLayout.Layout();
-        l.toX = x;
-        l.toY = y;
-        l.toWidth = width;
-        l.toHeight = height;
+        l.toX = x();
+        l.toY = y();
+        l.toWidth = width();
+        l.toHeight = height();
         return l;
     }
 
@@ -77,11 +88,6 @@ public class SWindowLayout {
             params.width = (int) toWidth;
             params.height = (int) toHeight;
             ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(layout, params);
-
-            x = (int) toX;
-            y = (int) toY;
-            width = (int) toWidth;
-            height = (int) toHeight;
         }
     }
 }

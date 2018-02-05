@@ -23,10 +23,10 @@ public class SView {
         return loc[1];
     }
     public int width() {
-        return params.width;
+        return view.getWidth();
     }
     public int height() {
-        return params.height;
+        return view.getHeight();
     }
 
     public SView(View view, SWindowLayout container) {

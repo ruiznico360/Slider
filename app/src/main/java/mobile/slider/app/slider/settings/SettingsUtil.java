@@ -1,14 +1,11 @@
 package mobile.slider.app.slider.settings;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.provider.Settings;
 
 import mobile.slider.app.slider.settings.resources.SettingType;
-import mobile.slider.app.slider.ui.PermissionsInterface;
-import mobile.slider.app.slider.util.IntentExtra;
 
 public class SettingsUtil {
     protected static String floaterGravity;
@@ -42,7 +39,7 @@ public class SettingsUtil {
         return Color.rgb(255 - Color.red(color),255 - Color.green(color),255 - Color.blue(color));
     }
     public static int defaultBackgroundColor() {
-        return Color.rgb(51,102,255);
+        return Color.rgb(83,0,96);
     }
 
     public static String getLanguage() {

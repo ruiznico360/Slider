@@ -97,7 +97,7 @@ public class SettingsWriter {
         editor.putInt(SettingType.WINDOW_SIZE, 70);
         editor.putString(SettingType.WINDOW_GRAVITY, WindowGravity.RIGHT);
         editor.putString(SettingType.WINDOW_SHADERS, WindowShader.BOTH);
-        editor.putInt(SettingType.FLOATER_SIZE, 200);
+        editor.putInt(SettingType.FLOATER_SIZE, 350);
         editor.putInt(SettingType.FLOATER_GRAVITY, -1000);
         editor.putFloat(SettingType.FLOATER_POS, -1000);
         editor.putString(SettingType.FLOATER_GRAVITY, WindowGravity.RIGHT);

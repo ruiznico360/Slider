@@ -83,7 +83,6 @@ public class Floater extends SView {
         }else if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
             params.gravity = Gravity.LEFT | Gravity.TOP;
             innerG = RelativeLayout.ALIGN_PARENT_LEFT;
-            floater.setScaleX(-1);
         }
         int width = 0;
         if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.DOTS)) {
@@ -168,8 +167,8 @@ public class Floater extends SView {
                     Vibrator vib = (Vibrator) c.getSystemService(Context.VIBRATOR_SERVICE);
                     vib.vibrate(25);
                     floaterRelocate = true;
-                    yOffset = event.getRawY() - container.y;
-                    initialX = container.x;
+                    yOffset = event.getRawY() - container.y();
+                    initialX = container.x();
                     if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                         xValueMultiplier = -1;
                     }else {
@@ -181,6 +180,8 @@ public class Floater extends SView {
 
                     garbage = new Garbage(new RelativeLayout(c), new RelativeLayout(c), new ImageView(c));
                     garbage.plot();
+
+                    SWindowLayout.Layout editor = container.openLayout()
                 }
             };
             initialTouchY = event.getRawY();
@@ -213,8 +214,8 @@ public class Floater extends SView {
                 if (!force) {
                     float fX = event.getRawX();
                     float fY = event.getRawY();
-                    int w = container.width / 2;
-                    int h = container.height / 2;
+                    int w = container.width() / 2;
+                    int h = container.height() / 2;
 
                     if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
                         if (fX - initialTouchX >= w && Math.abs(fY - initialTouchY) <= h) {
@@ -238,12 +239,13 @@ public class Floater extends SView {
                 SWindowLayout.Layout editor = container.openLayout();
 
                 float rawY = event.getRawY() - yOffset;
-                if (rawY + container.height > (height - (border))) {
-                    rawY = ((height - (border)) - container.height);
+                if (rawY + container.height() > (height - (border))) {
+                    rawY = ((height - (border)) - container.height());
                 }
                 else if (rawY < border) {
                     rawY = ((border));
                 }
+                Util.logM(xValueMultiplier, initialX, event.getRawX(), initialTouchX);
                 editor.setX(xValueMultiplier * (initialX + (int) (event.getRawX() - initialTouchX)));
                 editor.setY(rawY);
                 SettingsUtil.setFloaterPos((rawY) / (height));
@@ -255,12 +257,10 @@ public class Floater extends SView {
                 }
                 if (event.getRawX() < width) {
                     if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-                        Floater.this.view.setScaleX(-1);
                         SettingsUtil.setFloaterGravity(WindowGravity.LEFT);
                     }
                 } else if (event.getRawX() >= width) {
                     if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                        Floater.this.view.setScaleX(1);
                         SettingsUtil.setFloaterGravity(WindowGravity.RIGHT);
                     }
                 }
@@ -286,10 +286,10 @@ public class Floater extends SView {
             }else{
                 int rx = (int)event.getRawX();
                 int ry = (int)event.getRawY();
-                int x = container.x;
-                int y = container.y;
-                int w = container.width * 2;
-                int h = container.height;
+                int x = container.x();
+                int y = container.y();
+                int w = container.width() * 2;
+                int h = container.height();
                 if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                    x = Util.screenWidth() - w;
                    w = Util.screenWidth();
@@ -363,7 +363,7 @@ public class Floater extends SView {
             trash.plot();
 
             ShapeDrawable d = new ShapeDrawable(new RectShape());
-            d.getPaint().setShader(new LinearGradient(0,0,0,params.height, Color.TRANSPARENT, Color.BLACK, Shader.TileMode.REPEAT));
+            d.getPaint().setShader(new LinearGradient(0,0,0,params.height, Color.TRANSPARENT, Color.BLACK, Shader.TileMode.CLAMP));
             ((ImageView)trash.view).setScaleType(ImageView.ScaleType.FIT_XY);
             ((ImageView)trash.view).setAdjustViewBounds(true);
             Util.setBackground(view, d);

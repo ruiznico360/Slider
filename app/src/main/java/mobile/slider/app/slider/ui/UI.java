@@ -17,10 +17,12 @@ import android.view.animation.AnimationUtils;
 import android.widget.RelativeLayout;
 
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.content.SView.SView;
 import mobile.slider.app.slider.content.SView.SWindowLayout;
 import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
+import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.util.Util;
 
@@ -55,10 +57,11 @@ public class UI {
         if (UI.running) {
             return;
         }
-        if (SystemOverlay.service.floater.floaterMovement.currentlyInTouch) {
-            SystemOverlay.service.floater.floaterMovement.forceUp();
+        if (SystemOverlay.floater.floaterMovement.currentlyInTouch) {
+            SystemOverlay.floater.floaterMovement.forceUp();
         }
         SystemOverlay.floater.hideFloater();
+
         int size;
         if (Util.screenHeight() > Util.screenWidth()) {
             size = Util.screenWidth() / 5;
@@ -87,6 +90,7 @@ public class UI {
             params.gravity = Gravity.LEFT | Gravity.BOTTOM;
         }
 
+
         if (SystemOverlay.service.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             if (params.screenOrientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
                 params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
@@ -100,19 +104,17 @@ public class UI {
 
         final UI.UILayout uiLayout = new UI.UILayout(SystemOverlay.service);
         UI.uiLayout = new SWindowLayout(uiLayout);
-        View inner = UI.userInterface(SystemOverlay.service.getApplicationContext());
+        SView inner = new SView(UI.userInterface(SystemOverlay.service.getApplicationContext()),UI.uiLayout);
         uiLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     int rx = (int)event.getRawX();
                     int ry = (int)event.getRawY();
-                    int[] l = new int[2];
-                    v.getLocationOnScreen(l);
-                    int x = l[0];
-                    int y = l[1];
-                    int w = v.getWidth();
-                    int h = v.getHeight();
+                    int x = UI.uiLayout.x();
+                    int y = UI.uiLayout.y();
+                    int w = UI.uiLayout.width();
+                    int h = UI.uiLayout.height();
                     if (rx < x || rx > x + w || ry < y || ry > y + h) {
                         if (UI.running) {
                             UI.remove(SystemOverlay.service.getApplicationContext());
@@ -122,24 +124,33 @@ public class UI {
                 return true;
             }
         });
-        inner.findViewById(R.id.button).setOnTouchListener(new View.OnTouchListener() {
+        inner.view.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    new Window(SystemOverlay.service.service).create();
-                    UI.remove(SystemOverlay.service.getApplicationContext());
-                }
+            public void onClick(View view) {
+                new Window(SystemOverlay.service).create();
+                UI.remove(SystemOverlay.service.getApplicationContext());
+            }
+        });
+        inner.view.findViewById(R.id.button).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Util.log("Lclick");
+                SettingsWriter.resetDefaultSettings();
                 return true;
             }
         });
         UI.uiLayout.plot(params);
-        uiLayout.addView(inner);
+        inner.plot();
         uiLayout.setVisibility(View.VISIBLE);
 
-        uiLayout.updateViewLayout(inner, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        if (SystemOverlay.service.floater.floaterMovement.currentlyInTouch) {
-            SystemOverlay.service.floater.floaterMovement.forceUp();
-        }
+        SView.Layout editor = inner.openLayout();
+        editor.setWidth(RelativeLayout.LayoutParams.MATCH_PARENT);
+        editor.setHeight(RelativeLayout.LayoutParams.MATCH_PARENT);
+        editor.save();
+
+//        if (SystemOverlay.service.floater.floaterMovement.currentlyInTouch) {
+//            SystemOverlay.service.floater.floaterMovement.forceUp();
+//        }
 
         Animation a;
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
@@ -162,7 +173,8 @@ public class UI {
 
             }
         });
-        inner.startAnimation(a);
+        inner.view.startAnimation(a);
+
         final boolean phoneStatus = Util.isLocked(SystemOverlay.service.getApplicationContext());
         new Handler().postDelayed(new Runnable() {
             @Override
