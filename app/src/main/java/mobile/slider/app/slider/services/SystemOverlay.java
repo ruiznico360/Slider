@@ -36,6 +36,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 
+import java.util.ArrayList;
+
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.SView.SWindowLayout;
 import mobile.slider.app.slider.model.floater.Floater;
@@ -54,6 +56,7 @@ import mobile.slider.app.slider.util.Util;
 public class SystemOverlay extends Service {
     public static SystemOverlay service;
     public static Floater floater;
+    public static DeviceStateListener deviceStateListener;
 
     public static void start(Context c, String intent) {
         Intent i = new Intent(c,SystemOverlay.class);
@@ -142,6 +145,8 @@ public class SystemOverlay extends Service {
             Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from null intent");
             Floater.createFloater(View.VISIBLE);
         }
+        deviceStateListener = new DeviceStateListener();
+        deviceStateListener.start();
     }
     public void startInForeground() {
         Intent pi = new Intent();
@@ -200,6 +205,22 @@ public class SystemOverlay extends Service {
             return Util.screenWidth() / 10;
         }else{
             return Util.screenHeight() / 10;
+        }
+    }
+    public class DeviceStateListener {
+        public Handler handler = new Handler();
+        public ArrayList<Runnable> tasks = new ArrayList<>();
+
+        public void start() {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    for (Runnable r : tasks) {
+                        r.run();
+                    }
+                    handler.postDelayed(this,500);
+                }
+            },500);
         }
     }
 }

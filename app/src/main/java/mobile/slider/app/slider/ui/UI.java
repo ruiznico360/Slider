@@ -149,10 +149,6 @@ public class UI {
         editor.setHeight(RelativeLayout.LayoutParams.MATCH_PARENT);
         editor.save();
 
-//        if (SystemOverlay.service.floater.floaterMovement.currentlyInTouch) {
-//            SystemOverlay.service.floater.floaterMovement.forceUp();
-//        }
-
         Animation a;
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             a = AnimationUtils.loadAnimation(SystemOverlay.service.getApplicationContext(), R.anim.from_right_to_middle);
@@ -177,23 +173,26 @@ public class UI {
         inner.view.startAnimation(a);
 
         final boolean phoneStatus = Util.isLocked(SystemOverlay.service.getApplicationContext());
-        new Handler().postDelayed(new Runnable() {
+        SystemOverlay.deviceStateListener.tasks.add(new Runnable() {
             @Override
             public void run() {
                 if (UI.running) {
                     if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
                         UI.remove(SystemOverlay.service.getApplicationContext());
+                        SystemOverlay.deviceStateListener.tasks.remove(this);
                     }else if (!Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
                         UI.remove(SystemOverlay.service.getApplicationContext());
-                    }else {
-                        new Handler().postDelayed(this, 500);
+                        SystemOverlay.deviceStateListener.tasks.remove(this);
                     }
                 }
             }
-        }, 500);
+        });
     }
     public static void remove(final Context c) {
         running = false;
+
+//        if (SystemOverlay.deviceStateListener.tasks.contains())
+
         Animation a;
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             a = AnimationUtils.loadAnimation(c, R.anim.from_middle_to_right);
