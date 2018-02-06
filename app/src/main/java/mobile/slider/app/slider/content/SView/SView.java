@@ -8,6 +8,7 @@ import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
 import mobile.slider.app.slider.services.SystemOverlay;
+import mobile.slider.app.slider.util.Util;
 
 public class SView {
     public View view;
@@ -17,6 +18,7 @@ public class SView {
         int[] loc = new int[2];
         view.getLocationOnScreen(loc);
         return loc[0];
+
     }
     public int y() {
         int[] loc = new int[2];
@@ -24,10 +26,18 @@ public class SView {
         return loc[1];
     }
     public int width() {
-        return view.getWidth();
+        if (view.getWidth() != 0) {
+            return view.getWidth();
+        }else{
+            return params.width;
+        }
     }
     public int height() {
-        return view.getHeight();
+        if (view.getHeight() != 0) {
+            return view.getHeight();
+        }else{
+            return params.height;
+        }
     }
 
     public SView(View view, SWindowLayout container) {

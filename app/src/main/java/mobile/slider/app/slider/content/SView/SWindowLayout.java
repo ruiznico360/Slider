@@ -20,10 +20,18 @@ public class SWindowLayout {
         return params.y;
     }
     public int width() {
-        return params.width;
+        if (params.width > 0) {
+            return params.width;
+        }else{
+            return layout.getWidth();
+        }
     }
     public int height() {
-        return params.height;
+        if (params.height > 0) {
+            return params.height;
+        }else {
+            return layout.getHeight();
+        }
     }
 
     public SWindowLayout(RelativeLayout layout) {
@@ -31,11 +39,12 @@ public class SWindowLayout {
     }
 
     public void plot(WindowManager.LayoutParams params) {
-        plot(params.x, params.y,params.width,params.height,params.type,params.flags,params.format,params.gravity);
+        plot(params.x, params.y,params.width,params.height,params.type,params.flags,params.format,params.gravity, params.screenOrientation);
     }
-    public void plot(int x, int y, int width, int height, int type, int flags, int format, int gravity) {
+    public void plot(int x, int y, int width, int height, int type, int flags, int format, int gravity, int screenOrientation) {
         params = new WindowManager.LayoutParams(width, height, x, y, type, flags, format);
         params.gravity = gravity;
+        params.screenOrientation = screenOrientation;
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).addView(layout, params);
     }
     public void remove() {

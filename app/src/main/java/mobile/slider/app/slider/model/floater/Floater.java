@@ -129,9 +129,8 @@ public class Floater extends SView {
         return container.layout.getVisibility();
     }
     public class FloaterController {
-        public Handler longPressListener, garbageDisplayerListener;
-        public Runnable longPressRunnable, garbageDisplayerRunnable;
-        public long floaterRelocateMillis;
+        public Handler longPressListener;
+        public Runnable longPressRunnable;
         public boolean floaterRelocate = false, currentlyInTouch = false, touchEnabled = true;
         public float initialX,initialTouchX, initialTouchY, yOffset = 0, originalY;
         public Context c;
@@ -179,9 +178,8 @@ public class Floater extends SView {
                     originalY = SettingsUtil.getFloaterPos();
                     originalLastFloaterUpdate = SettingsUtil.getLastFloaterUpdate();
 
-                    floaterRelocateMillis = System.currentTimeMillis();
                     garbage = new Garbage(new RelativeLayout(c), new RelativeLayout(c), new ImageView(c));
-
+                    garbage.plot();
                 }
             };
             initialTouchY = event.getRawY();
@@ -199,21 +197,17 @@ public class Floater extends SView {
             currentlyInTouch = false;
             longPressListener.removeCallbacks(longPressRunnable);
             if (floaterRelocate) {
-                if (garbage.visible) {
-                    if (garbage.trash.height() == SettingsUtil.getFloaterSize()) {
-                        hideFloater();
-                        SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
-                        SettingsUtil.setFloaterPos(originalY);
-                        SettingsUtil.setFloaterGravity(originalGravity);
-                        Floater.createFloater(View.INVISIBLE);
-                        ToastMessage.toast(c, ToastMessage.HIDING_FLOATER);
-                    }else{
-                        Floater.createFloater(Floater.this.getVisibility());
-                    }
-                    garbage.container.remove();
+                if (garbage.trash.height() == SettingsUtil.getFloaterSize()) {
+                    hideFloater();
+                    SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
+                    SettingsUtil.setFloaterPos(originalY);
+                    SettingsUtil.setFloaterGravity(originalGravity);
+                    Floater.createFloater(View.INVISIBLE);
+                    ToastMessage.toast(c, ToastMessage.HIDING_FLOATER);
                 }else{
                     Floater.createFloater(Floater.this.getVisibility());
                 }
+                garbage.container.remove();
             }else{
                 if (!force) {
                     float fX = event.getRawX();
@@ -237,10 +231,6 @@ public class Floater extends SView {
 
         public void move(final MotionEvent event) {
             if (floaterRelocate) {
-                if (System.currentTimeMillis() - floaterRelocateMillis >= 3000 && !garbage.visible) {
-                    garbage.plot();
-                }
-
                 double width = Util.screenWidth() / 2;
                 int height = Util.screenHeight();
                 int border = SystemOverlay.getOverlayBorder();
@@ -281,22 +271,20 @@ public class Floater extends SView {
                 }
                 editor.save();
 
-                if (garbage.visible) {
-                    Rect cRect = new Rect(Floater.this.x(), Floater.this.y(), Floater.this.x() + Floater.this.width(), Floater.this.y() + Floater.this.height());
-                    if (cRect.intersects(garbage.trash.x(), garbage.trash.y(), garbage.trash.x() + garbage.trash.width(), garbage.trash.y() + garbage.trash.height())) {
-                        if (garbage.trash.height() != SettingsUtil.getFloaterSize()) {
-                            SView.Layout tEdit = garbage.trash.openLayout();
-                            tEdit.setHeight(SettingsUtil.getFloaterSize());
-                            tEdit.setWidth(SettingsUtil.getFloaterSize());
-                            tEdit.save();
-                        }
-                    } else {
-                        if (garbage.trash.height() != SettingsUtil.getFloaterSize() / 1.3) {
-                            SView.Layout tEdit = garbage.trash.openLayout();
-                            tEdit.setHeight(SettingsUtil.getFloaterSize() / 1.3f);
-                            tEdit.setWidth(SettingsUtil.getFloaterSize() / 1.3f);
-                            tEdit.save();
-                        }
+                Rect cRect = new Rect(container.x(), container.y(), container.x() + container.width(), container.y() + container.height());
+                if (cRect.intersects(garbage.trash.x() + (SettingsUtil.getFloaterSize() / 2), garbage.trash.y(), garbage.trash.x() + garbage.trash.width() - (SettingsUtil.getFloaterSize() / 2), garbage.trash.y() + garbage.trash.height())) {
+                    if (garbage.trash.height() != SettingsUtil.getFloaterSize()) {
+                        SView.Layout tEdit = garbage.trash.openLayout();
+                        tEdit.setHeight(SettingsUtil.getFloaterSize());
+                        tEdit.setWidth(SettingsUtil.getFloaterSize());
+                        tEdit.save();
+                    }
+                } else {
+                    if (garbage.trash.height() != SettingsUtil.getFloaterSize() / 1.3) {
+                        SView.Layout tEdit = garbage.trash.openLayout();
+                        tEdit.setHeight(SettingsUtil.getFloaterSize() / 1.3f);
+                        tEdit.setWidth(SettingsUtil.getFloaterSize() / 1.3f);
+                        tEdit.save();
                     }
                 }
             }else{
@@ -367,13 +355,11 @@ public class Floater extends SView {
     }
     public class Garbage extends SView{
         public SView trash;
-        public boolean visible = false;
         public Garbage(RelativeLayout background, RelativeLayout gradient, ImageView trash) {
             super(gradient, new SWindowLayout(background));
             this.trash = new SView(trash, new SWindowLayout(gradient));
         }
         public void plot() {
-            visible = true;
             final WindowManager.LayoutParams params = new WindowManager.LayoutParams(Util.screenWidth(),
                     SettingsUtil.getFloaterSize() * 2, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                     WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD, PixelFormat.TRANSLUCENT);

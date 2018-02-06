@@ -85,9 +85,11 @@ public class UI {
             }
         }
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-            params.gravity = Gravity.RIGHT | Gravity.BOTTOM;
+            params.gravity = Gravity.BOTTOM;
+            params.x = Util.screenWidth() - params.width;
         }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
-            params.gravity = Gravity.LEFT | Gravity.BOTTOM;
+            params.gravity = Gravity.BOTTOM;
+            params.x = 0;
         }
 
 
@@ -134,7 +136,6 @@ public class UI {
         inner.view.findViewById(R.id.button).setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                Util.log("Lclick");
                 SettingsWriter.resetDefaultSettings();
                 return true;
             }
