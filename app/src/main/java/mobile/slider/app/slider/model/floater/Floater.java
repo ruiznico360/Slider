@@ -44,8 +44,15 @@ public class Floater extends SView {
         this.floaterMovement = new FloaterController(SystemOverlay.service);
         currentOrientation = SystemOverlay.service.getResources().getConfiguration().orientation;
     }
+    public int floaterPosX(int width) {
+        if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+            return 0;
+        }else{
+            return Util.screenWidth() - width;
+        }
+    }
 
-    public static int floaterPos() {
+    public int floaterPosY() {
         double floaterPos;
         double height = Util.screenHeight();
         int border = SystemOverlay.getOverlayBorder();
@@ -68,20 +75,15 @@ public class Floater extends SView {
         final RelativeLayout container = new RelativeLayout(SystemOverlay.service);
         SystemOverlay.floater = new Floater(floater, container, visibility);
 
-        int floaterPos = floaterPos();
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 SettingsUtil.getFloaterSize(), WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                         + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT);
 
-        params.y = floaterPos;
-
         int innerG = 0;
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-            params.gravity = Gravity.RIGHT | Gravity.TOP;
             innerG = RelativeLayout.ALIGN_PARENT_RIGHT;
         }else if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-            params.gravity = Gravity.LEFT | Gravity.TOP;
             innerG = RelativeLayout.ALIGN_PARENT_LEFT;
         }
         int width = 0;
@@ -97,6 +99,10 @@ public class Floater extends SView {
         }else if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.INVISIBLE)) {
             width = (SettingsUtil.getFloaterSize() / 5);
         }
+
+        params.gravity = Gravity.LEFT | Gravity.TOP;
+        params.y = SystemOverlay.floater.floaterPosY();
+        params.x = SystemOverlay.floater.floaterPosX(params.width);
 
         SystemOverlay.floater.container.plot(params);
         SystemOverlay.floater.plot();
@@ -123,11 +129,11 @@ public class Floater extends SView {
         return container.layout.getVisibility();
     }
     public class FloaterController {
-        public Handler longPressListener;
-        public Runnable longPressRunnable;
+        public Handler longPressListener, garbageDisplayerListener;
+        public Runnable longPressRunnable, garbageDisplayerRunnable;
+        public long floaterRelocateMillis;
         public boolean floaterRelocate = false, currentlyInTouch = false, touchEnabled = true;
         public float initialX,initialTouchX, initialTouchY, yOffset = 0, originalY;
-        public int xValueMultiplier;
         public Context c;
         public View.OnTouchListener touchListener;
         public Garbage garbage;
@@ -169,19 +175,13 @@ public class Floater extends SView {
                     floaterRelocate = true;
                     yOffset = event.getRawY() - container.y();
                     initialX = container.x();
-                    if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
-                        xValueMultiplier = -1;
-                    }else {
-                        xValueMultiplier = 1;
-                    }
                     originalGravity = SettingsUtil.getFloaterGravity();
                     originalY = SettingsUtil.getFloaterPos();
                     originalLastFloaterUpdate = SettingsUtil.getLastFloaterUpdate();
 
+                    floaterRelocateMillis = System.currentTimeMillis();
                     garbage = new Garbage(new RelativeLayout(c), new RelativeLayout(c), new ImageView(c));
-                    garbage.plot();
 
-                    SWindowLayout.Layout editor = container.openLayout()
                 }
             };
             initialTouchY = event.getRawY();
@@ -199,17 +199,21 @@ public class Floater extends SView {
             currentlyInTouch = false;
             longPressListener.removeCallbacks(longPressRunnable);
             if (floaterRelocate) {
-                if (garbage.trash.height() == SettingsUtil.getFloaterSize()) {
-                    hideFloater();
-                    SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
-                    SettingsUtil.setFloaterPos(originalY);
-                    SettingsUtil.setFloaterGravity(originalGravity);
-                    Floater.createFloater(View.INVISIBLE);
-                    ToastMessage.toast(c, ToastMessage.HIDING_FLOATER);
+                if (garbage.visible) {
+                    if (garbage.trash.height() == SettingsUtil.getFloaterSize()) {
+                        hideFloater();
+                        SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
+                        SettingsUtil.setFloaterPos(originalY);
+                        SettingsUtil.setFloaterGravity(originalGravity);
+                        Floater.createFloater(View.INVISIBLE);
+                        ToastMessage.toast(c, ToastMessage.HIDING_FLOATER);
+                    }else{
+                        Floater.createFloater(Floater.this.getVisibility());
+                    }
+                    garbage.container.remove();
                 }else{
                     Floater.createFloater(Floater.this.getVisibility());
                 }
-                garbage.container.remove();
             }else{
                 if (!force) {
                     float fX = event.getRawX();
@@ -233,6 +237,10 @@ public class Floater extends SView {
 
         public void move(final MotionEvent event) {
             if (floaterRelocate) {
+                if (System.currentTimeMillis() - floaterRelocateMillis >= 3000 && !garbage.visible) {
+                    garbage.plot();
+                }
+
                 double width = Util.screenWidth() / 2;
                 int height = Util.screenHeight();
                 int border = SystemOverlay.getOverlayBorder();
@@ -245,8 +253,7 @@ public class Floater extends SView {
                 else if (rawY < border) {
                     rawY = ((border));
                 }
-                Util.logM(xValueMultiplier, initialX, event.getRawX(), initialTouchX);
-                editor.setX(xValueMultiplier * (initialX + (int) (event.getRawX() - initialTouchX)));
+                editor.setX((initialX + (int) (event.getRawX() - initialTouchX)));
                 editor.setY(rawY);
                 SettingsUtil.setFloaterPos((rawY) / (height));
 
@@ -256,31 +263,40 @@ public class Floater extends SView {
                     SettingsUtil.setLastFloaterUpdate(FloaterUpdate.PORTRAIT);
                 }
                 if (event.getRawX() < width) {
+                    SView.Layout fEdit = openLayout();
                     if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
                         SettingsUtil.setFloaterGravity(WindowGravity.LEFT);
+                        fEdit.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                        fEdit.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                        fEdit.save();
                     }
                 } else if (event.getRawX() >= width) {
+                    SView.Layout fEdit = openLayout();
                     if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                         SettingsUtil.setFloaterGravity(WindowGravity.RIGHT);
+                        fEdit.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                        fEdit.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                        fEdit.save();
                     }
                 }
                 editor.save();
 
-                Rect cRect = new Rect(Floater.this.x(), Floater.this.y(), Floater.this.x() + Floater.this.width(), Floater.this.y() + Floater.this.height());
-
-                if (cRect.intersects(garbage.trash.x(), garbage.trash.y(), garbage.trash.x() + garbage.trash.width(), garbage.trash.y() + garbage.trash.height())) {
-                    if (garbage.trash.height() != SettingsUtil.getFloaterSize()) {
-                        SView.Layout tEdit = garbage.trash.openLayout();
-                        tEdit.setHeight(SettingsUtil.getFloaterSize());
-                        tEdit.setWidth(SettingsUtil.getFloaterSize());
-                        tEdit.save();
-                    }
-                }else{
-                    if (garbage.trash.height() != SettingsUtil.getFloaterSize() / 1.3) {
-                        SView.Layout tEdit = garbage.trash.openLayout();
-                        tEdit.setHeight(SettingsUtil.getFloaterSize() / 1.3f);
-                        tEdit.setWidth(SettingsUtil.getFloaterSize() / 1.3f);
-                        tEdit.save();
+                if (garbage.visible) {
+                    Rect cRect = new Rect(Floater.this.x(), Floater.this.y(), Floater.this.x() + Floater.this.width(), Floater.this.y() + Floater.this.height());
+                    if (cRect.intersects(garbage.trash.x(), garbage.trash.y(), garbage.trash.x() + garbage.trash.width(), garbage.trash.y() + garbage.trash.height())) {
+                        if (garbage.trash.height() != SettingsUtil.getFloaterSize()) {
+                            SView.Layout tEdit = garbage.trash.openLayout();
+                            tEdit.setHeight(SettingsUtil.getFloaterSize());
+                            tEdit.setWidth(SettingsUtil.getFloaterSize());
+                            tEdit.save();
+                        }
+                    } else {
+                        if (garbage.trash.height() != SettingsUtil.getFloaterSize() / 1.3) {
+                            SView.Layout tEdit = garbage.trash.openLayout();
+                            tEdit.setHeight(SettingsUtil.getFloaterSize() / 1.3f);
+                            tEdit.setWidth(SettingsUtil.getFloaterSize() / 1.3f);
+                            tEdit.save();
+                        }
                     }
                 }
             }else{
@@ -342,19 +358,23 @@ public class Floater extends SView {
         });
         view.startAnimation(a);
     }
+
     public void updateFloater() {
         SWindowLayout.Layout editor = container.openLayout();
-        editor.setY(floaterPos());
+        editor.setY(floaterPosY());
+        editor.setX(floaterPosX(container.width()));
         editor.save();
     }
     public class Garbage extends SView{
         public SView trash;
+        public boolean visible = false;
         public Garbage(RelativeLayout background, RelativeLayout gradient, ImageView trash) {
             super(gradient, new SWindowLayout(background));
             this.trash = new SView(trash, new SWindowLayout(gradient));
         }
         public void plot() {
-            final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,
+            visible = true;
+            final WindowManager.LayoutParams params = new WindowManager.LayoutParams(Util.screenWidth(),
                     SettingsUtil.getFloaterSize() * 2, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
                     WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD, PixelFormat.TRANSLUCENT);
             params.gravity = Gravity.BOTTOM;

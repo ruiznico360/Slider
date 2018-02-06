@@ -1,6 +1,7 @@
 package mobile.slider.app.slider.content.SView;
 
 import android.content.Context;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -55,6 +56,13 @@ public class SView {
         }
         public void addRule(int rule) {
             params.addRule(rule);
+        }
+        public void removeRule(int rule) {
+            if (Build.VERSION.SDK_INT >= 17) {
+                params.removeRule(rule);
+            }else{
+                params.addRule(rule,0);
+            }
         }
         public void save() {
             params.width = (int)toWidth;

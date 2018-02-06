@@ -14,20 +14,16 @@ public class SWindowLayout {
     public WindowManager.LayoutParams params;
 
     public int x() {
-        int[] loc = new int[2];
-        layout.getLocationOnScreen(loc);
-        return loc[0];
+        return params.x;
     }
     public int y() {
-        int[] loc = new int[2];
-        layout.getLocationOnScreen(loc);
-        return loc[1];
+        return params.y;
     }
     public int width() {
-        return layout.getWidth();
+        return params.width;
     }
     public int height() {
-        return layout.getHeight();
+        return params.height;
     }
 
     public SWindowLayout(RelativeLayout layout) {
