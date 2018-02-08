@@ -17,14 +17,18 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
+import android.view.animation.BounceInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.SView.SView;
 import mobile.slider.app.slider.content.SView.SWindowLayout;
+import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
+import mobile.slider.app.slider.settings.Setting;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.FloaterUpdate;
@@ -36,6 +40,7 @@ import mobile.slider.app.slider.util.Util;
 public class Floater extends SView {
     public FloaterController floaterMovement;
     public int currentOrientation;
+    public Runnable deviceStateRunnable;
 
     public Floater(ImageView overlayFloater, RelativeLayout container, int visibility) {
         super(overlayFloater, new SWindowLayout(container));
@@ -43,6 +48,17 @@ public class Floater extends SView {
 
         this.floaterMovement = new FloaterController(SystemOverlay.service);
         currentOrientation = SystemOverlay.service.getResources().getConfiguration().orientation;
+
+        final boolean phoneStatus = Util.isLocked(SystemOverlay.service);
+        deviceStateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
+                    createFloater(SystemOverlay.floater.getVisibility());
+                }
+            }
+        };
+        SystemOverlay.deviceStateListener.tasks.add(deviceStateRunnable);
     }
     public int floaterPosX(int width) {
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
@@ -69,14 +85,24 @@ public class Floater extends SView {
     public static void createFloater(int visibility) {
         if (SystemOverlay.floater != null) {
             SystemOverlay.floater.container.remove();
+            if (SystemOverlay.deviceStateListener.tasks.contains(SystemOverlay.floater.deviceStateRunnable)) {
+                SystemOverlay.deviceStateListener.tasks.remove(SystemOverlay.floater.deviceStateRunnable);
+            }
         }
 
         final ImageView floater = new AppCompatImageView(SystemOverlay.service);
         final RelativeLayout container = new RelativeLayout(SystemOverlay.service);
         SystemOverlay.floater = new Floater(floater, container, visibility);
 
+        int floaterType;
+        if (Util.isLocked(SystemOverlay.service)) {
+            floaterType = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
+        }else{
+            floaterType = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
-                SettingsUtil.getFloaterSize(), WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+                SettingsUtil.getFloaterSize(), floaterType,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                         + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT);
 
@@ -180,6 +206,15 @@ public class Floater extends SView {
 
                     garbage = new Garbage(new RelativeLayout(c), new RelativeLayout(c), new ImageView(c));
                     garbage.plot();
+
+                    SView.Layout fEdit = openLayout();
+                    if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+                        fEdit.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                    }else {
+                        fEdit.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    }
+                    fEdit.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                    fEdit.save();
                 }
             };
             initialTouchY = event.getRawY();
@@ -256,17 +291,12 @@ public class Floater extends SView {
                     SView.Layout fEdit = openLayout();
                     if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
                         SettingsUtil.setFloaterGravity(WindowGravity.LEFT);
-                        fEdit.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                        fEdit.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-                        fEdit.save();
+
                     }
                 } else if (event.getRawX() >= width) {
                     SView.Layout fEdit = openLayout();
                     if (!SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                         SettingsUtil.setFloaterGravity(WindowGravity.RIGHT);
-                        fEdit.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                        fEdit.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
-                        fEdit.save();
                     }
                 }
                 editor.save();
@@ -306,8 +336,17 @@ public class Floater extends SView {
     }
     public void hideFloater() {
         floaterMovement.enableTouch(false);
-        Animation a = AnimationUtils.loadAnimation(SystemOverlay.service.getApplicationContext(), R.anim.fade_out);
-        a.setAnimationListener(new Animation.AnimationListener() {
+        AnimationSet set = new AnimationSet(true);
+        set.setFillEnabled(true);
+        Animation a = AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.fade_out);
+        a.setDuration(50);
+        set.addAnimation(a);
+        if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+            set.addAnimation(AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.from_middle_to_left));
+        }else{
+            set.addAnimation(AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.from_middle_to_right));
+        }
+        set.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
@@ -323,12 +362,21 @@ public class Floater extends SView {
 
             }
         });
-        view.startAnimation(a);
+        view.startAnimation(set);
     }
     public void showFloater() {
         setVisibility(View.VISIBLE);
-        Animation a = AnimationUtils.loadAnimation(SystemOverlay.service.getApplicationContext(), R.anim.fade_in);
-        a.setAnimationListener(new Animation.AnimationListener() {
+        AnimationSet set = new AnimationSet(true);
+        set.setFillEnabled(true);
+        Animation a = AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.fade_in);
+        a.setDuration(50);
+        set.addAnimation(a);
+        if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
+            set.addAnimation(AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.from_left_to_middle));
+        }else{
+            set.addAnimation(AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.from_right_to_middle));
+        }
+        set.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
@@ -344,7 +392,7 @@ public class Floater extends SView {
 
             }
         });
-        view.startAnimation(a);
+        view.startAnimation(set);
     }
 
     public void updateFloater() {

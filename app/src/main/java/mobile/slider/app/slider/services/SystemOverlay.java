@@ -124,6 +124,8 @@ public class SystemOverlay extends Service {
         if (!SettingsWriter.running) {
             SettingsWriter.init(getApplicationContext());
         }
+        deviceStateListener = new DeviceStateListener();
+        deviceStateListener.start();
         if (intent != null) {
             if (intent.getExtras() != null) {
                 if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
@@ -145,8 +147,7 @@ public class SystemOverlay extends Service {
             Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from null intent");
             Floater.createFloater(View.VISIBLE);
         }
-        deviceStateListener = new DeviceStateListener();
-        deviceStateListener.start();
+
     }
     public void startInForeground() {
         Intent pi = new Intent();

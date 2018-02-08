@@ -30,6 +30,7 @@ import static android.content.Context.WINDOW_SERVICE;
 
 public class UI {
     public static boolean running = false;
+    public static Runnable deviceStateRunnable;
     public static SWindowLayout uiLayout;
     public static View userInterface(Context c) {
         View ui = ((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.ui, null);
@@ -173,7 +174,7 @@ public class UI {
         inner.view.startAnimation(a);
 
         final boolean phoneStatus = Util.isLocked(SystemOverlay.service.getApplicationContext());
-        SystemOverlay.deviceStateListener.tasks.add(new Runnable() {
+        deviceStateRunnable = new Runnable() {
             @Override
             public void run() {
                 if (UI.running) {
@@ -186,12 +187,17 @@ public class UI {
                     }
                 }
             }
-        });
+        };
+        SystemOverlay.deviceStateListener.tasks.add(deviceStateRunnable);
     }
     public static void remove(final Context c) {
         running = false;
 
-//        if (SystemOverlay.deviceStateListener.tasks.contains())
+        if (SystemOverlay.deviceStateListener.tasks.contains(deviceStateRunnable)) {
+            SystemOverlay.deviceStateListener.tasks.remove(deviceStateRunnable);
+        }
+
+        deviceStateRunnable = null;
 
         Animation a;
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
