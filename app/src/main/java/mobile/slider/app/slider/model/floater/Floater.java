@@ -157,7 +157,7 @@ public class Floater extends SView {
     public class FloaterController {
         public Handler longPressListener;
         public Runnable longPressRunnable;
-        public boolean floaterRelocate = false, currentlyInTouch = false, touchEnabled = true;
+        public boolean floaterRelocate = false, currentlyInTouch = false, touchEnabled = false;
         public float initialX,initialTouchX, initialTouchY, yOffset = 0, originalY;
         public Context c;
         public View.OnTouchListener touchListener;
@@ -248,7 +248,7 @@ public class Floater extends SView {
                     float fX = event.getRawX();
                     float fY = event.getRawY();
                     int w = container.width() / 2;
-                    int h = container.height() / 2;
+                    int h = container.height();
 
                     if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
                         if (fX - initialTouchX >= w && Math.abs(fY - initialTouchY) <= h) {
@@ -322,7 +322,7 @@ public class Floater extends SView {
                 int ry = (int)event.getRawY();
                 int x = container.x();
                 int y = container.y();
-                int w = container.width() * 2;
+                int w = container.width();
                 int h = container.height();
                 if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
                    x = Util.screenWidth() - w;

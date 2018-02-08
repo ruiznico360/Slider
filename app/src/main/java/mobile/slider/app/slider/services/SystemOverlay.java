@@ -216,8 +216,8 @@ public class SystemOverlay extends Service {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    for (Runnable r : tasks) {
-                        r.run();
+                    for (int i = 0; i < tasks.size(); i++) {
+                        tasks.get(i).run();
                     }
                     handler.postDelayed(this,500);
                 }
