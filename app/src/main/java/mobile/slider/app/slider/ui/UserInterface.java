@@ -3,18 +3,19 @@ package mobile.slider.app.slider.ui;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.os.Handler;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.RelativeLayout;
+
+import java.util.Random;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.SView.SView;
@@ -22,40 +23,24 @@ import mobile.slider.app.slider.content.SView.SWindowLayout;
 import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
-import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.util.Util;
 
 import static android.content.Context.WINDOW_SERVICE;
 
-public class UI {
-    public static boolean running = false;
-    public static Runnable deviceStateRunnable;
-    public static SWindowLayout uiLayout;
-    public static View userInterface(Context c) {
-        View ui = ((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.ui, null);
-        ui.findViewById(R.id.ui_main_layout).setBackgroundColor(SettingsUtil.getBackgroundColor());
-        return ui;
+public class UserInterface {
+    public static UserInterface UI;
+    public Context c;
+    public Runnable deviceStateRunnable;
+    public SWindowLayout container;
+    public SView inner;
+
+    public UserInterface(Context c) {
+        this.c = c;
     }
-    public static class UILayout extends RelativeLayout {
-        Context c;
-        public UILayout(Context c){
-            super(c);
-            this.c = c;
-        }
-        @Override
-        public boolean dispatchKeyEvent(KeyEvent event) {
-            if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) || (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) || (event.getKeyCode() == KeyEvent.KEYCODE_HOME)) {
-                if (running) {
-                    remove(c);
-                }
-                return true;
-            }
-            return super.dispatchKeyEvent(event);
-        }
-    }
+
     public static void launchUI() {
-        if (UI.running) {
+        if (UI.running()) {
             return;
         }
         if (SystemOverlay.floater.floaterMovement.currentlyInTouch) {
@@ -63,6 +48,11 @@ public class UI {
         }
         SystemOverlay.floater.hideFloater();
 
+        UserInterface ui = new UserInterface(SystemOverlay.service);
+        ui.setup();
+    }
+
+    public void setup() {
         int size;
         if (Util.screenHeight() > Util.screenWidth()) {
             size = Util.screenWidth() / 5;
@@ -103,24 +93,23 @@ public class UI {
                 params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
             }
         }
+        container = new SWindowLayout(new UIContainer(c));
+        inner = new SView(((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.ui, null), container);
+        inner.view.findViewById(R.id.ui_main_layout).setBackgroundColor(SettingsUtil.getBackgroundColor());
 
-
-        final UI.UILayout uiLayout = new UI.UILayout(SystemOverlay.service);
-        UI.uiLayout = new SWindowLayout(uiLayout);
-        SView inner = new SView(UI.userInterface(SystemOverlay.service.getApplicationContext()),UI.uiLayout);
-        uiLayout.setOnTouchListener(new View.OnTouchListener() {
+        container.layout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     int rx = (int)event.getRawX();
                     int ry = (int)event.getRawY();
-                    int x = UI.uiLayout.x();
-                    int y = UI.uiLayout.y();
-                    int w = UI.uiLayout.width();
-                    int h = UI.uiLayout.height();
+                    int x = container.x();
+                    int y = container.y();
+                    int w = container.width();
+                    int h = container.height();
                     if (rx < x || rx > x + w || ry < y || ry > y + h) {
-                        if (UI.running) {
-                            UI.remove(SystemOverlay.service.getApplicationContext());
+                        if (UserInterface.running()) {
+                            UI.remove();
                         }
                     }
                 }
@@ -131,19 +120,19 @@ public class UI {
             @Override
             public void onClick(View view) {
                 new Window(SystemOverlay.service).create();
-                UI.remove(SystemOverlay.service.getApplicationContext());
+                UI.remove();
             }
         });
         inner.view.findViewById(R.id.button).setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                SettingsWriter.resetDefaultSettings();
+                SettingsUtil.setBackgroundColor(Color.rgb(new Random().nextInt(255),new Random().nextInt(255),new Random().nextInt(255)));
                 return true;
             }
         });
-        UI.uiLayout.plot(params);
+        container.plot(params);
         inner.plot();
-        uiLayout.setVisibility(View.VISIBLE);
+        container.layout.setVisibility(View.VISIBLE);
 
         SView.Layout editor = inner.openLayout();
         editor.setWidth(RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -164,7 +153,7 @@ public class UI {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                UI.running = true;
+                UI = UserInterface.this;
             }
             @Override
             public void onAnimationRepeat(Animation animation) {
@@ -177,12 +166,12 @@ public class UI {
         deviceStateRunnable = new Runnable() {
             @Override
             public void run() {
-                if (UI.running) {
+                if (running()) {
                     if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
-                        UI.remove(SystemOverlay.service.getApplicationContext());
+                        remove();
                         SystemOverlay.deviceStateListener.tasks.remove(this);
                     }else if (!Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
-                        UI.remove(SystemOverlay.service.getApplicationContext());
+                        remove();
                         SystemOverlay.deviceStateListener.tasks.remove(this);
                     }
                 }
@@ -190,9 +179,13 @@ public class UI {
         };
         SystemOverlay.deviceStateListener.tasks.add(deviceStateRunnable);
     }
-    public static void remove(final Context c) {
-        running = false;
 
+    public void backPressed() {
+        if (running()) {
+            remove();
+        }
+    }
+    public void remove() {
         if (SystemOverlay.deviceStateListener.tasks.contains(deviceStateRunnable)) {
             SystemOverlay.deviceStateListener.tasks.remove(deviceStateRunnable);
         }
@@ -205,7 +198,7 @@ public class UI {
         }else {
             a = AnimationUtils.loadAnimation(c, R.anim.from_middle_to_left);
         }
-        final View uiLayout = UI.uiLayout.layout;
+        final UserInterface deleteUI = UI;
         a.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -214,8 +207,7 @@ public class UI {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                ((WindowManager)c.getSystemService(WINDOW_SERVICE)).removeView(uiLayout);
-                UI.uiLayout = null;
+                deleteUI.container.remove();
                 SystemOverlay.floater.showFloater();
             }
 
@@ -224,6 +216,23 @@ public class UI {
 
             }
         });
-        uiLayout.findViewById(R.id.ui_main_layout).startAnimation(a);
+        inner.view.startAnimation(a);
+        UI = null;
+    }
+    public static boolean running() {
+        return UI != null;
+    }
+    public class UIContainer extends RelativeLayout {
+        public UIContainer(Context c){
+            super(c);
+        }
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent event) {
+            if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) || (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) || (event.getKeyCode() == KeyEvent.KEYCODE_HOME)) {
+                backPressed();
+                return true;
+            }
+            return super.dispatchKeyEvent(event);
+        }
     }
 }

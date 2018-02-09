@@ -6,7 +6,6 @@ import android.widget.RelativeLayout;
 
 import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
-import mobile.slider.app.slider.ui.UI;
 import mobile.slider.app.slider.util.Util;
 
 public class SWindowLayout {

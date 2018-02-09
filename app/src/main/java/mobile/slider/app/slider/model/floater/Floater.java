@@ -33,7 +33,7 @@ import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.FloaterUpdate;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
-import mobile.slider.app.slider.ui.UI;
+import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
@@ -252,11 +252,11 @@ public class Floater extends SView {
 
                     if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
                         if (fX - initialTouchX >= w && Math.abs(fY - initialTouchY) <= h) {
-                            UI.launchUI();
+                            UserInterface.launchUI();
                         }
                     }else{
                         if (initialTouchX - fX >= w && Math.abs(fY - initialTouchY) <= h) {
-                            UI.launchUI();
+                            UserInterface.launchUI();
                         }
                     }
                 }
