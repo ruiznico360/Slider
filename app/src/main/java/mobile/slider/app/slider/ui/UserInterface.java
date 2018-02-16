@@ -100,33 +100,38 @@ public class UserInterface {
         container.layout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    int rx = (int)event.getRawX();
-                    int ry = (int)event.getRawY();
-                    int x = container.x();
-                    int y = container.y();
-                    int w = container.width();
-                    int h = container.height();
-                    if (rx < x || rx > x + w || ry < y || ry > y + h) {
-                        if (UserInterface.running()) {
+                if (running()) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        int rx = (int) event.getRawX();
+                        int ry = (int) event.getRawY();
+                        int x = container.x();
+                        int y = container.y();
+                        int w = container.width();
+                        int h = container.height();
+                        if (rx < x || rx > x + w || ry < y || ry > y + h) {
                             UI.remove();
                         }
                     }
+                    return true;
                 }
-                return true;
+                return false;
             }
         });
         inner.view.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new Window(SystemOverlay.service).create();
-                UI.remove();
+                if (running()) {
+                    new Window(SystemOverlay.service).create();
+                    UI.remove();
+                }
             }
         });
         inner.view.findViewById(R.id.button).setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                SettingsUtil.setBackgroundColor(Color.rgb(new Random().nextInt(255),new Random().nextInt(255),new Random().nextInt(255)));
+                if (running()) {
+                    SettingsUtil.setBackgroundColor(Color.rgb(new Random().nextInt(255),new Random().nextInt(255),new Random().nextInt(255)));
+                }
                 return true;
             }
         });

@@ -125,7 +125,6 @@ public class Floater extends SView {
         }else if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.INVISIBLE)) {
             width = (SettingsUtil.getFloaterSize() / 5);
         }
-
         params.gravity = Gravity.LEFT | Gravity.TOP;
         params.y = SystemOverlay.floater.floaterPosY();
         params.x = SystemOverlay.floater.floaterPosX(params.width);
