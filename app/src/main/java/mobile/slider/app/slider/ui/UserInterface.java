@@ -15,6 +15,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.RelativeLayout;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import mobile.slider.app.slider.R;
@@ -24,6 +25,7 @@ import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
+import mobile.slider.app.slider.util.Contact;
 import mobile.slider.app.slider.util.Util;
 
 import static android.content.Context.WINDOW_SERVICE;
@@ -121,8 +123,9 @@ public class UserInterface {
             @Override
             public void onClick(View view) {
                 if (running()) {
-                    new Window(SystemOverlay.service).create();
+//                    new Window(SystemOverlay.service).create();
                     UI.remove();
+                    Contact.retrieveContacts(new ArrayList<Contact>());
                 }
             }
         });

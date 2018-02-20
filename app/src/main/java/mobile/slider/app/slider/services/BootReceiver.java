@@ -6,6 +6,7 @@ package mobile.slider.app.slider.services;
 
 
         import mobile.slider.app.slider.settings.SettingsWriter;
+        import mobile.slider.app.slider.ui.Setup;
         import mobile.slider.app.slider.ui.Slider;
         import mobile.slider.app.slider.util.IntentExtra;
 
@@ -16,7 +17,7 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context con, Intent intent) {
         if (SystemOverlay.service == null) {
             SettingsWriter.init(con);
-            if (Slider.canUseOverlay(con)) {
+            if (Setup.hasAllReqPermissions(con)) {
                 Intent i = new Intent(con, Slider.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 i.putExtra(IntentExtra.SAFE_REBOOT_SERVICE,true);

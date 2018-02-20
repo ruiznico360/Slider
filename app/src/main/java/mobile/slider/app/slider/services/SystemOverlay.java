@@ -7,47 +7,25 @@ import android.app.Service;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.PixelFormat;
-import android.graphics.Rect;
-import android.graphics.Shader;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RectShape;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
-import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.v7.app.NotificationCompat;
-import android.support.v7.widget.AppCompatImageView;
-import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 
 import java.util.ArrayList;
 
 import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.content.SView.SWindowLayout;
 import mobile.slider.app.slider.model.floater.Floater;
 import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.settings.SettingsWriter;
-import mobile.slider.app.slider.settings.SettingsUtil;
-import mobile.slider.app.slider.settings.resources.FloaterIcon;
-import mobile.slider.app.slider.settings.resources.FloaterUpdate;
-import mobile.slider.app.slider.settings.resources.WindowGravity;
-import mobile.slider.app.slider.ui.Slider;
+import mobile.slider.app.slider.ui.Setup;
 import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.ToastMessage;
@@ -73,7 +51,7 @@ public class SystemOverlay extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (Slider.canUseOverlay(this)) {
+        if (Setup.hasAllReqPermissions(this)) {
             super.onCreate();
             processIntent(intent);
             startInForeground();
