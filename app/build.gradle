@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-
     defaultConfig {
         applicationId "mobile.slider.app.slider"
         minSdkVersion 15
@@ -10,8 +9,8 @@ android {
         versionCode 1
         versionName "1.0"
     }
-    signingConfigs{
-        key{
+    signingConfigs {
+        key {
             keyAlias 'slideitkeystore'
             keyPassword 'password'
             storeFile file('C:\\Users\\Nicolas\\Documents\\Android\\Slider\\keystoretest.jks')
@@ -19,10 +18,11 @@ android {
         }
     }
     buildTypes {
-        debug{
+        debug {
             signingConfig signingConfigs.key
         }
     }
+    buildToolsVersion '25.0.2'
 }
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')

@@ -14,6 +14,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.services.SystemOverlay;
+import mobile.slider.app.slider.util.Util;
 
 public class Setup extends Activity {
     public static final int SYSTEM_ALERT_WINDOW_CODE = 1;
@@ -60,10 +62,12 @@ public class Setup extends Activity {
 
     public void requestReadContactsWindow() {
         if (Build.VERSION.SDK_INT >= 23) {
-            if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-                requestPermissions(new String[]{READ_CONTACTS}, READ_CONTACTS_CODE);
-            } else {
-                requestPermissions(new String[]{READ_CONTACTS}, READ_CONTACTS_CODE);
+            if (checkSelfPermission(READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
+                    requestPermissions(new String[]{READ_CONTACTS}, READ_CONTACTS_CODE);
+                } else {
+                    requestPermissions(new String[]{READ_CONTACTS}, READ_CONTACTS_CODE);
+                }
             }
         }
     }
@@ -75,11 +79,11 @@ public class Setup extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (Build.VERSION.SDK_INT >= 23) {
             if (requestCode == SYSTEM_ALERT_WINDOW_CODE) {
-                if (canReadContacts(this)) {
-                    finish();
-                    Intent i = new Intent(this, Slider.class);
-                    startActivity(i);
+                if (canUseOverlay(this)) {
+                    Util.log("yup");
+                    requestReadContactsWindow();
                 }else {
+                    Util.log("not");
                     retryButton.setVisibility(View.VISIBLE);
                     retryButton.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -90,22 +94,27 @@ public class Setup extends Activity {
                     permissionDenied.setText("Drawing over other apps is required for the functionality of the app. Please allow this by pressing retry.");
                     permissionDenied.setVisibility(View.VISIBLE);
                 }
-            }else if (requestCode == READ_CONTACTS_CODE) {
-                if (hasAllReqPermissions(this)) {
-                    finish();
-                    Intent i = new Intent(this, Slider.class);
-                    startActivity(i);
-                }else{
-                    retryButton.setVisibility(View.VISIBLE);
-                    retryButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            requestSystemAlertWindow();
-                        }
-                    });
-                    permissionDenied.setText("Reading contacts is required for this app!");
-                    permissionDenied.setVisibility(View.VISIBLE);                }
             }
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == READ_CONTACTS_CODE) {
+            Util.log("howdy");
+            if (hasAllReqPermissions(this)) {
+                finish();
+                Intent i = new Intent(this, Slider.class);
+                startActivity(i);
+            }else{
+                retryButton.setVisibility(View.VISIBLE);
+                retryButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        requestReadContactsWindow();
+                    }
+                });
+                permissionDenied.setText("Reading contacts is required for this app!");
+                permissionDenied.setVisibility(View.VISIBLE);                }
         }
     }
 }
