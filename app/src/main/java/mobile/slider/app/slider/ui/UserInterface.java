@@ -123,7 +123,7 @@ public class UserInterface {
             @Override
             public void onClick(View view) {
                 if (running()) {
-//                    new Window(SystemOverlay.service).create();
+                    new Window(SystemOverlay.service).create();
                     UI.remove();
                     Contact.retrieveContacts(new ArrayList<Contact>());
                 }
