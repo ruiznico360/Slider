@@ -16,6 +16,7 @@ public class Slider extends Activity {
             checkForServiceEnabled();
             finish();
         }else{
+            terminateInvalidService();
             finish();
             startActivity(new Intent(this, Setup.class));
         }
@@ -28,8 +29,14 @@ public class Slider extends Activity {
             }else {
                 SystemOverlay.start(getBaseContext(), IntentExtra.FROM_UI);
             }
-        } else {
+        }else {
             UserInterface.launchUI();
+        }
+    }
+
+    public void terminateInvalidService() {
+        if (SystemOverlay.service != null) {
+            SystemOverlay.service.stopSelf();
         }
     }
 }
