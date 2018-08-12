@@ -39,11 +39,12 @@ import mobile.slider.app.slider.util.Util;
 
 public class Floater extends SView {
     public FloaterController floaterMovement;
-    public int currentOrientation;
+    public int currentOrientation, currentVisibility;
     public Runnable deviceStateRunnable;
 
     public Floater(ImageView overlayFloater, RelativeLayout container, int visibility) {
         super(overlayFloater, new SWindowLayout(container));
+        currentVisibility = visibility;
         container.setVisibility(visibility);
 
         this.floaterMovement = new FloaterController(SystemOverlay.service);
@@ -147,11 +148,15 @@ public class Floater extends SView {
 
     }
 
-    public void setVisibility(int visibility) {
-        container.layout.setVisibility(visibility);
+    private void updateVisibility() {
+        container.layout.setVisibility(currentVisibility);
+    }
+
+    private void setVisibility(int visibility) {
+        currentVisibility = visibility;
     }
     public int getVisibility() {
-        return container.layout.getVisibility();
+        return currentVisibility;
     }
     public class FloaterController {
         public Handler longPressListener;
@@ -335,6 +340,7 @@ public class Floater extends SView {
     }
     public void hideFloater() {
         floaterMovement.enableTouch(false);
+        setVisibility(View.INVISIBLE);
         AnimationSet set = new AnimationSet(true);
         set.setFillEnabled(true);
         Animation a = AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.fade_out);
@@ -353,7 +359,7 @@ public class Floater extends SView {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                setVisibility(View.INVISIBLE);
+                updateVisibility();
             }
 
             @Override
@@ -365,6 +371,7 @@ public class Floater extends SView {
     }
     public void showFloater() {
         setVisibility(View.VISIBLE);
+        updateVisibility();
         AnimationSet set = new AnimationSet(true);
         set.setFillEnabled(true);
         Animation a = AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.fade_in);
