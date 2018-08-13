@@ -191,6 +191,7 @@ public class SystemOverlay extends Service {
         public ArrayList<Runnable> tasks = new ArrayList<>();
 
         public void start() {
+            //add window hider
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
