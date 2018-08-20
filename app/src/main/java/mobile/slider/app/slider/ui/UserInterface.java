@@ -301,7 +301,7 @@ public class UserInterface {
             mainLayout.updateViewLayout(logo, params);
 
             uiSelector.setBackgroundColor(Color.MAGENTA);
-            uiSelector.setAdapter();
+//            uiSelector.setAdapter();
             uiSelector.addView(quickApps);
             uiSelector.addView(phoneApps);
             params = (RelativeLayout.LayoutParams) uiSelector.getLayoutParams();
