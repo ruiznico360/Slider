@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
@@ -32,10 +34,13 @@ import static android.content.Context.WINDOW_SERVICE;
 
 public class UserInterface {
     public static UserInterface UI;
+
+    public float WUNIT, HUNIT;
     public Context c;
     public Runnable deviceStateRunnable;
     public SWindowLayout container;
     public SView inner;
+    public MainUI mainUI;
 
     public UserInterface(Context c) {
         this.c = c;
@@ -58,8 +63,12 @@ public class UserInterface {
         int size;
         if (Util.screenHeight() > Util.screenWidth()) {
             size = Util.screenWidth() / 5;
+            HUNIT = Util.screenHeight() / 100;
+            WUNIT = size / 100f;
         }else{
             size = Util.screenHeight() / 5;
+            HUNIT = Util.screenWidth() / 100;
+            WUNIT = size / 100f;
         }
 
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams();
@@ -97,6 +106,7 @@ public class UserInterface {
         }
         container = new SWindowLayout(new UIContainer(c));
         inner = new SView(((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.ui, null), container);
+
         inner.view.findViewById(R.id.ui_main_layout).setBackgroundColor(SettingsUtil.getBackgroundColor());
 
         container.layout.setOnTouchListener(new View.OnTouchListener() {
@@ -119,25 +129,28 @@ public class UserInterface {
                 return false;
             }
         });
-        inner.view.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (running()) {
-                    new Window(SystemOverlay.service).create();
-                    UI.remove();
-                    Contact.retrieveContacts(new ArrayList<Contact>());
-                }
-            }
-        });
-        inner.view.findViewById(R.id.button).setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                if (running()) {
-                    SettingsUtil.setBackgroundColor(Color.rgb(new Random().nextInt(255),new Random().nextInt(255),new Random().nextInt(255)));
-                }
-                return true;
-            }
-        });
+//        inner.view.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (running()) {
+//                    new Window(SystemOverlay.service).create();
+//                    UI.remove();
+//                    Contact.retrieveContacts(new ArrayList<Contact>());
+//                }
+//            }
+//        });
+//        inner.view.findViewById(R.id.button).setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View view) {
+//                if (running()) {
+//                    SettingsUtil.setBackgroundColor(Color.rgb(new Random().nextInt(255),new Random().nextInt(255),new Random().nextInt(255)));
+//                }
+//                return true;
+//            }
+//        });
+        mainUI = new MainUI();
+        mainUI.setup();
+
         container.plot(params);
         inner.plot();
         container.layout.setVisibility(View.VISIBLE);
@@ -241,6 +254,64 @@ public class UserInterface {
                 return true;
             }
             return super.dispatchKeyEvent(event);
+        }
+    }
+    public class MainUI {
+        public ListView uiSelector, quickApps, phoneApps;
+        public ImageView logo, uiPos, uiIndicatorText;
+        public RelativeLayout mainLayout;
+
+        public void setup() {
+            uiSelector = new ListView(c);
+            quickApps = new ListView(c);
+            phoneApps = new ListView(c);
+            logo = new ImageView(c);
+            uiPos = new ImageView(c);
+            uiIndicatorText = new ImageView(c);
+            mainLayout = inner.view.findViewById(R.id.ui_main_layout);
+
+
+            mainLayout.addView(uiSelector);
+            mainLayout.addView(uiPos);
+            mainLayout.addView(uiIndicatorText);
+            mainLayout.addView(logo);
+
+            uiIndicatorText.setBackgroundColor(Color.RED);
+            Util.generateViewId(uiIndicatorText);
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) uiIndicatorText.getLayoutParams();
+            params.topMargin = (int) (HUNIT * 5);
+            params.width = (int) (WUNIT * 100);
+            params.height = (int) (HUNIT * 10);
+            mainLayout.updateViewLayout(uiIndicatorText, params);
+
+            uiPos.setBackgroundColor(Color.YELLOW);
+            Util.generateViewId(uiPos);
+            params = (RelativeLayout.LayoutParams) uiPos.getLayoutParams();
+            params.addRule(RelativeLayout.BELOW, uiIndicatorText.getId());
+            params.width = (int) (WUNIT * 100);
+            params.height = (int) (HUNIT * 10);
+            mainLayout.updateViewLayout(uiPos, params);
+
+            logo.setBackgroundColor(Color.GREEN);
+            Util.generateViewId(logo);
+            params = (RelativeLayout.LayoutParams) logo.getLayoutParams();
+            params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            params.width = (int) (WUNIT * 100);
+            params.height = (int) (HUNIT * 10);
+            mainLayout.updateViewLayout(logo, params);
+
+            uiSelector.setBackgroundColor(Color.MAGENTA);
+            uiSelector.setAdapter();
+            uiSelector.addView(quickApps);
+            uiSelector.addView(phoneApps);
+            params = (RelativeLayout.LayoutParams) uiSelector.getLayoutParams();
+            params.addRule(RelativeLayout.BELOW, uiPos.getId());
+            params.addRule(RelativeLayout.ABOVE, logo.getId());
+            params.width = (int) (WUNIT * 100);
+            mainLayout.updateViewLayout(uiSelector, params);
+
+            quickApps.setBackgroundColor(Color.RED);
+            phoneApps.setBackgroundColor(Color.CYAN);
         }
     }
 }
