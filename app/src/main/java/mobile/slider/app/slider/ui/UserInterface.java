@@ -5,24 +5,33 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ArrayAdapter;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.SView.SView;
 import mobile.slider.app.slider.content.SView.SWindowLayout;
+import mobile.slider.app.slider.content.fragments.UIFragment;
 import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
@@ -257,12 +266,13 @@ public class UserInterface {
         }
     }
     public class MainUI {
-        public ListView uiSelector, quickApps, phoneApps;
+        public ViewPager uiSelector;
+        public ListView quickApps, phoneApps;
         public ImageView logo, uiPos, uiIndicatorText;
         public RelativeLayout mainLayout;
 
         public void setup() {
-            uiSelector = new ListView(c);
+            uiSelector = new ViewPager(c);
             quickApps = new ListView(c);
             phoneApps = new ListView(c);
             logo = new ImageView(c);
@@ -300,18 +310,20 @@ public class UserInterface {
             params.height = (int) (HUNIT * 10);
             mainLayout.updateViewLayout(logo, params);
 
+            quickApps.setBackgroundColor(Color.RED);
+            phoneApps.setBackgroundColor(Color.CYAN);
+            ArrayList<View> pages = new ArrayList<>();
+            pages.add(quickApps);
+            pages.add(phoneApps);
+
             uiSelector.setBackgroundColor(Color.MAGENTA);
-//            uiSelector.setAdapter();
-            uiSelector.addView(quickApps);
-            uiSelector.addView(phoneApps);
             params = (RelativeLayout.LayoutParams) uiSelector.getLayoutParams();
             params.addRule(RelativeLayout.BELOW, uiPos.getId());
             params.addRule(RelativeLayout.ABOVE, logo.getId());
             params.width = (int) (WUNIT * 100);
             mainLayout.updateViewLayout(uiSelector, params);
 
-            quickApps.setBackgroundColor(Color.RED);
-            phoneApps.setBackgroundColor(Color.CYAN);
+            uiSelector.setAdapter(new UIFragment.Adapter(c, pages));
         }
     }
 }

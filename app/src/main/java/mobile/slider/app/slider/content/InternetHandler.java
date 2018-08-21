@@ -3,40 +3,30 @@ package mobile.slider.app.slider.content;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.Html;
-import android.util.AttributeSet;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONException;
 
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.content.fragments.ContentFragment;
 import mobile.slider.app.slider.internetutil.HttpClient;
 import mobile.slider.app.slider.internetutil.SearchResult;
 import mobile.slider.app.slider.util.Util;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
