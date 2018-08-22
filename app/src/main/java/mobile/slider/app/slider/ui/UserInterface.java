@@ -77,11 +77,11 @@ public class UserInterface {
     public void setup() {
         int size;
         if (Util.screenHeight() > Util.screenWidth()) {
-            size = Util.screenWidth() / 5;
+            size = Util.screenWidth() / 4;
             HUNIT = Util.screenHeight() / 100;
             WUNIT = size / 100f;
         }else{
-            size = Util.screenHeight() / 5;
+            size = Util.screenHeight() / 4;
             HUNIT = Util.screenWidth() / 100;
             WUNIT = size / 100f;
         }
@@ -299,7 +299,7 @@ public class UserInterface {
             uiIndicatorText.setImageDrawable(ImageUtil.getDrawable(R.drawable.quick_apps_title));
             Util.generateViewId(uiIndicatorText);
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) uiIndicatorText.getLayoutParams();
-            params.topMargin = (int) (HUNIT * 5);
+            params.topMargin = (int) (HUNIT * 3);
             params.width = (int) (WUNIT * 100);
             params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.quick_apps_title), params.width);
             mainLayout.updateViewLayout(uiIndicatorText, params);
@@ -348,24 +348,13 @@ public class UserInterface {
 
                 @Override
                 public void onPageSelected(int position) {
-//                    Util.log("position vs current item" + uiSelector.getCurrentItem() + " " + position + " fin");
-//                    if (position != 1) {
-//                        ArrayList<View> oldPages = ((UIFragment.Adapter) uiSelector.getAdapter()).pages;
-//                        ArrayList<View> newPages = new ArrayList<>();
-//                        if (uiSelector.getCurrentItem() == 0) {
-//                            newPages.add(oldPages.get(1));
-//                            newPages.add(oldPages.get(0));
-//                            newPages.add(oldPages.get(2));
-//                        } else if (uiSelector.getCurrentItem() == 2) {
-//                            newPages.add(oldPages.get(1));
-//                            newPages.add(oldPages.get(2));
-//                            newPages.add(oldPages.get(0));
-//                        }
-//                        ((UIFragment.Adapter) uiSelector.getAdapter()).pages = newPages;
-//                        uiSelector.getAdapter().notifyDataSetChanged();
-//                        uiSelector.invalidate();
-//                        uiSelector.setCurrentItem(1, false);
-//                    }
+                    if (position == 1) {
+                        ImageUtil.setImageDrawable(uiPos, R.drawable.main_ui_indicator_left);
+                    }else if (position == 2) {
+                        ImageUtil.setImageDrawable(uiPos, R.drawable.main_ui_indicator_center);
+                    }else if (position == 3) {
+                        ImageUtil.setImageDrawable(uiPos, R.drawable.main_ui_indicator_right);
+                    }
                 }
 
                 @Override
