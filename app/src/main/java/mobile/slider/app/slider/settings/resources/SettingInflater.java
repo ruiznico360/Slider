@@ -26,7 +26,7 @@ import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.settings.ViewIdGenerator;
 import mobile.slider.app.slider.ui.SettingsActivity;
-import mobile.slider.app.slider.util.Util;
+import mobile.slider.app.slider.util.ImageUtil;
 
 public class SettingInflater {
     private SettingsActivity act;
@@ -451,9 +451,9 @@ public class SettingInflater {
                 ly.setOrientation(LinearLayout.HORIZONTAL);
                 ly.setGravity(Gravity.CENTER_VERTICAL);
 
-                dots.setImageDrawable(Util.getDrawable(R.drawable.floater_dots));
-                translucent.setImageDrawable(Util.getDrawable(R.drawable.floater_translucent_icon));
-                invisible.setImageDrawable(Util.getDrawable(R.drawable.floater_invisible));
+                dots.setImageDrawable(ImageUtil.getDrawable(R.drawable.floater_dots));
+                translucent.setImageDrawable(ImageUtil.getDrawable(R.drawable.floater_translucent_icon));
+                invisible.setImageDrawable(ImageUtil.getDrawable(R.drawable.floater_invisible));
 
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.WRAP_CONTENT,1);
                 params.setMargins(20,0,20,0);

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
-import android.os.Handler;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,10 +12,6 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
-import android.view.animation.BounceInterpolator;
-import android.view.animation.Interpolator;
-import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -24,6 +19,7 @@ import java.util.ArrayList;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.settings.SettingsUtil;
+import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
@@ -323,7 +319,7 @@ public class Window {
             resizeButton = new ImageView(c);
             resizeArea = new ImageView(c);
 
-            Util.setImageDrawable(minimizedIcon, R.drawable.window_icon);
+            ImageUtil.setImageDrawable(minimizedIcon, R.drawable.window_icon);
             final WindowManager.LayoutParams minimizedIconParams = new WindowManager.LayoutParams(SettingsUtil.getFloaterSize(),
                     SettingsUtil.getFloaterSize(), WindowManager.LayoutParams.TYPE_PHONE,
                     WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
@@ -386,10 +382,10 @@ public class Window {
             resizeButtonParams.gravity = Gravity.TOP | Gravity.LEFT;
             resizeButtonParams.y = windowParams.y - resizeButtonParams.height;
             resizeButtonParams.x = windowParams.x + windowParams.width;
-            Util.setImageDrawable(resizeButton, R.drawable.window_resize_icon);
+            ImageUtil.setImageDrawable(resizeButton, R.drawable.window_resize_icon);
             ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE)).addView(resizeButton, resizeButtonParams);
 
-            Util.setImageDrawable(resizeArea, R.drawable.window_resize_area_icon);
+            ImageUtil.setImageDrawable(resizeArea, R.drawable.window_resize_area_icon);
             final WindowManager.LayoutParams resizeAreaParams = new WindowManager.LayoutParams(Util.screenWidth(),
                     Util.screenHeight(), WindowManager.LayoutParams.TYPE_PHONE,
                     WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
@@ -426,7 +422,7 @@ public class Window {
             statusBarParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
             innerWindow.updateViewLayout(statusBar, statusBarParams);
 
-            Util.setImageDrawable(exitButton, R.drawable.window_close_icon);
+            ImageUtil.setImageDrawable(exitButton, R.drawable.window_close_icon);
             Util.generateViewId(exitButton);
             exitButton.setOnTouchListener(listener.windowButton(new Runnable() {
                 @Override
@@ -440,7 +436,7 @@ public class Window {
             exitButtonParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             statusBar.updateViewLayout(exitButton, exitButtonParams);
 
-            Util.setImageDrawable(minimizeButton, R.drawable.window_minimize_icon);
+            ImageUtil.setImageDrawable(minimizeButton, R.drawable.window_minimize_icon);
             minimizeButton.setOnTouchListener(listener.windowButton(new Runnable() {
                 @Override
                 public void run() {

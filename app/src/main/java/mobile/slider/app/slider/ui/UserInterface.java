@@ -5,7 +5,11 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.media.Image;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.view.Gravity;
@@ -31,12 +35,14 @@ import java.util.Random;
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.SView.SView;
 import mobile.slider.app.slider.content.SView.SWindowLayout;
+import mobile.slider.app.slider.content.animations.ZoomAnimation;
 import mobile.slider.app.slider.content.fragments.UIFragment;
 import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.util.Contact;
+import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;
 
 import static android.content.Context.WINDOW_SERVICE;
@@ -267,7 +273,7 @@ public class UserInterface {
     }
     public class MainUI {
         public ViewPager uiSelector;
-        public ListView quickApps, phoneApps;
+        public ListView phoneApps, quickApps, windowApps, dummyPhoneApps, dummyWindowApps;
         public ImageView logo, uiPos, uiIndicatorText;
         public RelativeLayout mainLayout;
 
@@ -275,6 +281,10 @@ public class UserInterface {
             uiSelector = new ViewPager(c);
             quickApps = new ListView(c);
             phoneApps = new ListView(c);
+            windowApps = new ListView(c);
+            dummyPhoneApps = new ListView(c);
+            dummyWindowApps = new ListView(c);
+
             logo = new ImageView(c);
             uiPos = new ImageView(c);
             uiIndicatorText = new ImageView(c);
@@ -286,44 +296,124 @@ public class UserInterface {
             mainLayout.addView(uiIndicatorText);
             mainLayout.addView(logo);
 
-            uiIndicatorText.setBackgroundColor(Color.RED);
+            uiIndicatorText.setImageDrawable(ImageUtil.getDrawable(R.drawable.quick_apps_title));
             Util.generateViewId(uiIndicatorText);
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) uiIndicatorText.getLayoutParams();
             params.topMargin = (int) (HUNIT * 5);
             params.width = (int) (WUNIT * 100);
-            params.height = (int) (HUNIT * 10);
+            params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.quick_apps_title), params.width);
             mainLayout.updateViewLayout(uiIndicatorText, params);
 
-            uiPos.setBackgroundColor(Color.YELLOW);
+            uiPos.setImageDrawable(ImageUtil.getDrawable(R.drawable.main_ui_indicator_center));
             Util.generateViewId(uiPos);
             params = (RelativeLayout.LayoutParams) uiPos.getLayoutParams();
             params.addRule(RelativeLayout.BELOW, uiIndicatorText.getId());
             params.width = (int) (WUNIT * 100);
-            params.height = (int) (HUNIT * 10);
+            params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.main_ui_indicator_center), params.width);
             mainLayout.updateViewLayout(uiPos, params);
 
-            logo.setBackgroundColor(Color.GREEN);
+            logo.setImageDrawable(ImageUtil.getDrawable(R.drawable.app_logo));
             Util.generateViewId(logo);
             params = (RelativeLayout.LayoutParams) logo.getLayoutParams();
             params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
             params.width = (int) (WUNIT * 100);
-            params.height = (int) (HUNIT * 10);
+            params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.app_logo), params.width);
             mainLayout.updateViewLayout(logo, params);
 
-            quickApps.setBackgroundColor(Color.RED);
+            dummyWindowApps.setBackgroundColor(Color.GREEN);
             phoneApps.setBackgroundColor(Color.CYAN);
-            ArrayList<View> pages = new ArrayList<>();
-            pages.add(quickApps);
-            pages.add(phoneApps);
+            quickApps.setBackgroundColor(Color.RED);
+            windowApps.setBackgroundColor(Color.GREEN);
+            dummyPhoneApps.setBackgroundColor(Color.CYAN);
 
-            uiSelector.setBackgroundColor(Color.MAGENTA);
+            ArrayList<View> pages = new ArrayList<>();
+            pages.add(dummyWindowApps);
+            pages.add(phoneApps);
+            pages.add(quickApps);
+            pages.add(windowApps);
+            pages.add(dummyPhoneApps);
+
             params = (RelativeLayout.LayoutParams) uiSelector.getLayoutParams();
             params.addRule(RelativeLayout.BELOW, uiPos.getId());
             params.addRule(RelativeLayout.ABOVE, logo.getId());
             params.width = (int) (WUNIT * 100);
             mainLayout.updateViewLayout(uiSelector, params);
 
+            uiSelector.setBackgroundColor(Color.MAGENTA);
+            uiSelector.setOverScrollMode(View.OVER_SCROLL_NEVER);
             uiSelector.setAdapter(new UIFragment.Adapter(c, pages));
+            uiSelector.setCurrentItem(2, false);
+            uiSelector.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                private float mLastPositionOffset = 0f;
+
+                @Override
+                public void onPageSelected(int position) {
+//                    Util.log("position vs current item" + uiSelector.getCurrentItem() + " " + position + " fin");
+//                    if (position != 1) {
+//                        ArrayList<View> oldPages = ((UIFragment.Adapter) uiSelector.getAdapter()).pages;
+//                        ArrayList<View> newPages = new ArrayList<>();
+//                        if (uiSelector.getCurrentItem() == 0) {
+//                            newPages.add(oldPages.get(1));
+//                            newPages.add(oldPages.get(0));
+//                            newPages.add(oldPages.get(2));
+//                        } else if (uiSelector.getCurrentItem() == 2) {
+//                            newPages.add(oldPages.get(1));
+//                            newPages.add(oldPages.get(2));
+//                            newPages.add(oldPages.get(0));
+//                        }
+//                        ((UIFragment.Adapter) uiSelector.getAdapter()).pages = newPages;
+//                        uiSelector.getAdapter().notifyDataSetChanged();
+//                        uiSelector.invalidate();
+//                        uiSelector.setCurrentItem(1, false);
+//                    }
+                }
+
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//
+                }
+
+                @Override
+                public void onPageScrollStateChanged (int state) {
+                    if (state == ViewPager.SCROLL_STATE_IDLE) {
+                        int curr = uiSelector.getCurrentItem();
+                        int lastReal = uiSelector.getAdapter().getCount() - 2;
+                        if (curr == 0) {
+                            uiSelector.setCurrentItem(lastReal, false);
+                        } else if (curr > lastReal) {
+                            uiSelector.setCurrentItem(1, false);
+                        }
+                    }
+                }
+            });
+//            uiSelector.setPageTransformer(false, new ViewPager.PageTransformer() {
+//                private static final float MIN_SCALE = 0.8f;
+//                private static final float MIN_ALPHA = 0.5f;
+//
+//                @Override
+//                public void transformPage(View page, float position) {
+//
+//                    if (position <-1){  // [-Infinity,-1)
+//                        // This page is way off-screen to the left.
+//                        page.setAlpha(1f);
+//                        page.setScaleX(1f);
+//                        page.setScaleY(1f);
+//                    }
+//                    else if (position <=1){ // [-1,1]
+//
+//                        page.setScaleX(Math.max(MIN_SCALE,1-Math.abs(position)));
+//                        page.setScaleY(Math.max(MIN_SCALE,1-Math.abs(position)));
+//                        page.setAlpha(Math.max(MIN_ALPHA,1-Math.abs(position)));
+//
+//                    }
+//                    else {  // (1,+Infinity]
+//                        // This page is way off-screen to the right.
+//                        page.setAlpha(1f);
+//                        page.setScaleX(1f);
+//                        page.setScaleY(1f);
+//                    }
+//                }
+//            });
         }
     }
 }

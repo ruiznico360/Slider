@@ -19,21 +19,19 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
-import android.view.animation.BounceInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.SView.SView;
 import mobile.slider.app.slider.content.SView.SWindowLayout;
-import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
-import mobile.slider.app.slider.settings.Setting;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.FloaterUpdate;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.ui.UserInterface;
+import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
@@ -117,11 +115,11 @@ public class Floater extends SView {
         if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.DOTS)) {
             width = ((SettingsUtil.getFloaterSize() / (200 / 50)));
             params.width =  (SettingsUtil.getFloaterSize()) / (100 / 50);
-            Util.setImageDrawable(floater, R.drawable.floater_dots);
+            ImageUtil.setImageDrawable(floater, R.drawable.floater_dots);
             floater.setAlpha(0.85f);
         }else if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.TRANSLUCENT)) {
             width = ((SettingsUtil.getFloaterSize() / (515 / 50)));
-            Util.setImageDrawable(floater, R.drawable.floater_translucent);
+            ImageUtil.setImageDrawable(floater, R.drawable.floater_translucent);
             floater.setAlpha(0.7f);
         }else if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.INVISIBLE)) {
             width = (SettingsUtil.getFloaterSize() / 5);
@@ -426,8 +424,8 @@ public class Floater extends SView {
             d.getPaint().setShader(new LinearGradient(0,0,0,params.height, Color.TRANSPARENT, Color.BLACK, Shader.TileMode.CLAMP));
             ((ImageView)trash.view).setScaleType(ImageView.ScaleType.FIT_XY);
             ((ImageView)trash.view).setAdjustViewBounds(true);
-            Util.setBackground(view, d);
-            Util.setImageDrawable(((ImageView)trash.view), R.drawable.garbage);
+            ImageUtil.setBackground(view, d);
+            ImageUtil.setImageDrawable(((ImageView)trash.view), R.drawable.garbage);
 
             Layout editor = openLayout();
             editor.setWidth(params.width);

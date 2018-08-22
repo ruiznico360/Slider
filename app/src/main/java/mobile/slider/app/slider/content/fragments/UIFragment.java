@@ -7,10 +7,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -41,12 +43,15 @@ public class UIFragment extends Fragment {
             this.pages = pages;
             mContext = context;
         }
-
         @Override
         public Object instantiateItem(ViewGroup collection, int position) {
             View page = pages.get(position);
             LayoutInflater inflater = LayoutInflater.from(mContext);
             ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.ui_fragment, collection, false);
+
+            if (page.getParent() != null) {
+                ((RelativeLayout)page.getParent()).removeView(page);
+            }
 
             RelativeLayout uiFragment = layout.findViewById(R.id.ui_fragment);
             uiFragment.addView(page);
@@ -54,6 +59,7 @@ public class UIFragment extends Fragment {
             params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
             params.height = RelativeLayout.LayoutParams.MATCH_PARENT;
             uiFragment.updateViewLayout(page, params);
+
 
             collection.addView(layout);
             return layout;
@@ -68,25 +74,10 @@ public class UIFragment extends Fragment {
         public int getCount() {
             return pages.size();
         }
-
         @Override
         public boolean isViewFromObject(View view, Object object) {
             return view == object;
         }
     }
-    public enum ModelObject {
 
-        RED(R.layout.ui_fragment),
-        BLUE(R.layout.ui_fragment),
-        GREEN( R.layout.ui_fragment);
-
-        private int mLayoutResId;
-
-        ModelObject(int layoutResId) {
-            mLayoutResId = layoutResId;
-        }
-        public int getLayoutResId() {
-            return mLayoutResId;
-        }
-    }
 }

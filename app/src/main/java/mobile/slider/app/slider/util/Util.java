@@ -81,23 +81,7 @@ public class Util {
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
         return dm.heightPixels;
     }
-    public static void setImageDrawable(ImageView view, int id) {
-        view.setImageDrawable(getDrawable(id));
-    }
-    public static void setBackground(View view, int id) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            view.setBackground(getDrawable(id));
-        }else{
-            view.setBackgroundResource(id);
-        }
-    }
-    public static void setBackground(View view, Drawable d) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            view.setBackground(d);
-        }else{
-            view.setBackgroundDrawable(d);
-        }
-    }
+
     public static void logM(Object... args) {
         String s = "MULTI-LOG";
         for (Object j : args) {
@@ -108,23 +92,7 @@ public class Util {
     public static void log(Object s) {
         Log.d("Slider", s + "");
     }
-    public static ShapeDrawable backgroundGradientTop(View container) {
-        ShapeDrawable d = new ShapeDrawable(new RectShape());
-        d.getPaint().setShader(new LinearGradient(0,0,0,container.getLayoutParams().height + 10, Color.parseColor("#303F9F"), SettingsUtil.getBackgroundColor(), Shader.TileMode.REPEAT));
-        return d;
-    }
-    public static ShapeDrawable backgroundGradientBottom(View container) {
-        ShapeDrawable d = new ShapeDrawable(new RectShape());
-        d.getPaint().setShader(new LinearGradient(0,0,0,container.getLayoutParams().height + 10, SettingsUtil.getBackgroundColor(), Color.parseColor("#303F9F"), Shader.TileMode.REPEAT));
-        return d;
-    }
-    public static Drawable getDrawable(int id) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            return SystemOverlay.service.getDrawable(id);
-        }else{
-            return SystemOverlay.service.getResources().getDrawable(id);
-        }
-    }
+
     public static void sendNotification(Context c, String title, String text) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(c).setSmallIcon(R.drawable.floater_dots).setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).setContentTitle(title).setContentText(text);
         int NOTIFICATION_ID = new Random().nextInt(5000);

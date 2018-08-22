@@ -29,9 +29,9 @@ public class ToastMessage {
         final ImageView text = new ImageView(c);
 
         if (toastMsg.equals(ToastMessage.HIDING_FLOATER)) {
-            Util.setImageDrawable(text, R.drawable.toast_hiding_floater);
+            ImageUtil.setImageDrawable(text, R.drawable.toast_hiding_floater);
         }else if (toastMsg.equals(ToastMessage.HOWDY)) {
-            Util.setImageDrawable(text, R.drawable.toast_howdy);
+            ImageUtil.setImageDrawable(text, R.drawable.toast_howdy);
         }
 
         int size;
