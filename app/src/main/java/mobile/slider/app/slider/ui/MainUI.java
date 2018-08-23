@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 
 import java.util.ArrayList;
 
@@ -23,13 +24,13 @@ import mobile.slider.app.slider.util.Util;
 
 public class MainUI {
     public float WUNIT,HUNIT;
+    public int updateYourApps, updateMiniWindows;
     public SView inner;
     public Context c;
     public ViewPager uiSelector;
-    public ListView yourApps, quickApps, miniWindows, dummyYourApps, dummyMiniWindows;
+    public ScrollView yourApps, quickApps, miniWindows, dummyYourApps, dummyMiniWindows;
     public ImageView logo, uiPos, uiIndicatorText;
     public RelativeLayout mainLayout;
-    public MotionEvent updateMiniWindows, updateYourapps;
 
     public MainUI(float widthUnit, float heightUnit, Context context, SView inner) {
         this.WUNIT = widthUnit;
@@ -38,13 +39,19 @@ public class MainUI {
         this.inner = inner;
     }
 
+    public int wUnit(int percent) {
+        return (int)(WUNIT * percent);
+    }
+    public int hUnit(int percent) {
+        return (int)(HUNIT * percent);
+    }
     public void setup() {
         uiSelector = new ViewPager(c);
-        quickApps = new ListView(c);
-        yourApps = new ListView(c);
-        miniWindows = new ListView(c);
-        dummyYourApps = new ListView(c);
-        dummyMiniWindows = new ListView(c);
+        quickApps = new ScrollView(c);
+        yourApps = new ScrollView(c);
+        miniWindows = new ScrollView(c);
+        dummyYourApps = new ScrollView(c);
+        dummyMiniWindows = new ScrollView(c);
 
         logo = new ImageView(c);
         uiPos = new ImageView(c);
@@ -60,8 +67,8 @@ public class MainUI {
         uiIndicatorText.setImageDrawable(ImageUtil.getDrawable(R.drawable.quick_apps_title));
         Util.generateViewId(uiIndicatorText);
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) uiIndicatorText.getLayoutParams();
-        params.topMargin = (int) (HUNIT * 3);
-        params.width = (int) (WUNIT * 100);
+        params.topMargin = hUnit(3);
+        params.width = wUnit(100);
         params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.quick_apps_title), params.width);
         mainLayout.updateViewLayout(uiIndicatorText, params);
 
@@ -69,7 +76,7 @@ public class MainUI {
         Util.generateViewId(uiPos);
         params = (RelativeLayout.LayoutParams) uiPos.getLayoutParams();
         params.addRule(RelativeLayout.BELOW, uiIndicatorText.getId());
-        params.width = (int) (WUNIT * 100);
+        params.width = wUnit(100);
         params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.main_ui_indicator_center), params.width);
         mainLayout.updateViewLayout(uiPos, params);
 
@@ -77,7 +84,7 @@ public class MainUI {
         Util.generateViewId(logo);
         params = (RelativeLayout.LayoutParams) logo.getLayoutParams();
         params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        params.width = (int) (WUNIT * 100);
+        params.width = wUnit(100);
         params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.app_logo), params.width);
         mainLayout.updateViewLayout(logo, params);
 
@@ -97,7 +104,7 @@ public class MainUI {
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) uiSelector.getLayoutParams();
         params.addRule(RelativeLayout.BELOW, uiPos.getId());
         params.addRule(RelativeLayout.ABOVE, logo.getId());
-        params.width = (int) (WUNIT * 100);
+        params.width = wUnit(100);
         mainLayout.updateViewLayout(uiSelector, params);
 
         uiSelector.setBackgroundColor(Color.MAGENTA);
@@ -130,24 +137,21 @@ public class MainUI {
                     if (position == 1) {
                         ImageUtil.setImageDrawable(uiPos, R.drawable.main_ui_indicator_left);
                         ImageUtil.setImageDrawable(uiIndicatorText, R.drawable.your_apps_title);
-
-                        if (updateMiniWindows != null) {
-                            Util.log("miniwindows");
-                            dummyMiniWindows.dispatchTouchEvent(updateMiniWindows);
-                            updateMiniWindows = null;
-                        }
                     }else if (position == 2) {
                         ImageUtil.setImageDrawable(uiPos, R.drawable.main_ui_indicator_center);
                         ImageUtil.setImageDrawable(uiIndicatorText, R.drawable.quick_apps_title);
                     }else if (position == 3) {
                         ImageUtil.setImageDrawable(uiPos, R.drawable.main_ui_indicator_right);
                         ImageUtil.setImageDrawable(uiIndicatorText, R.drawable.mini_windows_title);
-
-                        if (updateYourapps != null) {
-                            Util.log("yourapps");
-                            dummyYourApps.dispatchTouchEvent(updateYourapps);
-                            updateYourapps = null;
-                        }
+                    }
+                }else if (state == ViewPager.SCROLL_STATE_SETTLING) {
+                    int position = uiSelector.getCurrentItem();
+                    if (position == 1) {
+                       Util.log("miniwindows");
+                        dummyMiniWindows.scrollTo(0,updateMiniWindows);
+                    }else if (position == 3) {
+                        Util.log("your apps");
+                        dummyYourApps.scrollTo(0,updateYourApps);
                     }
                 }
             }
@@ -188,61 +192,116 @@ public class MainUI {
         miniWindows.setBackgroundColor(Color.GREEN);
         dummyYourApps.setBackgroundColor(Color.CYAN);
 
-        ArrayList<View> data = new ArrayList<>();
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
-        data.add(new ImageView(c));
+        RelativeLayout l = new RelativeLayout(c);
+        ImageUtil.setBackground(l, R.drawable.garbage);
+        quickApps.addView(l);
+        ScrollView.LayoutParams params = (ScrollView.LayoutParams) l.getLayoutParams();
+        params.width = wUnit(100);
+        params.height = hUnit(200);
+        quickApps.updateViewLayout(l, params);
 
-        quickApps.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
-        quickApps.setDivider(null);
-        quickApps.setDividerHeight((int)HUNIT * 3);
+        l = new RelativeLayout(c);
+        ImageUtil.setBackground(l, R.drawable.garbage);
+        miniWindows.addView(l);
+        params = (ScrollView.LayoutParams) l.getLayoutParams();
+        params.width = wUnit(100);
+        params.height = hUnit(200);
+        miniWindows.updateViewLayout(l, params);
 
-        yourApps.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
-        yourApps.setDivider(null);
-        yourApps.setDividerHeight((int)HUNIT * 3);
+        l = new RelativeLayout(c);
+        ImageUtil.setBackground(l, R.drawable.garbage);
+        yourApps.addView(l);
+        params = (ScrollView.LayoutParams) l.getLayoutParams();
+        params.width = wUnit(100);
+        params.height = hUnit(200);
+        yourApps.updateViewLayout(l, params);
 
-        dummyMiniWindows.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
-        dummyMiniWindows.setDivider(null);
-        dummyMiniWindows.setDividerHeight((int)HUNIT * 3);
+        l = new RelativeLayout(c);
+        ImageUtil.setBackground(l, R.drawable.garbage);
+        dummyYourApps.addView(l);
+        params = (ScrollView.LayoutParams) l.getLayoutParams();
+        params.width = wUnit(100);
+        params.height = hUnit(200);
+        dummyYourApps.updateViewLayout(l, params);
 
-        dummyYourApps.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
-        dummyYourApps.setDivider(null);
-        dummyYourApps.setDividerHeight((int)HUNIT * 3);
+        l = new RelativeLayout(c);
+        ImageUtil.setBackground(l, R.drawable.garbage);
+        dummyMiniWindows.addView(l);
+        params = (ScrollView.LayoutParams) l.getLayoutParams();
+        params.width = wUnit(100);
+        params.height = hUnit(200);
+        dummyMiniWindows.updateViewLayout(l, params);
 
-        miniWindows.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
-        miniWindows.setDivider(null);
-        miniWindows.setDividerHeight((int)HUNIT * 3);
-
-
-        //try using scrollview
-        miniWindows.setOnScrollListener(new AbsListView.OnScrollListener() {
-
+        miniWindows.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-//                // onScroll will be called and there will be an infinite loop.
-//                // That's why i set a boolean value
-//                if (scrollState == SCROLL_STATE_TOUCH_SCROLL) {
-//                    isRightListEnabled = false;
-//                } else if (scrollState == SCROLL_STATE_IDLE) {
-//                    isRightListEnabled = true;
-//                }
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                updateMiniWindows = miniWindows.getScrollY();
+                return false;
             }
         });
+
+        yourApps.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                updateYourApps = yourApps.getScrollY();
+                return false;
+            }
+        });
+//        ArrayList<View> data = new ArrayList<>();
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//        data.add(new ImageView(c));
+//
+//        quickApps.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
+//        quickApps.setDivider(null);
+//        quickApps.setDividerHeight((int)HUNIT * 3);
+//
+//        yourApps.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
+//        yourApps.setDivider(null);
+//        yourApps.setDividerHeight((int)HUNIT * 3);
+//
+//        dummyMiniWindows.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
+//        dummyMiniWindows.setDivider(null);
+//        dummyMiniWindows.setDividerHeight((int)HUNIT * 3);
+//
+//        dummyYourApps.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
+//        dummyYourApps.setDivider(null);
+//        dummyYourApps.setDividerHeight((int)HUNIT * 3);
+//
+//        miniWindows.setAdapter(new MainUIListAdapter(data,c,(int) (WUNIT*100)));
+//        miniWindows.setDivider(null);
+//        miniWindows.setDividerHeight((int)HUNIT * 3);
+//
+//
+//        //try using scrollview
+//        miniWindows.setOnScrollListener(new AbsListView.OnScrollListener() {
+//
+//            @Override
+//            public void onScrollStateChanged(AbsListView view, int scrollState) {
+////                // onScroll will be called and there will be an infinite loop.
+////                // That's why i set a boolean value
+////                if (scrollState == SCROLL_STATE_TOUCH_SCROLL) {
+////                    isRightListEnabled = false;
+////                } else if (scrollState == SCROLL_STATE_IDLE) {
+////                    isRightListEnabled = true;
+////                }
+//            }
+//
+//            @Override
+//            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+//            }
+//        });
     }
 }
