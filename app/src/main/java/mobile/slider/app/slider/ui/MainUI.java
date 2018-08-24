@@ -6,19 +6,25 @@ import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Random;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.SView.SView;
 import mobile.slider.app.slider.content.adapters.MainUIAdapter;
 import mobile.slider.app.slider.content.adapters.MainUIListAdapter;
+import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;
 
@@ -88,7 +94,68 @@ public class MainUI {
         params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.app_logo), params.width);
         mainLayout.updateViewLayout(logo, params);
 
-        setupUiSelector();
+//        setupUiSelector();
+        final HorizontalScrollView sc = new HorizontalScrollView(c);
+        sc.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        sc.setHorizontalScrollBarEnabled(false);
+        mainLayout.addView(sc);
+        params = (RelativeLayout.LayoutParams) sc.getLayoutParams();
+        params.addRule(RelativeLayout.BELOW, uiPos.getId());
+        params.addRule(RelativeLayout.ABOVE, logo.getId());
+        params.width = wUnit(100);
+        mainLayout.updateViewLayout(sc, params);
+
+        final RelativeLayout l = new RelativeLayout(c);
+        sc.addView(l);
+        HorizontalScrollView.LayoutParams sp = (HorizontalScrollView.LayoutParams) l.getLayoutParams();
+        sp.width = wUnit(300);
+        sp.height = hUnit(200);
+        sc.updateViewLayout(l, sp);
+
+        final ImageView l1 = new ImageView(c);
+        final ImageView l2 = new ImageView(c);
+        final ImageView l3 = new ImageView(c);
+
+        l1.setBackgroundColor(Color.CYAN);
+        l2.setBackgroundColor(Color.RED);
+        l3.setBackgroundColor(Color.GREEN);
+
+        l.addView(l1, new RelativeLayout.LayoutParams(sp.width / 3, RelativeLayout.LayoutParams.MATCH_PARENT));
+
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(sp.width / 3, RelativeLayout.LayoutParams.MATCH_PARENT);
+        lp.leftMargin = sp.width / 3;
+        l.addView(l2, lp);
+
+        lp = new RelativeLayout.LayoutParams(sp.width / 3, RelativeLayout.LayoutParams.MATCH_PARENT);
+        lp.leftMargin = (sp.width / 3) * 2;
+        l.addView(l3, lp);
+
+
+        //make infinite by moving pages around
+        sc.setOnTouchListener(new View.OnTouchListener() {
+            public int initialX;
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int range = sc.getChildAt(0).getMeasuredWidth() - sc.getMeasuredWidth();
+                int pageSize = l2.getMeasuredWidth();
+                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    Util.log(sc.getScrollX());
+                }else if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    initialX = sc.getScrollX();
+                }else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    int sX = sc.getScrollX();
+                    if (sX - initialX > pageSize / 4) {
+                        sc.smoothScrollTo(initialX + sc.getMeasuredWidth(),0);
+                    }else if (sX - initialX < -pageSize / 4) {
+                        sc.smoothScrollTo(initialX - sc.getMeasuredWidth(),0);
+                    }else {
+                        sc.smoothScrollTo(initialX,0);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
 
     }
     private void setupUiSelector() {
