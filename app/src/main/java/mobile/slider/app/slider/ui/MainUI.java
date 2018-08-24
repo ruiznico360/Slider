@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
@@ -107,7 +108,7 @@ public class MainUI {
 
         final RelativeLayout l = new RelativeLayout(c);
         sc.addView(l);
-        HorizontalScrollView.LayoutParams sp = (HorizontalScrollView.LayoutParams) l.getLayoutParams();
+        final HorizontalScrollView.LayoutParams sp = (HorizontalScrollView.LayoutParams) l.getLayoutParams();
         sp.width = wUnit(300);
         sp.height = hUnit(200);
         sc.updateViewLayout(l, sp);
@@ -130,7 +131,81 @@ public class MainUI {
         lp.leftMargin = (sp.width / 3) * 2;
         l.addView(l3, lp);
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                sc.scrollTo(sc.getMeasuredWidth(),0);
+            }
+        },1);
+        final LHold lhold = new LHold();
+        lhold.needsToUpdate = false;
+        lhold.curr = l2;
+        sc.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged() {
+                if (lhold.needsToUpdate) {
+                    Util.log("lescroll " + sc.getScrollX());
+                    if (sc.getScrollX() == 0 || sc.getScrollX() == 360 || sc.getScrollX() == 720) {
+                        RelativeLayout.LayoutParams l1p = (RelativeLayout.LayoutParams) l1.getLayoutParams();
+                        RelativeLayout.LayoutParams l2p = (RelativeLayout.LayoutParams) l2.getLayoutParams();
+                        RelativeLayout.LayoutParams l3p = (RelativeLayout.LayoutParams) l3.getLayoutParams();
 
+//                        if (lhold.curr == l1) {
+//                            Util.log(lhold.scrollTo + " l1");
+//                            if (lhold.scrollTo.equals("left")) {
+//                                l1p.leftMargin = 2 * sp.width / 3;
+//                                l2p.leftMargin = 0;
+//                                l3p.leftMargin = sp.width / 3;
+//                                lhold.curr = l3;
+//                            } else {
+//                                l1p.leftMargin = 0;
+//                                l2p.leftMargin = sp.width / 3;
+//                                l3p.leftMargin = 2 * sp.width / 3;
+//                                lhold.curr = l2;
+//                            }
+//                        } else if (lhold.curr == l2) {
+//                            Util.log(lhold.scrollTo + " l2");
+//                            if (lhold.scrollTo.equals("left")) {
+//                                l1p.leftMargin = sp.width / 3;
+//                                l2p.leftMargin = 2 * sp.width / 3;
+//                                l3p.leftMargin = 0;
+//                                lhold.curr = l1;
+//                            } else {
+//                                l1p.leftMargin = 2 * sp.width / 3;
+//                                l2p.leftMargin = 0;
+//                                l3p.leftMargin = sp.width / 3;
+//                                lhold.curr = l3;
+//                            }
+//                        } else {
+//                            Util.log(lhold.scrollTo + " l3");
+//                            if (lhold.scrollTo.equals("left")) {
+//                                l1p.leftMargin = 0;
+//                                l2p.leftMargin = sp.width / 3;
+//                                l3p.leftMargin = 2 * sp.width / 3;
+//                                lhold.curr = l2;
+//                            } else {
+//                                l1p.leftMargin = sp.width / 3;
+//                                l2p.leftMargin = 2 * sp.width / 3;
+//                                l3p.leftMargin = 0;
+//                                lhold.curr = l1;
+//                            }
+//                        }
+//
+//                        l.updateViewLayout(l1, l1p);
+//                        l.updateViewLayout(l2, l2p);
+//                        l.updateViewLayout(l3, l3p);
+                        lhold.needsToUpdate = false;
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                Util.log("scrolled");
+                                sc.scrollTo(sc.getMeasuredWidth(), 0);
+                            }
+                        },1);
+                    }
+                }
+            }
+        });
         //make infinite by moving pages around
         sc.setOnTouchListener(new View.OnTouchListener() {
             public int initialX;
@@ -139,24 +214,32 @@ public class MainUI {
                 int range = sc.getChildAt(0).getMeasuredWidth() - sc.getMeasuredWidth();
                 int pageSize = l2.getMeasuredWidth();
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    Util.log(sc.getScrollX());
+//                    Util.log(sc.getScrollX());
                 }else if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     initialX = sc.getScrollX();
                 }else if (event.getAction() == MotionEvent.ACTION_UP) {
                     int sX = sc.getScrollX();
                     if (sX - initialX > pageSize / 4) {
-                        sc.smoothScrollTo(initialX + sc.getMeasuredWidth(),0);
+                        sc.scrollTo(initialX + sc.getMeasuredWidth(),0);
+                        lhold.needsToUpdate = true;
+                        lhold.scrollTo = "right";
                     }else if (sX - initialX < -pageSize / 4) {
-                        sc.smoothScrollTo(initialX - sc.getMeasuredWidth(),0);
+                        sc.scrollTo(initialX - sc.getMeasuredWidth(),0);
+                        lhold.needsToUpdate = true;
+                        lhold.scrollTo = "left";
                     }else {
-                        sc.smoothScrollTo(initialX,0);
+                        sc.scrollTo(initialX,0);
                     }
                     return true;
                 }
                 return false;
             }
         });
-
+    }
+    public class LHold {
+        public String scrollTo;
+        public boolean needsToUpdate;
+        public View curr;
     }
     private void setupUiSelector() {
         setupListViews();
