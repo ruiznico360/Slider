@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.SView.SView;
 import mobile.slider.app.slider.content.SView.SWindowLayout;
-import mobile.slider.app.slider.content.adapters.MainUIAdapter;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
@@ -112,13 +111,12 @@ public class UserInterface {
             public boolean onTouch(View v, MotionEvent event) {
                 if (running()) {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        int[] loc = new int[2];
+                        container.layout.getLocationOnScreen(loc);
                         int rx = (int) event.getRawX();
-                        int ry = (int) event.getRawY();
-                        int x = container.x();
-                        int y = container.y();
+                        int x = loc[0];
                         int w = container.width();
-                        int h = container.height();
-                        if (rx < x || rx > x + w || ry < y || ry > y + h) {
+                        if (rx < x || rx > x + w ) {
                             UI.remove();
                         }
                     }
@@ -127,25 +125,6 @@ public class UserInterface {
                 return false;
             }
         });
-//        inner.view.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (running()) {
-//                    new Window(SystemOverlay.service).create();
-//                    UI.remove();
-//                    Contact.retrieveContacts(new ArrayList<Contact>());
-//                }
-//            }
-//        });
-//        inner.view.findViewById(R.id.button).setOnLongClickListener(new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View view) {
-//                if (running()) {
-//                    SettingsUtil.setBackgroundColor(Color.rgb(new Random().nextInt(255),new Random().nextInt(255),new Random().nextInt(255)));
-//                }
-//                return true;
-//            }
-//        });
         mainUI = new MainUI(WUNIT, HUNIT, c, inner);
         mainUI.setup();
 
