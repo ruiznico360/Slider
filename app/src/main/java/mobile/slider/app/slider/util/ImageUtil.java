@@ -1,15 +1,26 @@
 package mobile.slider.app.slider.util;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
 import android.os.Build;
 import android.view.View;
 import android.widget.ImageView;
 
+import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 
@@ -18,6 +29,12 @@ public class ImageUtil {
         view.setImageDrawable(getDrawable(id));
     }
 
+    public static void setCircleImageDrawable(ImageView view, int id, int bgColor) {
+        GradientDrawable gd = new GradientDrawable();
+        gd.setShape(GradientDrawable.RING);
+        gd.setColor(bgColor);
+        view.setImageDrawable(gd);
+    }
     public static void setBackground(View view, int id) {
         if (Build.VERSION.SDK_INT >= 21) {
             view.setBackground(getDrawable(id));

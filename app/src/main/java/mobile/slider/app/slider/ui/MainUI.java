@@ -3,9 +3,11 @@ package mobile.slider.app.slider.ui;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.shapes.Shape;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -222,22 +224,14 @@ public class MainUI {
         });
     }
     private void setupListViews() {
+        new QuickApps().setup();
         yourApps.setBackgroundColor(Color.CYAN);
-        quickApps.setBackgroundColor(Color.RED);
         miniWindows.setBackgroundColor(Color.GREEN);
 
         RelativeLayout l = new RelativeLayout(c);
         ImageUtil.setBackground(l, R.drawable.garbage);
-        quickApps.addView(l);
-        ScrollView.LayoutParams params = (ScrollView.LayoutParams) l.getLayoutParams();
-        params.width = wUnit(100);
-        params.height = hUnit(200);
-        quickApps.updateViewLayout(l, params);
-
-        l = new RelativeLayout(c);
-        ImageUtil.setBackground(l, R.drawable.garbage);
         miniWindows.addView(l);
-        params = (ScrollView.LayoutParams) l.getLayoutParams();
+        ScrollView.LayoutParams params = (ScrollView.LayoutParams) l.getLayoutParams();
         params.width = wUnit(100);
         params.height = hUnit(200);
         miniWindows.updateViewLayout(l, params);
@@ -249,7 +243,38 @@ public class MainUI {
         params.width = wUnit(100);
         params.height = hUnit(200);
         yourApps.updateViewLayout(l, params);
+    }
+    public class QuickApps {
+        public void setup() {
+            RelativeLayout container = new RelativeLayout(c);
+            quickApps.addView(container,new ScrollView.LayoutParams(wUnit(100), ScrollView.LayoutParams.WRAP_CONTENT));
+            for (int i = 0; i < 10; i++) {
+                Item item = genItem(container);
+                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) item.container.getLayoutParams();
+                params.topMargin = i * params.height + wUnit(15);
+            }
+        }
+        private Item genItem(RelativeLayout parent) {
+            Item item;
+            RelativeLayout container = new RelativeLayout(c);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int)(wUnit(75)), wUnit(100));
+            params.addRule(RelativeLayout.CENTER_HORIZONTAL);
+            parent.addView(container, params);
 
-
+            ImageView appIcon = new ImageView(c);
+            ImageUtil.setCircleImageDrawable(appIcon,0,Color.BLACK);
+            RelativeLayout.LayoutParams iParams = new RelativeLayout.LayoutParams(params.width,params.width);
+            container.addView(appIcon, iParams);
+            item = new Item(container, appIcon);
+            return item;
+        }
+        public class Item {
+            public RelativeLayout container;
+            public ImageView appIcon;
+            public Item(RelativeLayout container, ImageView appIcon) {
+                this.container = container;
+                this.appIcon = appIcon;
+            }
+        }
     }
 }
