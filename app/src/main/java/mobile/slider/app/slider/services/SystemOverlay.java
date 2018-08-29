@@ -125,7 +125,6 @@ public class SystemOverlay extends Service {
             Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from null intent");
             Floater.createFloater(View.VISIBLE);
         }
-
     }
     public void startInForeground() {
         Intent pi = new Intent();

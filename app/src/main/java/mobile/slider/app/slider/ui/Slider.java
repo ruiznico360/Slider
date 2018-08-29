@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.util.IntentExtra;
+import mobile.slider.app.slider.util.Util;
 
 public class Slider extends Activity {
 

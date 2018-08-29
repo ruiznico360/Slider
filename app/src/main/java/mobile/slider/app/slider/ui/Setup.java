@@ -80,10 +80,8 @@ public class Setup extends Activity {
         if (Build.VERSION.SDK_INT >= 23) {
             if (requestCode == SYSTEM_ALERT_WINDOW_CODE) {
                 if (canUseOverlay(this)) {
-                    Util.log("yup");
                     requestReadContactsWindow();
                 }else {
-                    Util.log("not");
                     retryButton.setVisibility(View.VISIBLE);
                     retryButton.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -100,7 +98,6 @@ public class Setup extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == READ_CONTACTS_CODE) {
-            Util.log("howdy");
             if (hasAllReqPermissions(this)) {
                 finish();
                 Intent i = new Intent(this, Slider.class);

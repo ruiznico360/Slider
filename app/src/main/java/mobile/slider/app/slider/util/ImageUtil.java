@@ -29,12 +29,6 @@ public class ImageUtil {
         view.setImageDrawable(getDrawable(id));
     }
 
-    public static void setCircleImageDrawable(ImageView view, int id, int bgColor) {
-        GradientDrawable gd = new GradientDrawable();
-        gd.setShape(GradientDrawable.RING);
-        gd.setColor(bgColor);
-        view.setImageDrawable(gd);
-    }
     public static void setBackground(View view, int id) {
         if (Build.VERSION.SDK_INT >= 21) {
             view.setBackground(getDrawable(id));

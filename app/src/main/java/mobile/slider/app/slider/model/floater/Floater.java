@@ -88,6 +88,7 @@ public class Floater extends SView {
                 SystemOverlay.deviceStateListener.tasks.remove(SystemOverlay.floater.deviceStateRunnable);
             }
         }
+        Util.log("checkpoint 1");
 
         final ImageView floater = new AppCompatImageView(SystemOverlay.service);
         final RelativeLayout container = new RelativeLayout(SystemOverlay.service);
@@ -99,7 +100,7 @@ public class Floater extends SView {
         }else{
             floaterType = WindowManager.LayoutParams.TYPE_PHONE;
         }
-
+        Util.log("checkpoint 2");
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 SettingsUtil.getFloaterSize(), floaterType,
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
@@ -124,12 +125,16 @@ public class Floater extends SView {
         }else if (SettingsUtil.getFloaterIcon().equals(FloaterIcon.INVISIBLE)) {
             width = (SettingsUtil.getFloaterSize() / 5);
         }
+        Util.log("checkpoint 3");
         params.gravity = Gravity.LEFT | Gravity.TOP;
         params.y = SystemOverlay.floater.floaterPosY();
         params.x = SystemOverlay.floater.floaterPosX(params.width);
+        Util.log("checkpoint 3a");
 
         SystemOverlay.floater.container.plot(params);
+        Util.log("checkpoint 3b");
         SystemOverlay.floater.plot();
+        Util.log("checkpoint 3c");
 
         SView.Layout fEdit = SystemOverlay.floater.openLayout();
         fEdit.setWidth(width);
@@ -137,12 +142,14 @@ public class Floater extends SView {
         fEdit.addRule(RelativeLayout.CENTER_VERTICAL);
         fEdit.addRule(innerG);
         fEdit.save();
+        Util.log("checkpoint 4");
 
         if (visibility == View.VISIBLE) {
             SystemOverlay.floater.showFloater();
         }else{
-            SystemOverlay.floater.hideFloater();
+            SystemOverlay.floater.hideFloater(false);
         }
+        Util.log("checkpoint 5");
 
     }
 
@@ -235,7 +242,7 @@ public class Floater extends SView {
             longPressListener.removeCallbacks(longPressRunnable);
             if (floaterRelocate) {
                 if (garbage.trash.height() == SettingsUtil.getFloaterSize()) {
-                    hideFloater();
+                    hideFloater(false);
                     SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
                     SettingsUtil.setFloaterPos(originalY);
                     SettingsUtil.setFloaterGravity(originalGravity);
@@ -336,7 +343,7 @@ public class Floater extends SView {
             }
         }
     }
-    public void hideFloater() {
+    public void hideFloater(final boolean launchUI) {
         floaterMovement.enableTouch(false);
         setVisibility(View.INVISIBLE);
         AnimationSet set = new AnimationSet(true);
@@ -358,6 +365,10 @@ public class Floater extends SView {
             @Override
             public void onAnimationEnd(Animation animation) {
                 updateVisibility();
+                if (launchUI) {
+                    UserInterface ui = new UserInterface(SystemOverlay.service);
+                    ui.setup();
+                }
             }
 
             @Override

@@ -13,6 +13,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.opengl.Visibility;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
@@ -60,10 +61,12 @@ public class UserInterface {
         if (SystemOverlay.floater.floaterMovement.currentlyInTouch) {
             SystemOverlay.floater.floaterMovement.forceUp();
         }
-        SystemOverlay.floater.hideFloater();
-
-        UserInterface ui = new UserInterface(SystemOverlay.service);
-        ui.setup();
+        if (SystemOverlay.floater.getVisibility() == View.VISIBLE) {
+            SystemOverlay.floater.hideFloater(true);
+        }else{
+            UserInterface ui = new UserInterface(SystemOverlay.service);
+            ui.setup();
+        }
     }
 
     public void setup() {
@@ -136,8 +139,6 @@ public class UserInterface {
                 return false;
             }
         });
-        mainUI = new MainUI(WUNIT, HUNIT, c, inner);
-        mainUI.setup();
 
         container.plot(params);
         inner.plot();
@@ -147,6 +148,9 @@ public class UserInterface {
         editor.setWidth(RelativeLayout.LayoutParams.MATCH_PARENT);
         editor.setHeight(RelativeLayout.LayoutParams.MATCH_PARENT);
         editor.save();
+
+        mainUI = new MainUI(WUNIT, HUNIT, c, inner);
+        mainUI.setup();
 
         Animation a;
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
