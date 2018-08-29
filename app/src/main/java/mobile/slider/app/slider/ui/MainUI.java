@@ -15,6 +15,7 @@ import android.widget.ScrollView;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.content.SView.SView;
+import mobile.slider.app.slider.model.RoundedImageView;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.util.ImageUtil;
@@ -98,7 +99,6 @@ public class MainUI {
         params.width = sWidth;
         mainLayout.updateViewLayout(uiSelector, params);
 
-        uiSelector.setBackgroundColor(Color.MAGENTA);
         uiSelector.setOverScrollMode(View.OVER_SCROLL_NEVER);
         uiSelector.setHorizontalScrollBarEnabled(false);
 
@@ -257,12 +257,12 @@ public class MainUI {
         private Item genItem(RelativeLayout parent) {
             Item item;
             RelativeLayout container = new RelativeLayout(c);
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int)(wUnit(75)), wUnit(100));
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int)(wUnit(85)), wUnit(100));
             params.addRule(RelativeLayout.CENTER_HORIZONTAL);
             parent.addView(container, params);
 
-            ImageView appIcon = new ImageView(c);
-            ImageUtil.setCircleImageDrawable(appIcon,0,Color.BLACK);
+            ImageView appIcon = new RoundedImageView(c);
+            ImageUtil.setImageDrawable(appIcon, R.drawable.app_logo);
             RelativeLayout.LayoutParams iParams = new RelativeLayout.LayoutParams(params.width,params.width);
             container.addView(appIcon, iParams);
             item = new Item(container, appIcon);
