@@ -1,14 +1,8 @@
-package mobile.slider.app.slider.content.SView;
+package mobile.slider.app.slider.model.SView;
 
-import android.content.Context;
 import android.os.Build;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.RelativeLayout;
-
-import mobile.slider.app.slider.services.SystemOverlay;
-import mobile.slider.app.slider.util.Util;
 
 public class SView {
     public View view;
@@ -26,16 +20,22 @@ public class SView {
         return loc[1];
     }
     public int width() {
-        if (view.getWidth() != 0) {
-            return view.getWidth();
+        if (view.getMeasuredWidth() > 0) {
+            return view.getMeasuredWidth();
         }else{
+            if (params.width == -1) {
+                return container.width();
+            }
             return params.width;
         }
     }
     public int height() {
-        if (view.getHeight() != 0) {
-            return view.getHeight();
+        if (view.getMeasuredHeight() > 0) {
+            return view.getMeasuredHeight();
         }else{
+            if (params.height == -1) {
+                return container.height();
+            }
             return params.height;
         }
     }

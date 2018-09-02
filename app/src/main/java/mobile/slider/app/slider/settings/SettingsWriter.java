@@ -3,7 +3,6 @@ package mobile.slider.app.slider.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import mobile.slider.app.slider.content.SView.SView;
 import mobile.slider.app.slider.settings.resources.AppTheme;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.FloaterUpdate;

@@ -1,12 +1,10 @@
-package mobile.slider.app.slider.content.SView;
+package mobile.slider.app.slider.model.SView;
 
 import android.content.Context;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
-import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.services.SystemOverlay;
-import mobile.slider.app.slider.util.Util;
 
 public class SWindowLayout {
     public RelativeLayout layout;

@@ -42,7 +42,7 @@ public class SettingsActivity extends Activity {
     }
 
     public void setupActivity() {
-        SystemOverlay.floater.hideFloater(false);
+        SystemOverlay.floater.hideFloater();
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         settingView = (RelativeLayout) findViewById(R.id.settings_scroll_view);
 

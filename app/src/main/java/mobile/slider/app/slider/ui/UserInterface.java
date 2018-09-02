@@ -3,42 +3,29 @@ package mobile.slider.app.slider.ui;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.opengl.Visibility;
-import android.support.v4.view.ViewPager;
-import android.support.v7.widget.AppCompatImageView;
-import android.util.AttributeSet;
-import android.util.Log;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
-
-import java.util.ArrayList;
+import android.widget.ScrollView;
 
 import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.content.SView.SView;
-import mobile.slider.app.slider.content.SView.SWindowLayout;
+import mobile.slider.app.slider.model.SView.SView;
+import mobile.slider.app.slider.model.SView.SWindowLayout;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
-import mobile.slider.app.slider.util.ImageUtil;
+import mobile.slider.app.slider.util.Anim;
 import mobile.slider.app.slider.util.Util;
 
 public class UserInterface {
@@ -49,6 +36,7 @@ public class UserInterface {
     public SWindowLayout container;
     public SView inner;
     public MainUI mainUI;
+    public boolean touchEnabled = true, running = false;
 
     public UserInterface(Context c) {
         this.c = c;
@@ -61,15 +49,14 @@ public class UserInterface {
         if (SystemOverlay.floater.floaterMovement.currentlyInTouch) {
             SystemOverlay.floater.floaterMovement.forceUp();
         }
-        if (SystemOverlay.floater.getVisibility() == View.VISIBLE) {
-            SystemOverlay.floater.hideFloater(true);
-        }else{
-            UserInterface ui = new UserInterface(SystemOverlay.service);
-            ui.setup();
-        }
+        SystemOverlay.floater.hideFloater();
+
+        UI = new UserInterface(SystemOverlay.service);
+        UI.setup();
     }
 
     public void setup() {
+        running = true;
         float WUNIT, HUNIT;
         int size;
         if (Util.screenHeight() > Util.screenWidth()) {
@@ -115,7 +102,7 @@ public class UserInterface {
                 params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
             }
         }
-        container = new SWindowLayout(new UIContainer(c));
+        container = new SWindowLayout(new UIView.UIContainer(c));
         inner = new SView(((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.ui, null), container);
 
         inner.view.findViewById(R.id.ui_main_layout).setBackgroundColor(SettingsUtil.getBackgroundColor());
@@ -134,7 +121,7 @@ public class UserInterface {
                             UI.remove();
                         }
                     }
-                    return true;
+                    return false;
                 }
                 return false;
             }
@@ -142,7 +129,7 @@ public class UserInterface {
 
         container.plot(params);
         inner.plot();
-        container.layout.setVisibility(View.VISIBLE);
+        container.layout.setVisibility(View.INVISIBLE);
 
         SView.Layout editor = inner.openLayout();
         editor.setWidth(RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -152,28 +139,27 @@ public class UserInterface {
         mainUI = new MainUI(WUNIT, HUNIT, c, inner);
         mainUI.setup();
 
-        Animation a;
+        //view inv until start
+        Anim anim = new Anim(SystemOverlay.service, inner.view, 75);
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-            a = AnimationUtils.loadAnimation(SystemOverlay.service.getApplicationContext(), R.anim.from_right_to_middle);
+            anim.addTranslate(inner.width(), -inner.width(),0,0);
         }else {
-            a = AnimationUtils.loadAnimation(SystemOverlay.service.getApplicationContext(), R.anim.from_left_to_middle);
+            anim.addTranslate(-inner.width(), inner.width(),0,0);
         }
-        a.setAnimationListener(new Animation.AnimationListener() {
+        anim.setStart(new Runnable() {
             @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                UI = UserInterface.this;
-            }
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
+            public void run() {
+                container.layout.setVisibility(View.VISIBLE);
             }
         });
-        inner.view.startAnimation(a);
+        anim.setEnd(new Runnable() {
+            @Override
+            public void run() {
+                touchEnabled = true;
+            }
+        });
+        touchEnabled = false;
+        anim.start();
 
         final boolean phoneStatus = Util.isLocked(SystemOverlay.service.getApplicationContext());
         deviceStateRunnable = new Runnable() {
@@ -205,47 +191,78 @@ public class UserInterface {
 
         deviceStateRunnable = null;
 
-        Animation a;
+        Anim anim = new Anim(SystemOverlay.service, inner.view, 150);
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-            a = AnimationUtils.loadAnimation(c, R.anim.from_middle_to_right);
+            anim.addTranslate(inner.width(),0);
         }else {
-            a = AnimationUtils.loadAnimation(c, R.anim.from_middle_to_left);
+            anim.addTranslate(-inner.width(),0);
         }
-        final UserInterface deleteUI = UI;
-        a.setAnimationListener(new Animation.AnimationListener() {
+        touchEnabled = false;
+        anim.setEnd(new Runnable() {
             @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                deleteUI.container.remove();
+            public void run() {
+                UI.container.remove();
+                UI = null;
                 SystemOverlay.floater.showFloater();
             }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
         });
-        inner.view.startAnimation(a);
-        UI = null;
+        running = false;
+        anim.start();
     }
     public static boolean running() {
-        return UI != null;
-    }
-    public class UIContainer extends RelativeLayout {
-        public UIContainer(Context c){
-            super(c);
+        if (UI != null && UI.running) {
+            return true;
         }
-        @Override
-        public boolean dispatchKeyEvent(KeyEvent event) {
-            if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) || (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) || (event.getKeyCode() == KeyEvent.KEYCODE_HOME)) {
-                backPressed();
-                return true;
-            }
-            return super.dispatchKeyEvent(event);
-        }
+        return false;
     }
+    public static Anim uiAnim(Context c, View view, int duration) {
+        Anim a = new Anim(c,view,duration);
+        a.addTag(Anim.OVERRIDE, UI.inner.view);
+        return a;
+    }
+
+
+    //    public static class GS extends GestureDetector.SimpleOnGestureListener {
+//        public ScrollView scroller;
+//        public boolean scrolling = false;
+//
+//        public GS(ScrollView scroller) {
+//            this.scroller = scroller;
+//        }
+//
+//        @Override
+//        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+//            return super.onScroll(e1, e2, distanceX, distanceY);
+//        }
+//
+//        @Override
+//        public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX, final float velocityY) {
+//            new Handler().postDelayed(new Runnable() {
+//                float velocity = velocityY;
+//                @Override
+//                public void run() {
+//                    if (shouldMove() && !scrolling) {
+//                        if (velocityY < 0) {
+//                            velocity = velocity + (velocityY * -.05f);
+//                            scroller.scrollTo(0, scroller.getScrollY() - ((int) (velocity / 100f)));
+//                            if (velocity <= 0) {
+//                                new Handler().postDelayed(this, 42);
+//                            }
+//                        }else{
+//                            velocity = velocity - (velocityY * -.05f);
+//                            scroller.scrollTo(0, scroller.getScrollY() + ((int) (velocity / 100f)));
+//                            if (velocity <= 0) {
+//                                new Handler().postDelayed(this, 42);
+//                            }
+//                        }
+//
+//                    }
+//
+//                }
+//            }, 42);
+//            Util.log("On Fling " + velocityY);
+//            return true;
+//        }
+//
+//    }
 }

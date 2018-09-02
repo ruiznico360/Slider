@@ -16,21 +16,19 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.content.SView.SView;
-import mobile.slider.app.slider.content.SView.SWindowLayout;
+import mobile.slider.app.slider.model.SView.SView;
+import mobile.slider.app.slider.model.SView.SWindowLayout;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.FloaterUpdate;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.ui.UserInterface;
+import mobile.slider.app.slider.util.Anim;
 import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
@@ -54,6 +52,9 @@ public class Floater extends SView {
             public void run() {
                 if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
                     createFloater(SystemOverlay.floater.getVisibility());
+                    if (floaterMovement.garbage != null) {
+                        floaterMovement.garbage.container.remove();
+                    }
                 }
             }
         };
@@ -147,7 +148,7 @@ public class Floater extends SView {
         if (visibility == View.VISIBLE) {
             SystemOverlay.floater.showFloater();
         }else{
-            SystemOverlay.floater.hideFloater(false);
+            SystemOverlay.floater.hideFloater();
         }
         Util.log("checkpoint 5");
 
@@ -242,7 +243,7 @@ public class Floater extends SView {
             longPressListener.removeCallbacks(longPressRunnable);
             if (floaterRelocate) {
                 if (garbage.trash.height() == SettingsUtil.getFloaterSize()) {
-                    hideFloater(false);
+                    hideFloater();
                     SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
                     SettingsUtil.setFloaterPos(originalY);
                     SettingsUtil.setFloaterGravity(originalGravity);
@@ -343,71 +344,43 @@ public class Floater extends SView {
             }
         }
     }
-    public void hideFloater(final boolean launchUI) {
+    public void hideFloater() {
         floaterMovement.enableTouch(false);
         setVisibility(View.INVISIBLE);
-        AnimationSet set = new AnimationSet(true);
-        set.setFillEnabled(true);
-        Animation a = AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.fade_out);
-        a.setDuration(50);
-        set.addAnimation(a);
+
+        Anim anim = new Anim(SystemOverlay.service, view, 100);
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-            set.addAnimation(AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.from_middle_to_left));
+            anim.addTranslate(-width(),0);
         }else{
-            set.addAnimation(AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.from_middle_to_right));
+            anim.addTranslate(width(),0);
         }
-        set.setAnimationListener(new Animation.AnimationListener() {
+        anim.addAlpha(Anim.FADE_OUT);
+        anim.setEnd(new Runnable() {
             @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
+            public void run() {
                 updateVisibility();
-                if (launchUI) {
-                    UserInterface ui = new UserInterface(SystemOverlay.service);
-                    ui.setup();
-                }
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
             }
         });
-        view.startAnimation(set);
+        anim.start();
     }
     public void showFloater() {
         setVisibility(View.VISIBLE);
         updateVisibility();
-        AnimationSet set = new AnimationSet(true);
-        set.setFillEnabled(true);
-        Animation a = AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.fade_in);
-        a.setDuration(50);
-        set.addAnimation(a);
+
+        Anim anim = new Anim(SystemOverlay.service, view, 100);
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
-            set.addAnimation(AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.from_left_to_middle));
+            anim.addTranslate(-width(),width(),0,0);
         }else{
-            set.addAnimation(AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.from_right_to_middle));
+            anim.addTranslate(width(),-width(),0,0);
         }
-        set.setAnimationListener(new Animation.AnimationListener() {
+        anim.addAlpha(Anim.FADE_IN);
+        anim.setEnd(new Runnable() {
             @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
+            public void run() {
                 floaterMovement.enableTouch(true);
             }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
         });
-        view.startAnimation(set);
+        anim.start();
     }
 
     public void updateFloater() {
@@ -430,7 +403,6 @@ public class Floater extends SView {
             container.plot(params);
             super.plot();
             trash.plot();
-
             ShapeDrawable d = new ShapeDrawable(new RectShape());
             d.getPaint().setShader(new LinearGradient(0,0,0,params.height, Color.TRANSPARENT, Color.BLACK, Shader.TileMode.CLAMP));
             ((ImageView)trash.view).setScaleType(ImageView.ScaleType.FIT_XY);
@@ -450,7 +422,9 @@ public class Floater extends SView {
             editor.addRule(RelativeLayout.CENTER_IN_PARENT);
             editor.save();
 
-            view.startAnimation(AnimationUtils.loadAnimation(SystemOverlay.service, R.anim.fade_in));
+            Anim anim = new Anim(SystemOverlay.service, view, 300);
+            anim.addAlpha(Anim.FADE_IN);
+            anim.start();
         }
     }
 }
