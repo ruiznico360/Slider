@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
+import mobile.slider.app.slider.settings.ViewIdGenerator;
 import mobile.slider.app.slider.ui.Slider;
 
 import static android.content.Context.POWER_SERVICE;
@@ -125,22 +126,15 @@ public class Util {
             return false;
         }
     }
-    public static void generateViewId(View v) {
+    public static int generateViewId(View v) {
         AtomicInteger sNextGeneratedId = new AtomicInteger(1);
         int result;
-        for (;;) {
-            result = sNextGeneratedId.get();
-            // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
-            int newValue = result + 1;
-            if (newValue > 0x00FFFFFF) newValue = 1; // Roll over to 1, not 0.
-            if (sNextGeneratedId.compareAndSet(result, newValue)) {
-                break;
-            }
-        }
         if (Build.VERSION.SDK_INT >= 17) {
-            v.setId(View.generateViewId());
+            result = View.generateViewId();
         }else{
-            v.setId(result);
+            result = ViewIdGenerator.generateViewId();
         }
+        v.setId(result);
+        return result;
     }
 }

@@ -3,9 +3,14 @@ package mobile.slider.app.slider.ui;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.hardware.input.InputManager;
+import android.media.Image;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -23,12 +28,9 @@ import mobile.slider.app.slider.util.Util;
 public class MainUI {
     public float WUNIT,HUNIT;
     public boolean canMoveUISelector = true;
-    public SView inner;
+    public SView inner, uiSelector, yourApps, quickApps, miniWindows, logo, uiPos, uiIndicatorText;
+    public ViewGroup mainLayout;
     public Context c;
-    public HorizontalScrollView uiSelector;
-    public ScrollView yourApps, quickApps, miniWindows;
-    public ImageView logo, uiPos, uiIndicatorText;
-    public RelativeLayout mainLayout;
 
     public MainUI(float widthUnit, float heightUnit, Context context, SView inner) {
         this.WUNIT = widthUnit;
@@ -45,72 +47,60 @@ public class MainUI {
         return (int)(HUNIT * percent);
     }
     public void setup() {
-        uiSelector = new UIView.MHScrollView(c);
-        quickApps = new UIView.MScrollView(c);
-        yourApps = new UIView.MScrollView(c);
-        miniWindows = new UIView.MScrollView(c);
-
-        logo = new ImageView(c);
-        uiPos = new ImageView(c);
-        uiIndicatorText = new ImageView(c);
         mainLayout = inner.view.findViewById(R.id.ui_main_layout);
 
+        logo = new SView(new ImageView(c), mainLayout);
+        uiPos = new SView(new ImageView(c), mainLayout);
+        uiIndicatorText = new SView(new ImageView(c), mainLayout);
 
-        mainLayout.addView(uiSelector);
-        mainLayout.addView(uiPos);
-        mainLayout.addView(uiIndicatorText);
-        mainLayout.addView(logo);
+        uiIndicatorText.plot();
+        uiPos.plot();
+        logo.plot();
 
-        uiIndicatorText.setImageDrawable(ImageUtil.getDrawable(R.drawable.quick_apps_title));
-        Util.generateViewId(uiIndicatorText);
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) uiIndicatorText.getLayoutParams();
-        params.topMargin = hUnit(3);
-        params.width = wUnit(100);
-        params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.quick_apps_title), params.width);
-        mainLayout.updateViewLayout(uiIndicatorText, params);
+        ImageUtil.setImageDrawable(uiIndicatorText.view, R.drawable.quick_apps_title);
+        Util.generateViewId(uiIndicatorText.view);
 
-        uiPos.setImageDrawable(ImageUtil.getDrawable(R.drawable.main_ui_indicator_center));
-        Util.generateViewId(uiPos);
-        params = (RelativeLayout.LayoutParams) uiPos.getLayoutParams();
-        params.addRule(RelativeLayout.BELOW, uiIndicatorText.getId());
-        params.width = wUnit(100);
-        params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.main_ui_indicator_center), params.width);
-        mainLayout.updateViewLayout(uiPos, params);
+        SView.RLayout edit = uiIndicatorText.openRLayout();
+        edit.setTopM(hUnit(3));
+        edit.setWidth(wUnit(100));
+        edit.setHeight(ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.quick_apps_title), (int) edit.toWidth));
+        edit.save();
 
-        logo.setImageDrawable(ImageUtil.getDrawable(R.drawable.app_logo));
-        Util.generateViewId(logo);
-        params = (RelativeLayout.LayoutParams) logo.getLayoutParams();
-        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        params.width = wUnit(100);
-        params.height = ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.app_logo), params.width);
-        mainLayout.updateViewLayout(logo, params);
+        ImageUtil.setImageDrawable(uiPos.view, R.drawable.main_ui_indicator_center);
+        Util.generateViewId(uiPos.view);
+        edit = uiPos.openRLayout();
+        edit.addRule(RelativeLayout.BELOW, uiIndicatorText.view.getId());
+        edit.setWidth(wUnit(100));
+        edit.setHeight(ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.main_ui_indicator_center), (int) edit.toWidth));
+        edit.save();
+
+        ImageUtil.setImageDrawable(logo.view, R.drawable.app_logo);
+        Util.generateViewId(logo.view);
+        edit = logo.openRLayout();
+        edit.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        edit.setWidth(wUnit(100));
+        edit.setHeight(ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.app_logo), (int) edit.toWidth));
+        edit.save();
 
         setupUiSelector();
     }
     @SuppressLint("ClickableViewAccessibility")
     private void setupUiSelector() {
-        setupListViews();
-        final View[] uiSelectorViews = new View[]{yourApps,quickApps,miniWindows};
         final int sWidth = wUnit(100);
 
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) uiSelector.getLayoutParams();
-        params.addRule(RelativeLayout.BELOW, uiPos.getId());
-        params.addRule(RelativeLayout.ABOVE, logo.getId());
-        params.width = sWidth;
-        mainLayout.updateViewLayout(uiSelector, params);
+        uiSelector = new SView(new UIView.MHScrollView(c), mainLayout);
+        uiSelector.view.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        uiSelector.view.setHorizontalScrollBarEnabled(false);
+        uiSelector.plot();
+        SView.RLayout edit = uiSelector.openRLayout();
+        edit.setWidth(sWidth);
+        edit.setHeight(300);
+        edit.addRule(RelativeLayout.BELOW, uiPos.view.getId());
+        edit.addRule(RelativeLayout.ABOVE, logo.view.getId());
+        edit.save();
 
-        uiSelector.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        uiSelector.setHorizontalScrollBarEnabled(false);
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                uiSelector.scrollTo(sWidth,0);
-            }
-        },1);
-
-        final RelativeLayout uiSelectorLayout = new RelativeLayout(c);
-        uiSelector.addView(uiSelectorLayout, sWidth * 3, HorizontalScrollView.LayoutParams.MATCH_PARENT);
+        final SView uiSelectorLayout = new SView(new RelativeLayout(c), (ViewGroup) uiSelector.view);
+        uiSelectorLayout.plot(sWidth * 3, HorizontalScrollView.LayoutParams.MATCH_PARENT);
 
         final RelativeLayout.LayoutParams leftParams = new RelativeLayout.LayoutParams(sWidth, RelativeLayout.LayoutParams.MATCH_PARENT);
         final RelativeLayout.LayoutParams middleParams = new RelativeLayout.LayoutParams(sWidth, RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -119,11 +109,36 @@ public class MainUI {
         middleParams.leftMargin = sWidth;
         rightParams.leftMargin = sWidth * 2;
 
-        uiSelectorLayout.addView(yourApps, leftParams);
-        uiSelectorLayout.addView(quickApps, middleParams);
-        uiSelectorLayout.addView(miniWindows, rightParams);
+        yourApps = new SView(new UIView.MScrollView(c), (ViewGroup) uiSelectorLayout.view);
+        quickApps = new SView(new UIView.MScrollView(c), (ViewGroup) uiSelectorLayout.view);
+        miniWindows = new SView(new UIView.MScrollView(c), (ViewGroup) uiSelectorLayout.view);
 
-        uiSelector.setOnTouchListener(new View.OnTouchListener() {
+        yourApps.plot();
+        edit = yourApps.openRLayout();
+        edit.setLayout(leftParams);
+        edit.save();
+
+        quickApps.plot();
+        edit = quickApps.openRLayout();
+        edit.setLayout(middleParams);
+        edit.save();
+
+        miniWindows.plot();
+        edit = miniWindows.openRLayout();
+        edit.setLayout(rightParams);
+        edit.save();
+
+        final SView[] uiSelectorViews = new SView[]{yourApps,quickApps,miniWindows};
+        setupListViews();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                uiSelector.view.scrollTo(sWidth,0);
+            }
+        },1);
+
+        uiSelector.view.setOnTouchListener(new View.OnTouchListener() {
             public int initialX = -1;
             boolean updateReq = false;
             @Override
@@ -131,20 +146,20 @@ public class MainUI {
                 if (canMoveUISelector) {
                     if (event.getAction() == MotionEvent.ACTION_MOVE) {
                         if (initialX == -1) {
-                            initialX = uiSelector.getScrollX();
+                            initialX = uiSelector.view.getScrollX();
                         }
                     } else if (event.getAction() == MotionEvent.ACTION_UP) {
                         if (initialX == -1) {
                             return true;
                         }
 
-                        final int sX = uiSelector.getScrollX();
+                        final int sX = uiSelector.view.getScrollX();
                         final int scrollTo;
                         int leftSize,rightRize;
                         int uiLoc[] = new int[2];
-                        uiSelectorLayout.getLocationOnScreen(uiLoc);
+                        uiSelectorLayout.view.getLocationOnScreen(uiLoc);
                         final int uiSelecLoc[] = new int[2];
-                        uiSelector.getLocationOnScreen(uiSelecLoc);
+                        uiSelector.view.getLocationOnScreen(uiSelecLoc);
 
                         if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
                             leftSize = 4;
@@ -154,49 +169,50 @@ public class MainUI {
                             rightRize = 4;
                         }
                         if (sX - initialX > sWidth / rightRize) {
-                            scrollTo = uiSelecLoc[0] - sWidth * 2 - uiLoc[0];
+                            scrollTo = uiSelector.x() - sWidth * 2 - uiSelectorLayout.x();
                             updateReq = true;
-                            View temp = uiSelectorViews[0];
+                            SView temp = uiSelectorViews[0];
                             for (int i = 0; i < 2; i++){
                                 uiSelectorViews[i] = uiSelectorViews[i + 1];
                             }
                             uiSelectorViews[2] = temp;
 
                         } else if (sX - initialX < -sWidth / leftSize) {
-                            scrollTo = uiSelecLoc[0] - uiLoc[0];
+                            scrollTo = uiSelector.x() - uiSelectorLayout.x();
                             updateReq = true;
-                            View temp = uiSelectorViews[2];
+                            SView temp = uiSelectorViews[2];
                             for (int i = 2; i > 0; i--){
                                 uiSelectorViews[i] = uiSelectorViews[i - 1];
                             }
                             uiSelectorViews[0] = temp;
                         }else{
-                            scrollTo = uiSelecLoc[0] - sWidth - uiLoc[0];
+                            scrollTo = uiSelector.x() - sWidth - uiSelectorLayout.x();
                         }
 
-                        Anim anim = UserInterface.uiAnim(c, uiSelectorLayout, 150);
+                        Anim anim = UserInterface.uiAnim(c, uiSelectorLayout.view, 150);
                         anim.addTranslate(scrollTo,0);
                         anim.setEnd(new Runnable() {
                             @Override
                             public void run() {
-                                uiSelectorLayout.updateViewLayout(uiSelectorViews[0], leftParams);
-                                uiSelectorLayout.updateViewLayout(uiSelectorViews[1], middleParams);
-                                uiSelectorLayout.updateViewLayout(uiSelectorViews[2], rightParams);
-                                uiSelector.scrollTo(sWidth,0);
+                                uiSelectorViews[0].openRLayout().setLayout(leftParams).save();
+                                uiSelectorViews[1].openRLayout().setLayout(middleParams).save();
+                                uiSelectorViews[2].openRLayout().setLayout(rightParams).save();
+
+                                uiSelector.view.scrollTo(sWidth,0);
                                 canMoveUISelector = true;
                                 updateReq = false;
                                 new Handler().postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
                                         if (uiSelectorViews[1] == yourApps) {
-                                            ImageUtil.setImageDrawable(uiIndicatorText, R.drawable.your_apps_title);
-                                            ImageUtil.setImageDrawable(uiPos, R.drawable.main_ui_indicator_left);
+                                            ImageUtil.setImageDrawable(uiIndicatorText.view, R.drawable.your_apps_title);
+                                            ImageUtil.setImageDrawable(uiPos.view, R.drawable.main_ui_indicator_left);
                                         }else if (uiSelectorViews[1] == quickApps) {
-                                            ImageUtil.setImageDrawable(uiIndicatorText, R.drawable.quick_apps_title);
-                                            ImageUtil.setImageDrawable(uiPos, R.drawable.main_ui_indicator_center);
+                                            ImageUtil.setImageDrawable(uiIndicatorText.view, R.drawable.quick_apps_title);
+                                            ImageUtil.setImageDrawable(uiPos.view, R.drawable.main_ui_indicator_center);
                                         }else if (uiSelectorViews[1] == miniWindows) {
-                                            ImageUtil.setImageDrawable(uiIndicatorText, R.drawable.mini_windows_title);
-                                            ImageUtil.setImageDrawable(uiPos, R.drawable.main_ui_indicator_right);
+                                            ImageUtil.setImageDrawable(uiIndicatorText.view, R.drawable.mini_windows_title);
+                                            ImageUtil.setImageDrawable(uiPos.view, R.drawable.main_ui_indicator_right);
                                         }
                                     }
                                 },1);
@@ -216,57 +232,90 @@ public class MainUI {
     }
     private void setupListViews() {
         new QuickApps().setup();
-        yourApps.setBackgroundColor(Color.CYAN);
-        miniWindows.setBackgroundColor(Color.GREEN);
+        yourApps.view.setBackgroundColor(Color.CYAN);
+        miniWindows.view.setBackgroundColor(Color.GREEN);
 
-        RelativeLayout l = new RelativeLayout(c);
-        ImageUtil.setBackground(l, R.drawable.garbage);
-        miniWindows.addView(l);
-        ScrollView.LayoutParams params = (ScrollView.LayoutParams) l.getLayoutParams();
-        params.width = wUnit(100);
-        params.height = hUnit(200);
-        miniWindows.updateViewLayout(l, params);
+        SView l = new SView(new RelativeLayout(c), (ViewGroup) miniWindows.view);
+        ImageUtil.setBackground(l.view, R.drawable.garbage);
+        l.plot();
+        SView.Layout edit = l.openLayout();
+        edit.setWidth(wUnit(100));
+        edit.setHeight(hUnit(200));
+        edit.save();
 
-        l = new RelativeLayout(c);
-        ImageUtil.setBackground(l, R.drawable.garbage);
-        yourApps.addView(l);
-        params = (ScrollView.LayoutParams) l.getLayoutParams();
-        params.width = wUnit(100);
-        params.height = hUnit(200);
-        yourApps.updateViewLayout(l, params);
+        l = new SView(new RelativeLayout(c), (ViewGroup) yourApps.view);
+        ImageUtil.setBackground(l.view, R.drawable.garbage);
+        l.plot();
+        edit = l.openLayout();
+        edit.setWidth(wUnit(100));
+        edit.setHeight(hUnit(200));
+        edit.save();
     }
     public class QuickApps {
         public void setup() {
-            RelativeLayout container = new RelativeLayout(c);
-            quickApps.addView(container,new ScrollView.LayoutParams(wUnit(100), ScrollView.LayoutParams.WRAP_CONTENT));
+            SView container = new SView(new RelativeLayout(c), quickApps.view);
+            container.plot(wUnit(100), ScrollView.LayoutParams.WRAP_CONTENT);
             int[] drawables = new int[]{R.drawable.quick_apps_phone,R.drawable.quick_apps_sms,R.drawable.quick_apps_internet,R.drawable.quick_apps_calculator,R.drawable.quick_apps_contacts};
             for (int i = 0; i < drawables.length; i++) {
-                Item item = genItem(container);
-                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) item.container.getLayoutParams();
-                params.topMargin = i * params.height + wUnit(15);
-                ImageUtil.setImageDrawable(item.appIcon, drawables[i]);
+                final Item item = genItem(container.view);
+                SView.RLayout edit = item.container.openRLayout();
+
+
+                if (i == 4) {
+                    Util.generateViewId(item.appIcon.view);
+                    final SView et = new SView(new EditText(c), item.container.view);
+                    et.plot();
+                    SView.RLayout re = et.openRLayout();
+                    re.addRule(RelativeLayout.BELOW, item.appIcon.view.getId());
+                    re.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+                    re.setHeight(wUnit(50));
+                    re.save();
+
+                    et.view.setBackgroundColor(Color.RED);
+                    item.appIcon.view.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            et.view.requestFocus();
+                        }
+                    });
+                    ImageUtil.setImageDrawable(item.appIcon.view, drawables[i]);
+                    edit.setTopM(i * item.container.height() + wUnit(15)).setHeight(item.container.height() + wUnit(50)).save();
+                }else if (i == 3) {
+                    item.appIcon.view.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ((InputMethodManager)c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY,0);
+                        }
+                    });
+                    ImageUtil.setImageDrawable(item.appIcon.view, drawables[i]);
+                    edit.setTopM(i * item.container.height() + wUnit(15)).save();
+                }else{
+                    ImageUtil.setImageDrawable(item.appIcon.view, drawables[i]);
+                    edit.setTopM(i * item.container.height() + wUnit(15)).save();
+                }
             }
         }
-        private Item genItem(RelativeLayout parent) {
+        private Item genItem(View parent) {
             Item item;
-            RelativeLayout container = new RelativeLayout(c);
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int)(wUnit(85)), wUnit(100));
-            params.addRule(RelativeLayout.CENTER_HORIZONTAL);
-            parent.addView(container, params);
 
-            ImageView appIcon = new RoundedImageView(c);
-            RelativeLayout.LayoutParams iParams = new RelativeLayout.LayoutParams(params.width,params.width);
-            container.addView(appIcon, iParams);
+            SView container = new SView(new RelativeLayout(c), parent);
+            container.plot();
+            container.openRLayout().addRule(RelativeLayout.CENTER_HORIZONTAL).setWidth(wUnit(75)).setHeight(wUnit(100)).save();
+
+            SView appIcon = new SView(new RoundedImageView(c), container.view);
+            appIcon.plot(container.width(), container.width());
+
             item = new Item(container, appIcon);
             return item;
         }
         public class Item {
-            public RelativeLayout container;
-            public ImageView appIcon;
-            public Item(RelativeLayout container, ImageView appIcon) {
+            public SView container, appIcon;
+
+            public Item(SView container, SView appIcon) {
                 this.container = container;
                 this.appIcon = appIcon;
             }
         }
     }
 }
+

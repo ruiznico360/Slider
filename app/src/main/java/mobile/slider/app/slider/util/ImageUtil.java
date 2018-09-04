@@ -25,8 +25,8 @@ import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 
 public class ImageUtil {
-    public static void setImageDrawable(ImageView view, int id) {
-        view.setImageDrawable(getDrawable(id));
+    public static void setImageDrawable(View view, int id) {
+        ((ImageView)view).setImageDrawable(getDrawable(id));
     }
 
     public static void setBackground(View view, int id) {

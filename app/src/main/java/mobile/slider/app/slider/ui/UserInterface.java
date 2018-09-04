@@ -43,7 +43,7 @@ public class UserInterface {
     }
 
     public static void launchUI() {
-        if (UI.running()) {
+        if (UserInterface.running()) {
             return;
         }
         if (SystemOverlay.floater.floaterMovement.currentlyInTouch) {
@@ -53,6 +53,14 @@ public class UserInterface {
 
         UI = new UserInterface(SystemOverlay.service);
         UI.setup();
+    }
+
+    public static boolean shouldMove() {
+        if (UserInterface.running() && UI.touchEnabled) {
+            return true;
+        }else{
+            return false;
+        }
     }
 
     public void setup() {
@@ -103,14 +111,14 @@ public class UserInterface {
             }
         }
         container = new SWindowLayout(new UIView.UIContainer(c));
-        inner = new SView(((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.ui, null), container);
+        inner = new SView(((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.ui, null), container.layout);
 
         inner.view.findViewById(R.id.ui_main_layout).setBackgroundColor(SettingsUtil.getBackgroundColor());
 
         container.layout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (running()) {
+                if (shouldMove()) {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         int[] loc = new int[2];
                         container.layout.getLocationOnScreen(loc);
@@ -180,10 +188,11 @@ public class UserInterface {
     }
 
     public void backPressed() {
-        if (running()) {
+        if (shouldMove()) {
             remove();
         }
     }
+
     public void remove() {
         if (SystemOverlay.deviceStateListener.tasks.contains(deviceStateRunnable)) {
             SystemOverlay.deviceStateListener.tasks.remove(deviceStateRunnable);
@@ -203,10 +212,10 @@ public class UserInterface {
             public void run() {
                 UI.container.remove();
                 UI = null;
+                running = false;
                 SystemOverlay.floater.showFloater();
             }
         });
-        running = false;
         anim.start();
     }
     public static boolean running() {

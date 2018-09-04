@@ -28,6 +28,7 @@ import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.ui.Setup;
 import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.IntentExtra;
+import mobile.slider.app.slider.util.TaskHandler;
 import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
@@ -35,6 +36,7 @@ public class SystemOverlay extends Service {
     public static SystemOverlay service;
     public static Floater floater;
     public static DeviceStateListener deviceStateListener;
+    public static TaskHandler taskHandler;
 
     public static void start(Context c, String intent) {
         Intent i = new Intent(c,SystemOverlay.class);
@@ -102,8 +104,11 @@ public class SystemOverlay extends Service {
         if (!SettingsWriter.running) {
             SettingsWriter.init(getApplicationContext());
         }
+
         deviceStateListener = new DeviceStateListener();
         deviceStateListener.start();
+        taskHandler = new TaskHandler();
+
         if (intent != null) {
             if (intent.getExtras() != null) {
                 if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {

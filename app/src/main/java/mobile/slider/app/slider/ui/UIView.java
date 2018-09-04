@@ -3,30 +3,33 @@ package mobile.slider.app.slider.ui;
 import android.content.Context;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
+import java.util.Collection;
+
+import mobile.slider.app.slider.util.Util;
+
 public class UIView {
-    public static boolean shouldMove() {
-        if (UserInterface.UI != null && UserInterface.UI.touchEnabled) {
-            return true;
-        }else{
-            return false;
-        }
-    }
 
     public static class UIContainer extends RelativeLayout {
-        public UIContainer(Context c){
-            super(c);
-        }
+        public UIContainer(Context c){ super(c); }
+
         @Override
-        public boolean dispatchKeyEvent(KeyEvent event) {
+        public boolean dispatchKeyEventPreIme(KeyEvent event) {
             if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) || (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) || (event.getKeyCode() == KeyEvent.KEYCODE_HOME)) {
                 UserInterface.UI.backPressed();
                 return true;
             }
+            return super.dispatchKeyEventPreIme(event);
+        }
+
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent event) {
+
             return super.dispatchKeyEvent(event);
         }
     }
@@ -37,7 +40,7 @@ public class UIView {
         }
         @Override
         public boolean onTouchEvent(MotionEvent event) {
-            if (shouldMove()) {
+            if (UserInterface.shouldMove()) {
                 return super.onTouchEvent(event);
             }else{
                 return false;
@@ -53,7 +56,7 @@ public class UIView {
                 int scrollY = 0;
                 @Override
                 public void onScrollChanged() {
-                    if (shouldMove()) {
+                    if (UserInterface.shouldMove()) {
                         scrollY = MScrollView.this.getScrollY();
                     }else{
                         smoothScrollTo(0,scrollY);
@@ -63,7 +66,7 @@ public class UIView {
         }
         @Override
         public boolean onTouchEvent(MotionEvent event) {
-            if (shouldMove()) {
+            if (UserInterface.shouldMove()) {
                 return super.onTouchEvent(event);
             }else{
                 return false;

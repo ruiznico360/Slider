@@ -36,6 +36,14 @@ public class Anim {
         this.delay = 0;
     }
 
+    public static boolean isInAnim(View v) {
+        for (int i = 0; i < currentAnims.size(); i++) {
+            if (currentAnims.get(i).view == v) {
+                return true;
+            }
+        }
+        return false;
+    }
     public void addTag(String key, Object value) {
         tags.add(new AnimTag(key,value));
     }
@@ -87,9 +95,7 @@ public class Anim {
             @Override
             public void run() {
 //                if (UserInterface.UI != null && view == UserInterface.UI.inner.view) {
-//                    int[] loc = new int[2];
-//                    view.getLocationOnScreen(loc);
-//                    Util.log(view.getTranslationX() + " " +         loc[0]);
+//                    Util.log(translate.initX + " " + translate.xOffset);
 //                }
                 if (counter < speed) {
                     if (tags.size() != 0 && hasTag(OVERRIDE)) {
