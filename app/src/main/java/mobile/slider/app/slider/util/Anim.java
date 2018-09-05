@@ -30,7 +30,7 @@ public class Anim {
     private Runnable onStart, onEnd;
     private Translate translate;
     private Alpha alpha;
-    private boolean cancelled = false;
+    public boolean cancelled = false;
 
     public Anim(Context c, SView view, int duration) {
         this.c = c;

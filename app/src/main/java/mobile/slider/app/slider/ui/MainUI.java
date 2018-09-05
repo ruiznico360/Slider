@@ -5,10 +5,12 @@ import android.content.Context;
 import android.graphics.Color;
 import android.hardware.input.InputManager;
 import android.media.Image;
+import android.os.Build;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
@@ -267,7 +269,7 @@ public class MainUI {
                     item.appIcon.view.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Anim anim = new Anim(c, inner, 150);
+                            final Anim anim = new Anim(c, inner, 150);
                             if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
                                 anim.addTranslate(inner.width(),0);
                             }else{
@@ -277,30 +279,37 @@ public class MainUI {
                             anim.setEnd(new Runnable() {
                                 @Override
                                 public void run() {
-                                    inner.view.setVisibility(View.INVISIBLE);
-                                    remove();
-                                    int toWidth = UserInterface.relativeWidth() / 2;
-                                    UserInterface.UI.resize(toWidth, UserInterface.relativeHeight());
+                                    if (!anim.cancelled) {
+                                        inner.view.setVisibility(View.INVISIBLE);
+                                        remove();
+                                        int toWidth = UserInterface.relativeWidth() / 2;
+                                        UserInterface.UI.resize(toWidth, UserInterface.relativeHeight());
 
-                                    Anim anim = new Anim(c, inner, 25);
-                                    if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-                                        anim.addTranslate(toWidth, 0, 0,0);
-                                    }else{
-                                        anim.addTranslate(-toWidth, toWidth, 0,0);
+                                        final Anim anim = new Anim(c, inner, 25);
+                                        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+                                            anim.addTranslate(toWidth, -toWidth, 0, 0);
+                                        } else {
+                                            anim.addTranslate(-toWidth, toWidth, 0, 0);
+                                        }
+                                        anim.setStart(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                inner.view.setVisibility(View.VISIBLE);
+                                            }
+                                        });
+                                        anim.setEnd(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                UserInterface.UI.touchEnabled = true;
+                                            }
+                                        });
+                                        UserInterface.UI.container.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                anim.start();
+                                            }
+                                        });
                                     }
-                                    anim.setStart(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            inner.view.setVisibility(View.VISIBLE);
-                                        }
-                                    });
-                                    anim.setEnd(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            UserInterface.UI.touchEnabled = true;
-                                        }
-                                    });
-                                    anim.start();
                                 }
                             });
                             anim.start();

@@ -3,8 +3,10 @@ package mobile.slider.app.slider.model.SView;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 
+import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.Anim;
 
 public class SView {
@@ -12,6 +14,12 @@ public class SView {
     public ViewGroup container;
     public ViewGroup.LayoutParams params;
     public Anim currentAnim;
+
+    public SView(View view, View container) {
+        this.view = view;
+        this.container = (ViewGroup) container;
+    }
+
     public int x() {
         int[] loc = new int[2];
         view.getLocationOnScreen(loc);
@@ -43,10 +51,18 @@ public class SView {
             return params.height;
         }
     }
-
-    public SView(View view, View container) {
-        this.view = view;
-        this.container = (ViewGroup) container;
+    public void post(final Runnable r) {
+        view.getViewTreeObserver().addOnGlobalLayoutListener (new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (Build.VERSION.SDK_INT > 16) {
+                    view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }else {
+                    view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
+                r.run();
+            }
+        });
     }
     public void plot() {
         container.addView(view);

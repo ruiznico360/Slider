@@ -1,6 +1,8 @@
 package mobile.slider.app.slider.model.SView;
 
 import android.content.Context;
+import android.os.Build;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
@@ -9,6 +11,24 @@ import mobile.slider.app.slider.services.SystemOverlay;
 public class SWindowLayout {
     public RelativeLayout layout;
     public WindowManager.LayoutParams params;
+
+    public SWindowLayout(RelativeLayout layout) {
+        this.layout = layout;
+    }
+
+    public void post(final Runnable r) {
+        layout.getViewTreeObserver().addOnGlobalLayoutListener (new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (Build.VERSION.SDK_INT > 16) {
+                    layout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }else {
+                    layout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
+                r.run();
+            }
+        });
+    }
 
     public int x() {
         return params.x;
@@ -31,9 +51,6 @@ public class SWindowLayout {
         }
     }
 
-    public SWindowLayout(RelativeLayout layout) {
-        this.layout = layout;
-    }
 
     public void plot(WindowManager.LayoutParams params) {
         plot(params.x, params.y,params.width,params.height,params.type,params.flags,params.format,params.gravity, params.screenOrientation);
