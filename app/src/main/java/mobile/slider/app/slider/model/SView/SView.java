@@ -5,10 +5,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+import mobile.slider.app.slider.util.Anim;
+
 public class SView {
     public View view;
     public ViewGroup container;
     public ViewGroup.LayoutParams params;
+    public Anim currentAnim;
     public int x() {
         int[] loc = new int[2];
         view.getLocationOnScreen(loc);

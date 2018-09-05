@@ -26,26 +26,28 @@ import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;
 
 public class MainUI {
-    public float WUNIT,HUNIT;
     public boolean canMoveUISelector = true;
     public SView inner, uiSelector, yourApps, quickApps, miniWindows, logo, uiPos, uiIndicatorText;
     public ViewGroup mainLayout;
     public Context c;
 
-    public MainUI(float widthUnit, float heightUnit, Context context, SView inner) {
-        this.WUNIT = widthUnit;
-        this.HUNIT = heightUnit;
+    public MainUI(Context context, SView inner) {
         this.c = context;
         this.inner = inner;
     }
 
 
     public int wUnit(int percent) {
-        return (int)(WUNIT * percent);
+        return (int)(UserInterface.UI.width / 100f * percent);
     }
     public int hUnit(int percent) {
-        return (int)(HUNIT * percent);
+        return (int)(UserInterface.UI.height / 100f * percent);
     }
+
+    public void remove() {
+        mainLayout.removeAllViews();
+    }
+
     public void setup() {
         mainLayout = inner.view.findViewById(R.id.ui_main_layout);
 
@@ -189,7 +191,7 @@ public class MainUI {
                             scrollTo = uiSelector.x() - sWidth - uiSelectorLayout.x();
                         }
 
-                        Anim anim = UserInterface.uiAnim(c, uiSelectorLayout.view, 150);
+                        Anim anim = UserInterface.uiAnim(c, uiSelectorLayout, 150);
                         anim.addTranslate(scrollTo,0);
                         anim.setEnd(new Runnable() {
                             @Override
@@ -259,39 +261,51 @@ public class MainUI {
             for (int i = 0; i < drawables.length; i++) {
                 final Item item = genItem(container.view);
                 SView.RLayout edit = item.container.openRLayout();
-
-
-                if (i == 4) {
-                    Util.generateViewId(item.appIcon.view);
-                    final SView et = new SView(new EditText(c), item.container.view);
-                    et.plot();
-                    SView.RLayout re = et.openRLayout();
-                    re.addRule(RelativeLayout.BELOW, item.appIcon.view.getId());
-                    re.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-                    re.setHeight(wUnit(50));
-                    re.save();
-
-                    et.view.setBackgroundColor(Color.RED);
+                ImageUtil.setImageDrawable(item.appIcon.view, drawables[i]);
+                edit.setTopM(i * item.container.height() + wUnit(15)).save();
+                if (i == 0) {
                     item.appIcon.view.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            et.view.requestFocus();
+                            Anim anim = new Anim(c, inner, 150);
+                            if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+                                anim.addTranslate(inner.width(),0);
+                            }else{
+                                anim.addTranslate(-inner.width(),0);
+                            }
+                            UserInterface.UI.touchEnabled = false;
+                            anim.setEnd(new Runnable() {
+                                @Override
+                                public void run() {
+                                    inner.view.setVisibility(View.INVISIBLE);
+                                    remove();
+                                    int toWidth = UserInterface.relativeWidth() / 2;
+                                    UserInterface.UI.resize(toWidth, UserInterface.relativeHeight());
+
+                                    Anim anim = new Anim(c, inner, 25);
+                                    if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+                                        anim.addTranslate(toWidth, 0, 0,0);
+                                    }else{
+                                        anim.addTranslate(-toWidth, toWidth, 0,0);
+                                    }
+                                    anim.setStart(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            inner.view.setVisibility(View.VISIBLE);
+                                        }
+                                    });
+                                    anim.setEnd(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            UserInterface.UI.touchEnabled = true;
+                                        }
+                                    });
+                                    anim.start();
+                                }
+                            });
+                            anim.start();
                         }
                     });
-                    ImageUtil.setImageDrawable(item.appIcon.view, drawables[i]);
-                    edit.setTopM(i * item.container.height() + wUnit(15)).setHeight(item.container.height() + wUnit(50)).save();
-                }else if (i == 3) {
-                    item.appIcon.view.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            ((InputMethodManager)c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY,0);
-                        }
-                    });
-                    ImageUtil.setImageDrawable(item.appIcon.view, drawables[i]);
-                    edit.setTopM(i * item.container.height() + wUnit(15)).save();
-                }else{
-                    ImageUtil.setImageDrawable(item.appIcon.view, drawables[i]);
-                    edit.setTopM(i * item.container.height() + wUnit(15)).save();
                 }
             }
         }
@@ -300,7 +314,7 @@ public class MainUI {
 
             SView container = new SView(new RelativeLayout(c), parent);
             container.plot();
-            container.openRLayout().addRule(RelativeLayout.CENTER_HORIZONTAL).setWidth(wUnit(75)).setHeight(wUnit(100)).save();
+            container.openRLayout().addRule(RelativeLayout.CENTER_HORIZONTAL).setWidth(wUnit(85)).setHeight(wUnit(100)).save();
 
             SView appIcon = new SView(new RoundedImageView(c), container.view);
             appIcon.plot(container.width(), container.width());

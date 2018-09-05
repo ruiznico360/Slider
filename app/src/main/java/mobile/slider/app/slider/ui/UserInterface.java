@@ -32,6 +32,7 @@ public class UserInterface {
     public static UserInterface UI;
 
     public Context c;
+    public float width, height;
     public Runnable deviceStateRunnable;
     public SWindowLayout container;
     public SView inner;
@@ -63,19 +64,36 @@ public class UserInterface {
         }
     }
 
+    public static int relativeWidth() {
+        if (Util.screenHeight() > Util.screenWidth()) {
+            return Util.screenWidth();
+        }else{
+            return Util.screenHeight();
+
+        }
+    }
+    public static int relativeHeight() {
+        if (Util.screenHeight() > Util.screenWidth()) {
+            return Util.screenHeight();
+        }else{
+            return Util.screenWidth();
+
+        }
+    }
+    public void resize(int width, int height) {
+        SWindowLayout.Layout edit = container.openLayout();
+        edit.setWidth(width);
+        edit.setHeight(height);
+        edit.save();
+
+        this.height = height;
+        this.width = width;
+    }
     public void setup() {
         running = true;
-        float WUNIT, HUNIT;
-        int size;
-        if (Util.screenHeight() > Util.screenWidth()) {
-            size = Util.screenWidth() / 4;
-            HUNIT = Util.screenHeight() / 100f;
-            WUNIT = size / 100f;
-        }else{
-            size = Util.screenHeight() / 4;
-            HUNIT = Util.screenWidth() / 100f;
-            WUNIT = size / 100f;
-        }
+        int size = relativeWidth() / 4;
+        height = relativeHeight();
+        width = size;
 
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams();
         params.width = size;
@@ -144,11 +162,11 @@ public class UserInterface {
         editor.setHeight(RelativeLayout.LayoutParams.MATCH_PARENT);
         editor.save();
 
-        mainUI = new MainUI(WUNIT, HUNIT, c, inner);
+        mainUI = new MainUI(c, inner);
         mainUI.setup();
 
         //view inv until start
-        Anim anim = new Anim(SystemOverlay.service, inner.view, 75);
+        Anim anim = new Anim(SystemOverlay.service, inner, 75);
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             anim.addTranslate(inner.width(), -inner.width(),0,0);
         }else {
@@ -198,9 +216,13 @@ public class UserInterface {
             SystemOverlay.deviceStateListener.tasks.remove(deviceStateRunnable);
         }
 
+        if (inner.currentAnim != null) {
+            inner.currentAnim.cancel();
+        }
         deviceStateRunnable = null;
 
-        Anim anim = new Anim(SystemOverlay.service, inner.view, 150);
+        Util.log("starting anim ");
+        Anim anim = new Anim(SystemOverlay.service, inner, 150);
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             anim.addTranslate(inner.width(),0);
         }else {
@@ -224,7 +246,7 @@ public class UserInterface {
         }
         return false;
     }
-    public static Anim uiAnim(Context c, View view, int duration) {
+    public static Anim uiAnim(Context c, SView view, int duration) {
         Anim a = new Anim(c,view,duration);
         a.addTag(Anim.OVERRIDE, UI.inner.view);
         return a;

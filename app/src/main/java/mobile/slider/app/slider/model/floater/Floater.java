@@ -54,10 +54,8 @@ public class Floater extends SView {
             @Override
             public void run() {
                 if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
-                    Util.log("recreating floater");
                     createFloater(SystemOverlay.floater.getVisibility());
                     if (floaterMovement.garbage != null) {
-                        Util.log("removed garbage");
                         floaterMovement.garbage.sContainer.remove();
                     }
                 }
@@ -355,7 +353,7 @@ public class Floater extends SView {
         floaterMovement.enableTouch(false);
         setVisibility(View.INVISIBLE);
 
-        Anim anim = new Anim(SystemOverlay.service, view, 100);
+        Anim anim = new Anim(SystemOverlay.service, this, 100);
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
             anim.addTranslate(-width(),0);
         }else{
@@ -374,7 +372,7 @@ public class Floater extends SView {
         setVisibility(View.VISIBLE);
         updateVisibility();
 
-        Anim anim = new Anim(SystemOverlay.service, view, 100);
+        Anim anim = new Anim(SystemOverlay.service, this, 100);
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
             anim.addTranslate(-width(),width(),0,0);
         }else{
@@ -431,7 +429,7 @@ public class Floater extends SView {
             editor.addRule(RelativeLayout.CENTER_IN_PARENT);
             editor.save();
 
-            Anim anim = new Anim(SystemOverlay.service, view, 300);
+            Anim anim = new Anim(SystemOverlay.service, this, 300);
             anim.addAlpha(Anim.FADE_IN);
             anim.start();
         }
