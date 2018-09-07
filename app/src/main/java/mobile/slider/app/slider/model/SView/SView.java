@@ -118,6 +118,15 @@ public class SView {
     public class RLayout extends Layout {
         public int leftM, topM, rightM, bottomM;
 
+        public RLayout setWidth(float width) {
+            super.setWidth(width);
+            return this;
+        }
+        public RLayout setHeight(float height) {
+            super.setHeight(height);
+            return this;
+        }
+
         public RLayout addRule(int rule) {
             ((RelativeLayout.LayoutParams) params).addRule(rule);
             return this;

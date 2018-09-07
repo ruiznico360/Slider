@@ -1,12 +1,18 @@
 package mobile.slider.app.slider.ui;
 
 import android.annotation.SuppressLint;
+import android.content.ContentUris;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.hardware.input.InputManager;
 import android.media.Image;
 import android.os.Build;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.provider.ContactsContract;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,13 +23,21 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
+
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Random;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.model.RoundedImageView;
+import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.util.Anim;
+import mobile.slider.app.slider.util.Contact;
 import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;
 
@@ -262,9 +276,8 @@ public class MainUI {
             int[] drawables = new int[]{R.drawable.quick_apps_phone,R.drawable.quick_apps_sms,R.drawable.quick_apps_internet,R.drawable.quick_apps_calculator,R.drawable.quick_apps_contacts};
             for (int i = 0; i < drawables.length; i++) {
                 final Item item = genItem(container.view);
-                SView.RLayout edit = item.container.openRLayout();
                 ImageUtil.setImageDrawable(item.appIcon.view, drawables[i]);
-                edit.setTopM(i * item.container.height() + wUnit(15)).save();
+
                 if (i == 0) {
                     item.appIcon.view.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -315,6 +328,29 @@ public class MainUI {
                             anim.start();
                         }
                     });
+                    SView.RLayout edit = item.container.openRLayout();
+                    edit.setTopM(i * item.container.height() + wUnit(15)).save();
+                }else if (i == 4) {
+                    SView.RLayout edit = item.container.openRLayout();
+                    edit.setTopM(i * item.container.height() + wUnit(15)).setHeight(item.container.height() + hUnit(10)).save();
+
+                    final SView text = new SView(new TextView(c), item.container.view);
+                    text.plot();
+                    text.openRLayout().setHeight(hUnit(10)).setWidth(item.container.width()).addRule(RelativeLayout.ALIGN_PARENT_BOTTOM).save();
+                    item.appIcon.view.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ArrayList<Contact> cList = new ArrayList<Contact>();
+                            Contact.retrieveContacts(cList);
+                            int sel = new Random().nextInt(cList.size());
+                            ((ImageView)item.appIcon.view).setImageBitmap(cList.get(sel).getPhoto());
+                            ((TextView)text.view).setText(cList.get(sel).name);
+                        }
+                    });
+
+                }else {
+                    SView.RLayout edit = item.container.openRLayout();
+                    edit.setTopM(i * item.container.height() + wUnit(15)).save();
                 }
             }
         }
