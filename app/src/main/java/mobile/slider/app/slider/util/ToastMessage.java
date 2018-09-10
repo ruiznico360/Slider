@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.services.SystemOverlay;
 
 public class ToastMessage {
     public static final String HIDING_FLOATER = "hiding_floater";
@@ -41,11 +42,9 @@ public class ToastMessage {
             size = Util.screenHeight() / 9;
         }
 
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams((Util.screenWidth() / 8) * 7,
-                size, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN + WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, PixelFormat.TRANSLUCENT);
-
+        final WindowManager.LayoutParams params = SystemOverlay.newWindow(false);
+        params.width = (Util.screenWidth() / 8) * 7;
+        params.height = size;
         params.y = Util.screenHeight() - (size * 3);
         params.gravity = Gravity.TOP;
 

@@ -100,16 +100,9 @@ public class Floater extends SView {
         final RelativeLayout container = new RelativeLayout(SystemOverlay.service);
         SystemOverlay.floater = new Floater(floater, container, visibility);
 
-        int floaterType;
-        if (Util.isLocked(SystemOverlay.service)) {
-            floaterType = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
-        }else{
-            floaterType = WindowManager.LayoutParams.TYPE_PHONE;
-        }
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
-                SettingsUtil.getFloaterSize(), floaterType,
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        + WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT);
+        final WindowManager.LayoutParams params = SystemOverlay.newWindow(false);
+        params.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        params.height = SettingsUtil.getFloaterSize();
 
         int innerG = 0;
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.RIGHT)) {
@@ -403,9 +396,9 @@ public class Floater extends SView {
             this.trash = new SView(trash, gradient);
         }
         public void plot() {
-            final WindowManager.LayoutParams params = new WindowManager.LayoutParams(Util.screenWidth(),
-                    SettingsUtil.getFloaterSize() * 2, WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD, PixelFormat.TRANSLUCENT);
+            final WindowManager.LayoutParams params = SystemOverlay.newWindow(false);
+            params.width = Util.screenWidth();
+            params.height = SettingsUtil.getFloaterSize() * 2;
             params.gravity = Gravity.BOTTOM;
             sContainer.plot(params);
             super.plot();

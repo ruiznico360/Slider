@@ -1,6 +1,7 @@
 package mobile.slider.app.slider.ui;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -17,6 +18,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
@@ -271,7 +274,7 @@ public class MainUI {
     }
     public class QuickApps {
         public void setup() {
-            SView container = new SView(new RelativeLayout(c), quickApps.view);
+            final SView container = new SView(new RelativeLayout(c), quickApps.view);
             container.plot(wUnit(100), ScrollView.LayoutParams.WRAP_CONTENT);
             int[] drawables = new int[]{R.drawable.quick_apps_phone,R.drawable.quick_apps_sms,R.drawable.quick_apps_internet,R.drawable.quick_apps_calculator,R.drawable.quick_apps_contacts};
             for (int i = 0; i < drawables.length; i++) {
@@ -348,7 +351,16 @@ public class MainUI {
                         }
                     });
 
-                }else {
+                }else if (i == 1) {
+                    SView.RLayout edit = item.container.openRLayout();
+                    edit.setTopM(i * item.container.height() + wUnit(15)).setHeight(item.container.height() + hUnit(10)).save();
+                    item.appIcon.view.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            mainLayout.setTranslationX(-100);
+                        }
+                    });
+                }else{
                     SView.RLayout edit = item.container.openRLayout();
                     edit.setTopM(i * item.container.height() + wUnit(15)).save();
                 }

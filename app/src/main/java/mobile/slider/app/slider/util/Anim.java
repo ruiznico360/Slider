@@ -93,7 +93,6 @@ public class Anim {
     public void cancel() {
         cancelled = true;
         finishAnim();
-        Util.log("cancelled");
     }
     public void start() {
         speed = (float) duration / (1000f / 42f);

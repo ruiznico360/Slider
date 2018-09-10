@@ -2,6 +2,7 @@ package mobile.slider.app.slider.ui;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -33,12 +34,23 @@ public class Setup extends Activity {
         if (Build.VERSION.SDK_INT >= 23) {
             requestSystemAlertWindow();
         }
+        if (!notificationAccess(this)) {
+            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
+            startActivity(intent);
+        }
     }
     public static boolean hasAllReqPermissions(Context c) {
-        if (canUseOverlay(c) && canReadContacts(c)) {
+        if (canUseOverlay(c) && canReadContacts(c) && notificationAccess(c)) {
             return true;
         }
         return false;
+    }
+    public static boolean notificationAccess(Context c) {
+        String s = Settings.Secure.getString(c.getContentResolver(),"enabled_notification_listeners");
+        if (Build.VERSION.SDK_INT >= 26 && (s == null || !s.contains(c.getPackageName()))) {
+            return false;
+        }
+        return true;
     }
     public static boolean canUseOverlay(Context c) {
         if (Build.VERSION.SDK_INT >= 23) {

@@ -95,21 +95,9 @@ public class UserInterface {
         height = relativeHeight();
         width = size;
 
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        final WindowManager.LayoutParams params = SystemOverlay.newWindow(true);
         params.width = size;
         params.height = WindowManager.LayoutParams.MATCH_PARENT;
-        params.format = PixelFormat.TRANSLUCENT;
-        params.flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED + WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD + WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
-
-        if (Util.isLocked(SystemOverlay.service.getApplicationContext())) {
-            if (params.type != WindowManager.LayoutParams.TYPE_SYSTEM_ERROR) {
-                params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
-            }
-        }else{
-            if (params.type != WindowManager.LayoutParams.TYPE_PHONE) {
-                params.type = WindowManager.LayoutParams.TYPE_PHONE;
-            }
-        }
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             params.gravity = Gravity.BOTTOM;
             params.x = Util.screenWidth() - params.width;
@@ -221,7 +209,6 @@ public class UserInterface {
         }
         deviceStateRunnable = null;
 
-        Util.log("starting anim ");
         Anim anim = new Anim(SystemOverlay.service, inner, 150);
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             anim.addTranslate(inner.width(),0);

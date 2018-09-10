@@ -1,19 +1,24 @@
 package mobile.slider.app.slider.services;
 
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.service.notification.NotificationListenerService;
 import android.support.v4.app.NotificationCompat;
 import android.view.View;
 import android.view.WindowManager;
@@ -33,6 +38,11 @@ import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
 public class SystemOverlay extends Service {
+    public static final int SERV_ID = 1234567;
+    public static final String CHANNEL_NAME = "Slider Notification Channel";
+    public static final String CHANNEL_ID = "SliderNotfChannel";
+    public static final String CHANNEL_DESC= "Notification Channel for Slider Notifications.";
+
     public static SystemOverlay service;
     public static Floater floater;
     public static DeviceStateListener deviceStateListener;
@@ -99,7 +109,45 @@ public class SystemOverlay extends Service {
             }
         }
     }
+    public static WindowManager.LayoutParams newWindow(boolean watchOutsideTouch) {
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        if (Build.VERSION.SDK_INT < 26) {
+            params.format = PixelFormat.TRANSLUCENT;
 
+            if (watchOutsideTouch) {
+                params.flags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
+            }else {
+                params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN + WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
+            }
+
+            if (Util.isLocked(SystemOverlay.service.getApplicationContext())) {
+                if (params.type != WindowManager.LayoutParams.TYPE_SYSTEM_ERROR) {
+                    params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
+                }
+            }else{
+                if (params.type != WindowManager.LayoutParams.TYPE_PHONE) {
+                    params.type = WindowManager.LayoutParams.TYPE_PHONE;
+                }
+            }
+        }else{
+            params.format = PixelFormat.TRANSLUCENT;
+            if (watchOutsideTouch) {
+                params.flags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
+            }else {
+                params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN + WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
+            }
+            params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+
+//            if (Util.isLocked(SystemOverlay.service.getApplicationContext())) {
+//                params.flags +=
+//            }else{
+//                if (params.type != WindowManager.LayoutParams.TYPE_PHONE) {
+//                    params.type = WindowManager.LayoutParams.TYPE_PHONE;
+//                }
+//            }
+        }
+        return params;
+    }
     public void processIntent(Intent intent) {
         if (!SettingsWriter.running) {
             SettingsWriter.init(getApplicationContext());
@@ -132,29 +180,36 @@ public class SystemOverlay extends Service {
         }
     }
     public void startInForeground() {
-        Intent pi = new Intent();
+
+        Intent notificationIntent = new Intent();
         if(android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1){
-            pi.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-            pi.putExtra("android.provider.extra.APP_PACKAGE", getPackageName());
+            notificationIntent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+            notificationIntent.putExtra("android.provider.extra.APP_PACKAGE", getPackageName());
         }else if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-            pi.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-            pi.putExtra("app_package", getPackageName());
-            pi.putExtra("app_uid", getApplicationInfo().uid);
+            notificationIntent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+            notificationIntent.putExtra("app_package", getPackageName());
+            notificationIntent.putExtra("app_uid", getApplicationInfo().uid);
         }else {
-            pi.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            pi.addCategory(Intent.CATEGORY_DEFAULT);
-            pi.setData(Uri.parse("package:" + getPackageName()));
+            notificationIntent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            notificationIntent.addCategory(Intent.CATEGORY_DEFAULT);
+            notificationIntent.setData(Uri.parse("package:" + getPackageName()));
         }
+        PendingIntent pendingIntent=PendingIntent.getActivity(this,0,notificationIntent,0);
         RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_layout);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                pi, 0);
-        Notification notification = new NotificationCompat.Builder(this)
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.app_icon_status)
                 .setContent(contentView)
                 .setContentIntent(pendingIntent).build();
+        if(Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(CHANNEL_DESC);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(channel);
+        }
+        startForeground(SERV_ID, notification);
 
-        this.startForeground(1234567, notification);
     }
+
     public void startJob() {
 //        if (Build.VERSION.SDK_INT >= 21) {
 //            ComponentName mServiceComponent = new ComponentName(this, RestarterJobService.class);

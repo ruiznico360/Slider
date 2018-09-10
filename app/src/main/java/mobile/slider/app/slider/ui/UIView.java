@@ -21,7 +21,7 @@ public class UIView {
         @Override
         public boolean dispatchKeyEventPreIme(KeyEvent event) {
             if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) || (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) || (event.getKeyCode() == KeyEvent.KEYCODE_HOME)) {
-                UserInterface.UI.backPressed();
+                if (UserInterface.running()) UserInterface.UI.backPressed();
                 return true;
             }
             return super.dispatchKeyEventPreIme(event);
