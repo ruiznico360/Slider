@@ -111,8 +111,8 @@ public class SystemOverlay extends Service {
     }
     public static WindowManager.LayoutParams newWindow(boolean watchOutsideTouch) {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        params.format = PixelFormat.TRANSLUCENT;
         if (Build.VERSION.SDK_INT < 26) {
-            params.format = PixelFormat.TRANSLUCENT;
 
             if (watchOutsideTouch) {
                 params.flags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
@@ -130,7 +130,6 @@ public class SystemOverlay extends Service {
                 }
             }
         }else{
-            params.format = PixelFormat.TRANSLUCENT;
             if (watchOutsideTouch) {
                 params.flags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
             }else {
