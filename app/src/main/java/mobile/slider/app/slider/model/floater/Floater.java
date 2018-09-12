@@ -4,13 +4,11 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.os.Vibrator;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.Gravity;
@@ -49,19 +47,60 @@ public class Floater extends SView {
         this.floaterMovement = new FloaterController(SystemOverlay.service);
         currentOrientation = SystemOverlay.service.getResources().getConfiguration().orientation;
 
-        final boolean phoneStatus = Util.isLocked(SystemOverlay.service);
-        deviceStateRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
-                    createFloater(SystemOverlay.floater.getVisibility());
-                    if (floaterMovement.garbage != null) {
-                        floaterMovement.garbage.sContainer.remove();
+        genDeviceStateRunnable();
+    }
+    public void genDeviceStateRunnable() {
+        if (Util.VERSION < 26) {
+            final boolean phoneStatus = Util.isLocked(SystemOverlay.service);
+            deviceStateRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (!UserInterface.running()) {
+                        if (getVisibility() == View.INVISIBLE) {
+                            if (Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
+                                showFloater();
+                            }
+                        } else {
+                            if (!Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
+                                hideFloater();
+                                if (floaterMovement.garbage != null) {
+                                    floaterMovement.garbage.sContainer.remove();
+                                }
+                            }
+                        }
+                    }
+                    if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
+                        createFloater(SystemOverlay.floater.getVisibility());
+                        if (floaterMovement.garbage != null) {
+                            floaterMovement.garbage.sContainer.remove();
+                        }
                     }
                 }
-            }
-        };
-        SystemOverlay.deviceStateListener.tasks.add(deviceStateRunnable);
+            };
+            SystemOverlay.periodicRunnableHandler.tasks.add(deviceStateRunnable);
+        }else {
+            deviceStateRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (!UserInterface.running()) {
+                        if (getVisibility() == View.INVISIBLE) {
+                            if (!Util.isLocked(SystemOverlay.service.getApplicationContext()) && Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
+                                showFloater();
+                            }
+                        } else {
+                            if (Util.isLocked(SystemOverlay.service.getApplicationContext()) || !Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
+                                hideFloater();
+                                if (floaterMovement.garbage != null) {
+                                    floaterMovement.garbage.sContainer.remove();
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            SystemOverlay.periodicRunnableHandler.tasks.add(deviceStateRunnable);
+        }
+
     }
     public int floaterPosX(int width) {
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
@@ -91,8 +130,8 @@ public class Floater extends SView {
                 SystemOverlay.floater.floaterMovement.forceUp();
             }
             SystemOverlay.floater.sContainer.remove();
-            if (SystemOverlay.deviceStateListener.tasks.contains(SystemOverlay.floater.deviceStateRunnable)) {
-                SystemOverlay.deviceStateListener.tasks.remove(SystemOverlay.floater.deviceStateRunnable);
+            if (SystemOverlay.periodicRunnableHandler.tasks.contains(SystemOverlay.floater.deviceStateRunnable)) {
+                SystemOverlay.periodicRunnableHandler.tasks.remove(SystemOverlay.floater.deviceStateRunnable);
             }
         }
 
@@ -142,7 +181,6 @@ public class Floater extends SView {
         }else{
             SystemOverlay.floater.hideFloater();
         }
-
     }
 
     private void updateVisibility() {
@@ -343,6 +381,9 @@ public class Floater extends SView {
         }
     }
     public void hideFloater() {
+        if (currentAnim != null) {
+            currentAnim.cancel();
+        }
         floaterMovement.enableTouch(false);
         setVisibility(View.INVISIBLE);
 
@@ -362,6 +403,9 @@ public class Floater extends SView {
         anim.start();
     }
     public void showFloater() {
+        if (currentAnim != null) {
+            currentAnim.cancel();
+        }
         setVisibility(View.VISIBLE);
         updateVisibility();
 

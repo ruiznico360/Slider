@@ -1,6 +1,7 @@
 package mobile.slider.app.slider.model.SView;
 
 import android.os.Build;
+import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -60,13 +61,17 @@ public class SView {
                 }else {
                     view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
-                r.run();
+                new Handler().postDelayed(r,1);
             }
         });
     }
     public void plot() {
         container.addView(view);
         params = view.getLayoutParams();
+    }
+    public void remove() {
+        view.setVisibility(View.INVISIBLE);
+        container.removeView(view);
     }
     public void plot(int width, int height) {
         params = new ViewGroup.LayoutParams(width,height);

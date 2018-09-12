@@ -20,6 +20,7 @@ import android.util.TimeUtils;
 import java.util.concurrent.TimeUnit;
 
 import mobile.slider.app.slider.ui.Slider;
+import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.Util;
 
 @TargetApi (26)
@@ -48,10 +49,14 @@ public class NotificationListener extends NotificationListenerService {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (getActiveNotifications() != null) {
-                    for (StatusBarNotification s : getActiveNotifications()) {
-                        checkNotification(s);
+                try {
+                    if (getActiveNotifications() != null) {
+                        for (StatusBarNotification s : getActiveNotifications()) {
+                            checkNotification(s);
+                        }
                     }
+                }catch (RuntimeException e) {
+                    new Handler().postDelayed(this,1);
                 }
             }
         },1);
@@ -66,8 +71,8 @@ public class NotificationListener extends NotificationListenerService {
     public void checkNotification(StatusBarNotification sbn) {
         if ((sbn.getTag() != null && sbn.getTag().contains(getPackageName()))) {
             snoozeNotification(sbn.getKey(), TimeUnit.DAYS.toMillis(1000));
-        }else if (sbn.getNotification().getChannelId() != null && (sbn.getNotification().getChannelId().equals(SystemOverlay.CHANNEL_ID))) {
-            snoozeNotification(sbn.getKey(), (1000));
+        }else if (sbn.getNotification().extras != null && (sbn.getNotification().extras.getInt(IntentExtra.SLIDER_NOTIFICATION_SETUP) == -1)) {
+            snoozeNotification(sbn.getKey(), (100));
         }
         if (SystemClock.uptimeMillis() - Slider.START_TIME > 50) {
             if ((sbn.getPackageName().equals("android")) && sbn.getTag() == null) {

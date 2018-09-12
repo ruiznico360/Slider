@@ -150,6 +150,8 @@ public class Anim {
 
     public void finishAnim() {
         view.currentAnim = null;
+        currentAnims.remove(Anim.this);
+
         if (onEnd != null) {
             onEnd.run();
         }
@@ -160,7 +162,6 @@ public class Anim {
         if (alpha != null) {
             view.view.setAlpha(1);
         }
-        currentAnims.remove(Anim.this);
     }
     public void setStart(Runnable r) {
         this.onStart = r;

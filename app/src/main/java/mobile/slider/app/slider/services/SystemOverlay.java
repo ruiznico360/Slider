@@ -1,6 +1,5 @@
 package mobile.slider.app.slider.services;
 
-import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -14,11 +13,11 @@ import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.provider.Settings;
-import android.service.notification.NotificationListenerService;
 import android.support.v4.app.NotificationCompat;
 import android.view.View;
 import android.view.WindowManager;
@@ -33,7 +32,6 @@ import mobile.slider.app.slider.settings.SettingsWriter;
 import mobile.slider.app.slider.ui.Setup;
 import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.IntentExtra;
-import mobile.slider.app.slider.util.TaskHandler;
 import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
@@ -45,8 +43,7 @@ public class SystemOverlay extends Service {
 
     public static SystemOverlay service;
     public static Floater floater;
-    public static DeviceStateListener deviceStateListener;
-    public static TaskHandler taskHandler;
+    public static PeriodicRunnableHandler periodicRunnableHandler;
 
     public static void start(Context c, String intent) {
         Intent i = new Intent(c,SystemOverlay.class);
@@ -136,14 +133,6 @@ public class SystemOverlay extends Service {
                 params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE + WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN + WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
             }
             params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-
-//            if (Util.isLocked(SystemOverlay.service.getApplicationContext())) {
-//                params.flags +=
-//            }else{
-//                if (params.type != WindowManager.LayoutParams.TYPE_PHONE) {
-//                    params.type = WindowManager.LayoutParams.TYPE_PHONE;
-//                }
-//            }
         }
         return params;
     }
@@ -152,29 +141,23 @@ public class SystemOverlay extends Service {
             SettingsWriter.init(getApplicationContext());
         }
 
-        deviceStateListener = new DeviceStateListener();
-        deviceStateListener.start();
-        taskHandler = new TaskHandler();
+        periodicRunnableHandler = new PeriodicRunnableHandler();
+        periodicRunnableHandler.start();
 
         if (intent != null) {
             if (intent.getExtras() != null) {
                 if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
-                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from UI");
                     Floater.createFloater(View.INVISIBLE);
                     UserInterface.launchUI();
                 }else if (intent.getExtras().containsKey(IntentExtra.SAFE_REBOOT_SERVICE)) {
-                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from Reboot");
                     Floater.createFloater(View.VISIBLE);
                 }else{
-                    Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from intent with no extras");
                     Floater.createFloater(View.VISIBLE);
                 }
             }else {
-                Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from intent with null extras");
                 Floater.createFloater(View.VISIBLE);
             }
         }else{
-            Util.sendNotification(getApplicationContext(), "SystemOverlay", "Created from null intent");
             Floater.createFloater(View.VISIBLE);
         }
     }
@@ -193,11 +176,15 @@ public class SystemOverlay extends Service {
             notificationIntent.addCategory(Intent.CATEGORY_DEFAULT);
             notificationIntent.setData(Uri.parse("package:" + getPackageName()));
         }
+
         PendingIntent pendingIntent=PendingIntent.getActivity(this,0,notificationIntent,0);
         RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_layout);
+        Bundle extras = new Bundle();
+        extras.putInt(IntentExtra.SLIDER_NOTIFICATION_SETUP, -1);
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.app_icon_status)
                 .setContent(contentView)
+                .addExtras(extras)
                 .setContentIntent(pendingIntent).build();
         if(Build.VERSION.SDK_INT >= 26) {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
@@ -244,7 +231,7 @@ public class SystemOverlay extends Service {
             return Util.screenHeight() / 10;
         }
     }
-    public class DeviceStateListener {
+    public class PeriodicRunnableHandler {
         public Handler handler = new Handler();
         public ArrayList<Runnable> tasks = new ArrayList<>();
 

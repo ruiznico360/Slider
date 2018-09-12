@@ -357,7 +357,14 @@ public class MainUI {
                     item.appIcon.view.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mainLayout.setTranslationX(-100);
+                            ((InputMethodManager) c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(0,1);
+                        }
+                    });
+                    item.appIcon.view.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            ((InputMethodManager) c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(1,0);
+                            return false;
                         }
                     });
                 }else{

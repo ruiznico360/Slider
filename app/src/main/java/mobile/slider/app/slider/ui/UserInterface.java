@@ -3,21 +3,12 @@ package mobile.slider.app.slider.ui;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.PixelFormat;
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.GestureDetector;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.SView.SView;
@@ -153,6 +144,8 @@ public class UserInterface {
         mainUI = new MainUI(c, inner);
         mainUI.setup();
 
+        genDeviceStateRunnable();
+
         //view inv until start
         Anim anim = new Anim(SystemOverlay.service, inner, 75);
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
@@ -174,23 +167,6 @@ public class UserInterface {
         });
         touchEnabled = false;
         anim.start();
-
-        final boolean phoneStatus = Util.isLocked(SystemOverlay.service.getApplicationContext());
-        deviceStateRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (running()) {
-                    if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
-                        remove();
-                        SystemOverlay.deviceStateListener.tasks.remove(this);
-                    }else if (!Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
-                        remove();
-                        SystemOverlay.deviceStateListener.tasks.remove(this);
-                    }
-                }
-            }
-        };
-        SystemOverlay.deviceStateListener.tasks.add(deviceStateRunnable);
     }
 
     public void backPressed() {
@@ -199,9 +175,45 @@ public class UserInterface {
         }
     }
 
+    public void genDeviceStateRunnable() {
+        if (Util.VERSION < 26) {
+            final boolean phoneStatus = Util.isLocked(SystemOverlay.service.getApplicationContext());
+            deviceStateRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (running()) {
+                        if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
+                            remove();
+                            SystemOverlay.periodicRunnableHandler.tasks.remove(this);
+                        } else if (!Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
+                            remove();
+                            SystemOverlay.periodicRunnableHandler.tasks.remove(this);
+                        }
+                    }
+                }
+            };
+            SystemOverlay.periodicRunnableHandler.tasks.add(deviceStateRunnable);
+        }else {
+            deviceStateRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (running()) {
+                        if (Util.isLocked(SystemOverlay.service.getApplicationContext())) {
+                            remove();
+                            SystemOverlay.periodicRunnableHandler.tasks.remove(this);
+                        }else if (!Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
+                            remove();
+                            SystemOverlay.periodicRunnableHandler.tasks.remove(this);
+                        }
+                    }
+                }
+            };
+            SystemOverlay.periodicRunnableHandler.tasks.add(deviceStateRunnable);
+        }
+    }
     public void remove() {
-        if (SystemOverlay.deviceStateListener.tasks.contains(deviceStateRunnable)) {
-            SystemOverlay.deviceStateListener.tasks.remove(deviceStateRunnable);
+        if (SystemOverlay.periodicRunnableHandler.tasks.contains(deviceStateRunnable)) {
+            SystemOverlay.periodicRunnableHandler.tasks.remove(deviceStateRunnable);
         }
 
         if (inner.currentAnim != null) {

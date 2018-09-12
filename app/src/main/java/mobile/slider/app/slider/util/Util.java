@@ -44,6 +44,8 @@ import mobile.slider.app.slider.ui.Slider;
 import static android.content.Context.POWER_SERVICE;
 
 public class Util {
+    public static final int VERSION = Build.VERSION.SDK_INT;
+
     public static View.OnTouchListener darkenAsPressed(final Runnable onClick) {
         return new View.OnTouchListener() {
             private boolean movable = true;

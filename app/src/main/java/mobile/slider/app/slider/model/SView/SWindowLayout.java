@@ -2,6 +2,8 @@ package mobile.slider.app.slider.model.SView;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
+import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
@@ -26,7 +28,7 @@ public class SWindowLayout {
                 }else {
                     layout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
-                r.run();
+                new Handler().postDelayed(r,1);
             }
         });
     }
@@ -63,6 +65,7 @@ public class SWindowLayout {
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).addView(layout, params);
     }
     public void remove() {
+        layout.setVisibility(View.INVISIBLE);
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).removeView(layout);
     }
     public SWindowLayout.Layout openLayout() {
