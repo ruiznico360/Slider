@@ -30,7 +30,7 @@ public class Anim {
     private Runnable onStart, onEnd;
     private Translate translate;
     private Alpha alpha;
-    public boolean cancelled = false;
+    public boolean cancelled = false, hideAfter = false;
 
     public Anim(Context c, SView view, int duration) {
         this.c = c;
@@ -47,6 +47,9 @@ public class Anim {
             }
         }
         return false;
+    }
+    public void setHideAfter() {
+        hideAfter = true;
     }
     public void addTag(String key, Object value) {
         tags.add(new AnimTag(key,value));
@@ -149,6 +152,9 @@ public class Anim {
     }
 
     public void finishAnim() {
+        if (hideAfter) {
+            view.view.setVisibility(View.INVISIBLE);
+        }
         view.currentAnim = null;
         currentAnims.remove(Anim.this);
 

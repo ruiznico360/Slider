@@ -29,9 +29,6 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     @TargetApi(Build.VERSION_CODES.N)
     public void onListenerDisconnected() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            requestRebind(new ComponentName(this, NotificationListenerService.class));
-        }
     }
     @Override
     @TargetApi(Build.VERSION_CODES.N)
@@ -43,7 +40,6 @@ public class NotificationListener extends NotificationListenerService {
 
     @Override
     public void onCreate() {
-        Util.log("created nl");
         super.onCreate();
 
         new Handler().postDelayed(new Runnable() {
@@ -74,8 +70,8 @@ public class NotificationListener extends NotificationListenerService {
         }else if (sbn.getNotification().extras != null && (sbn.getNotification().extras.getInt(IntentExtra.SLIDER_NOTIFICATION_SETUP) == -1)) {
             snoozeNotification(sbn.getKey(), (100));
         }
-        if (SystemClock.uptimeMillis() - Slider.START_TIME > 50) {
-            if ((sbn.getPackageName().equals("android")) && sbn.getTag() == null) {
+        if ((sbn.getPackageName().equals("android"))) {
+            if (sbn.getNotification().extras != null && sbn.getNotification().extras.get("android.title") != null && (sbn.getNotification().extras.get("android.title").toString().equals("Slider is displaying over other apps") || sbn.getNotification().extras.get("android.title").toString().equals("Slider is running in the background"))) {
                 snoozeNotification(sbn.getKey(), TimeUnit.DAYS.toMillis(1000));
             }
         }

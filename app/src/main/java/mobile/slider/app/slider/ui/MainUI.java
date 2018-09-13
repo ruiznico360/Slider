@@ -286,6 +286,7 @@ public class MainUI {
                         @Override
                         public void onClick(View v) {
                             final Anim anim = new Anim(c, inner, 150);
+                            anim.hideAfter = true;
                             if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
                                 anim.addTranslate(inner.width(),0);
                             }else{
@@ -296,7 +297,6 @@ public class MainUI {
                                 @Override
                                 public void run() {
                                     if (!anim.cancelled) {
-                                        inner.view.setVisibility(View.INVISIBLE);
                                         remove();
                                         int toWidth = UserInterface.relativeWidth() / 2;
                                         UserInterface.UI.resize(toWidth, UserInterface.relativeHeight());
