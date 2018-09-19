@@ -98,7 +98,6 @@ public class Anim {
         finishAnim();
     }
     public void start() {
-        speed = (float) duration / (1000f / 42f);
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override

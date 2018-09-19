@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.model.SView.SWindowLayout;
+import mobile.slider.app.slider.model.floater.Floater;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
@@ -234,7 +235,7 @@ public class UserInterface {
                 UI.container.remove();
                 UI = null;
                 running = false;
-                SystemOverlay.floater.showFloater();
+                SystemOverlay.floater.showFloater(Floater.SHOW_DELAY);
             }
         });
         anim.start();

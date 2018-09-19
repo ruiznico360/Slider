@@ -19,14 +19,6 @@ public class SettingsUtil {
     protected static float floaterPos;
     protected static boolean autoSelectAppTheme;
 
-    public static boolean checkPermissions(Context c) {
-        if (Build.VERSION.SDK_INT < 23) {
-            return true;
-        }else if (Settings.canDrawOverlays(c)) {
-            return true;
-        }
-        return false;
-    }
     public static int oppositeBackgroundShade(int color) {
         double darkness = 1-(0.299*Color.red(color) + 0.587*Color.green(color) + 0.114*Color.blue(color))/255;
         if(darkness<0.5){

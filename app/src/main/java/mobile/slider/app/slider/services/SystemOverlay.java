@@ -144,21 +144,11 @@ public class SystemOverlay extends Service {
         periodicRunnableHandler = new PeriodicRunnableHandler();
         periodicRunnableHandler.start();
 
-        if (intent != null) {
-            if (intent.getExtras() != null) {
-                if (intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
-                    Floater.createFloater(View.INVISIBLE);
-                    UserInterface.launchUI();
-                }else if (intent.getExtras().containsKey(IntentExtra.SAFE_REBOOT_SERVICE)) {
-                    Floater.createFloater(View.VISIBLE);
-                }else{
-                    Floater.createFloater(View.VISIBLE);
-                }
-            }else {
-                Floater.createFloater(View.VISIBLE);
-            }
+        if (intent != null && intent.getExtras() != null && intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
+            Floater.createFloater(View.INVISIBLE,0);
+            UserInterface.launchUI();
         }else{
-            Floater.createFloater(View.VISIBLE);
+            Floater.createFloater(View.VISIBLE,0);
         }
     }
     public void startInForeground() {

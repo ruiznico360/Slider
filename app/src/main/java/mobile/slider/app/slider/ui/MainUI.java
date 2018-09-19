@@ -301,7 +301,7 @@ public class MainUI {
                                         int toWidth = UserInterface.relativeWidth() / 2;
                                         UserInterface.UI.resize(toWidth, UserInterface.relativeHeight());
 
-                                        final Anim anim = new Anim(c, inner, 25);
+                                        final Anim anim = new Anim(c, inner, 100);
                                         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
                                             anim.addTranslate(toWidth, -toWidth, 0, 0);
                                         } else {

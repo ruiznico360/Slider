@@ -33,6 +33,7 @@ import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
 public class Floater extends SView {
+    public static final int SHOW_DELAY = 1000;
     public FloaterController floaterMovement;
     public SWindowLayout sContainer;
     public int currentOrientation, currentVisibility;
@@ -58,7 +59,7 @@ public class Floater extends SView {
                     if (!UserInterface.running()) {
                         if (getVisibility() == View.INVISIBLE) {
                             if (Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
-                                showFloater();
+                                showFloater(SHOW_DELAY);
                             }
                         } else {
                             if (!Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
@@ -70,7 +71,7 @@ public class Floater extends SView {
                         }
                     }
                     if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
-                        createFloater(SystemOverlay.floater.getVisibility());
+                        createFloater(SystemOverlay.floater.getVisibility(),SHOW_DELAY);
                         if (floaterMovement.garbage != null) {
                             floaterMovement.garbage.sContainer.remove();
                         }
@@ -85,7 +86,7 @@ public class Floater extends SView {
                     if (!UserInterface.running()) {
                         if (getVisibility() == View.INVISIBLE) {
                             if (!Util.isLocked(SystemOverlay.service.getApplicationContext()) && Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
-                                showFloater();
+                                showFloater(SHOW_DELAY);
                             }
                         } else {
                             if (Util.isLocked(SystemOverlay.service.getApplicationContext()) || !Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
@@ -123,8 +124,7 @@ public class Floater extends SView {
         }
         return (int)floaterPos;
     }
-
-    public static void createFloater(int visibility) {
+    public static void createFloater(int visibility, int delay) {
         if (SystemOverlay.floater != null) {
             if (SystemOverlay.floater.floaterMovement.currentlyInTouch) {
                 SystemOverlay.floater.floaterMovement.forceUp();
@@ -177,8 +177,12 @@ public class Floater extends SView {
         fEdit.save();
 
         if (visibility == View.VISIBLE) {
-            SystemOverlay.floater.showFloater();
+            SystemOverlay.floater.setVisibility(View.INVISIBLE);
+            SystemOverlay.floater.updateVisibility();
+            SystemOverlay.floater.showFloater(delay);
         }else{
+            SystemOverlay.floater.setVisibility(View.VISIBLE);
+            SystemOverlay.floater.updateVisibility();
             SystemOverlay.floater.hideFloater();
         }
     }
@@ -277,10 +281,10 @@ public class Floater extends SView {
                     SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
                     SettingsUtil.setFloaterPos(originalY);
                     SettingsUtil.setFloaterGravity(originalGravity);
-                    Floater.createFloater(View.INVISIBLE);
+                    Floater.createFloater(View.INVISIBLE,0);
                     ToastMessage.toast(c, ToastMessage.HIDING_FLOATER);
                 }else{
-                    Floater.createFloater(Floater.this.getVisibility());
+                    Floater.createFloater(Floater.this.getVisibility(),0);
                 }
                 garbage.sContainer.remove();
             }else{
@@ -402,12 +406,11 @@ public class Floater extends SView {
         });
         anim.start();
     }
-    public void showFloater() {
+    public void showFloater(int delay) {
         if (currentAnim != null) {
             currentAnim.cancel();
         }
         setVisibility(View.VISIBLE);
-        updateVisibility();
 
         Anim anim = new Anim(SystemOverlay.service, this, 100);
         if (SettingsUtil.getFloaterGravity().equals(WindowGravity.LEFT)) {
@@ -415,6 +418,13 @@ public class Floater extends SView {
         }else{
             anim.addTranslate(width(),-width(),0,0);
         }
+        anim.setStart(new Runnable() {
+            @Override
+            public void run() {
+                updateVisibility();
+            }
+        });
+        anim.delay = delay;
         anim.addAlpha(Anim.FADE_IN);
         anim.setEnd(new Runnable() {
             @Override
