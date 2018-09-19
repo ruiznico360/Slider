@@ -15,7 +15,7 @@
         android:textColor="#000"
         android:textSize="@dimen/activity_horizontal_margin"
         android:layout_marginLeft="10dp"
-        android:text="Slider is running"
+        android:text="Slider"
         android:id="@+id/notification_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -23,9 +23,19 @@
         android:layout_toRightOf="@id/notification_image"
         />
     <TextView
+        android:textSize="@dimen/activity_horizontal_margin"
+        android:layout_toRightOf="@id/notification_title"
+        android:textColor="#494949"
+        android:layout_marginLeft="5dp"
+        android:text="Setup is incomplete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        />
+    <TextView
         android:layout_marginLeft="10dp"
         android:textColor="#494949"
-        android:text="Click here to disable notification"
+        android:text="Click here to hide notifications"
         android:id="@+id/notification_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

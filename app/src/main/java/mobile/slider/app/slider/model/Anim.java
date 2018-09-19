@@ -1,17 +1,13 @@
-package mobile.slider.app.slider.util;
+package mobile.slider.app.slider.model;
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
 
 import java.util.ArrayList;
 
 import mobile.slider.app.slider.model.SView.SView;
-import mobile.slider.app.slider.ui.MainUI;
-import mobile.slider.app.slider.ui.UserInterface;
 
 public class Anim {
     public static final String FADE_IN = "IN";
@@ -98,6 +94,7 @@ public class Anim {
         finishAnim();
     }
     public void start() {
+        speed = (float) duration / (1000f / 42f);
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override

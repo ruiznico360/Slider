@@ -9,14 +9,7 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PixelFormat;
-import android.view.WindowManager;
 import android.widget.RelativeLayout;
-
-import mobile.slider.app.slider.settings.SettingsUtil;
-import mobile.slider.app.slider.util.IntentExtra;
-import mobile.slider.app.slider.util.Util;
 
 @TargetApi(21)
 public class RestarterJobService extends JobService {

@@ -1,29 +1,18 @@
 package mobile.slider.app.slider.services;
 
 import android.annotation.TargetApi;
-import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.support.annotation.RequiresApi;
-import android.util.Log;
-import android.util.TimeUtils;
 
 import java.util.concurrent.TimeUnit;
 
-import mobile.slider.app.slider.ui.Slider;
-import mobile.slider.app.slider.util.IntentExtra;
-import mobile.slider.app.slider.util.Util;
-
-@TargetApi (26)
+@RequiresApi(26)
 public class NotificationListener extends NotificationListenerService {
 
     @Override

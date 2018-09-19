@@ -6,13 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
-import android.graphics.Shader;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RectShape;
 import android.hardware.display.DisplayManager;
 import android.media.RingtoneManager;
 import android.os.Build;
@@ -21,25 +15,17 @@ import android.support.v4.app.NotificationCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.services.SystemOverlay;
-import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.ViewIdGenerator;
-import mobile.slider.app.slider.ui.Slider;
+import mobile.slider.app.slider.ui.activity.Slider;
 
 import static android.content.Context.POWER_SERVICE;
 
@@ -93,7 +79,7 @@ public class Util {
         Util.log(s);
     }
     public static void log(Object s) {
-        Log.d("Slider", s + "");
+        Log.d("SliderLog", s + "");
     }
 
     public static void sendNotification(Context c, String title, String text) {

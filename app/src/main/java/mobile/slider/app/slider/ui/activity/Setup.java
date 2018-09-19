@@ -1,8 +1,7 @@
-package mobile.slider.app.slider.ui;
+package mobile.slider.app.slider.ui.activity;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,8 +14,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.services.SystemOverlay;
-import mobile.slider.app.slider.util.Util;
 
 public class Setup extends Activity {
     public static final int SYSTEM_ALERT_WINDOW_CODE = 1;

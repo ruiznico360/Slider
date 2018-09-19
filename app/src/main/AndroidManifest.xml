@@ -12,22 +12,37 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
-        android:name=".util.SliderApplication"
+        android:name=".content.SliderApplication"
         android:allowBackup="true"
         android:icon="@drawable/app_icon"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.Slider"
-            android:theme="@android:style/Theme.NoDisplay">
+
+        <activity android:name=".ui.activity.Slider"
+            android:excludeFromRecents="true"
+            android:finishOnCloseSystemDialogs="true"
+            android:noHistory="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.activity.Setup"></activity>
+
+        <activity
+            android:name=".ui.activity.SettingsActivity"
+            android:autoRemoveFromRecents="true"
+            android:excludeFromRecents="true"
+            android:finishOnCloseSystemDialogs="true"
+            android:noHistory="true"
+            android:taskAffinity=".ui.SettingsActivity"
+            android:theme="@style/AppTheme.SettingsStyle" />
+
         <service android:name=".services.SystemOverlay" />
+
         <service
             android:name=".services.RestarterJobService"
             android:exported="true"
@@ -47,15 +62,5 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:autoRemoveFromRecents="true"
-            android:excludeFromRecents="true"
-            android:finishOnCloseSystemDialogs="true"
-            android:noHistory="true"
-            android:taskAffinity=".ui.SettingsActivity"
-            android:theme="@style/AppTheme.SettingsStyle" />
-        <activity android:name=".ui.Setup"></activity>
     </application>
-
 </manifest>

@@ -1,27 +1,18 @@
-package mobile.slider.app.slider.util;
+package mobile.slider.app.slider.model.contact;
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
-import android.util.Base64;
-import android.util.Log;
-import android.widget.ArrayAdapter;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.services.SystemOverlay;
-
-import static android.provider.VoicemailContract.Voicemails.NUMBER;
+import mobile.slider.app.slider.util.Util;
 
 public class Contact {
     public String id;

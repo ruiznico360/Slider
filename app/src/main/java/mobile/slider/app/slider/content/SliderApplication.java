@@ -1,4 +1,4 @@
-package mobile.slider.app.slider.util;
+package mobile.slider.app.slider.content;
 
 import android.app.Application;
 import android.content.Context;

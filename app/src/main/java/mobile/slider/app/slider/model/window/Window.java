@@ -168,7 +168,7 @@ public class Window {
                 final float speed = 5;
 
                 AnimationSet a = new AnimationSet(true);
-                a.addAnimation(AnimationUtils.loadAnimation(c, R.anim.shrink));
+//                a.addAnimation(AnimationUtils.loadAnimation(c, R.anim.shrink));
                 a.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {
@@ -246,7 +246,7 @@ public class Window {
                 ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE)).updateViewLayout(window, windowParams);
 
                 AnimationSet a = new AnimationSet(true);
-                a.addAnimation(AnimationUtils.loadAnimation(c, R.anim.grow));
+//                a.addAnimation(AnimationUtils.loadAnimation(c, R.anim.grow));
                 a.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {

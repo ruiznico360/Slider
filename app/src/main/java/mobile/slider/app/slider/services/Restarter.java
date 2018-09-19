@@ -2,17 +2,10 @@ package mobile.slider.app.slider.services;
 
 import android.app.ActivityManager;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-
-
-import mobile.slider.app.slider.settings.SettingsUtil;
-import mobile.slider.app.slider.settings.SettingsWriter;
-import mobile.slider.app.slider.util.IntentExtra;
-import mobile.slider.app.slider.util.Util;
 
 public class Restarter extends Service {
     public Restarter() {

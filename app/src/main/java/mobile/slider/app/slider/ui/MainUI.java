@@ -1,46 +1,29 @@
 package mobile.slider.app.slider.ui;
 
 import android.annotation.SuppressLint;
-import android.app.NotificationManager;
-import android.content.ContentUris;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.hardware.input.InputManager;
-import android.media.Image;
-import android.os.Build;
 import android.os.Handler;
-import android.os.SystemClock;
-import android.provider.ContactsContract;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Random;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.model.RoundedImageView;
-import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
-import mobile.slider.app.slider.util.Anim;
-import mobile.slider.app.slider.util.Contact;
+import mobile.slider.app.slider.model.Anim;
+import mobile.slider.app.slider.model.contact.Contact;
 import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;
 
@@ -68,7 +51,7 @@ public class MainUI {
     }
 
     public void setup() {
-        mainLayout = inner.view.findViewById(R.id.ui_main_layout);
+        mainLayout = (ViewGroup)inner.view;
 
         logo = new SView(new ImageView(c), mainLayout);
         uiPos = new SView(new ImageView(c), mainLayout);

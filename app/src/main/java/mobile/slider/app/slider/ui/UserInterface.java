@@ -17,7 +17,7 @@ import mobile.slider.app.slider.model.floater.Floater;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
-import mobile.slider.app.slider.util.Anim;
+import mobile.slider.app.slider.model.Anim;
 import mobile.slider.app.slider.util.Util;
 
 public class UserInterface {
@@ -109,9 +109,9 @@ public class UserInterface {
             }
         }
         container = new SWindowLayout(new UIView.UIContainer(c));
-        inner = new SView(((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.ui, null), container.layout);
+        inner = new SView(new RelativeLayout(c), container.layout);
 
-        inner.view.findViewById(R.id.ui_main_layout).setBackgroundColor(SettingsUtil.getBackgroundColor());
+        inner.view.setBackgroundColor(SettingsUtil.getBackgroundColor());
 
         container.layout.setOnTouchListener(new View.OnTouchListener() {
             @Override

@@ -29,9 +29,8 @@ import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.floater.Floater;
 import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.settings.SettingsWriter;
-import mobile.slider.app.slider.ui.Setup;
+import mobile.slider.app.slider.ui.activity.Setup;
 import mobile.slider.app.slider.ui.UserInterface;
-import mobile.slider.app.slider.util.IntentExtra;
 import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
@@ -145,10 +144,10 @@ public class SystemOverlay extends Service {
         periodicRunnableHandler.start();
 
         if (intent != null && intent.getExtras() != null && intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
-            Floater.createFloater(View.INVISIBLE,0);
-            UserInterface.launchUI();
+            Floater.createFloater(View.INVISIBLE);
         }else{
-            Floater.createFloater(View.VISIBLE,0);
+            Floater.createFloater(View.VISIBLE);
+            floater.showFloater(Floater.SHOW_DELAY);
         }
     }
     public void startInForeground() {

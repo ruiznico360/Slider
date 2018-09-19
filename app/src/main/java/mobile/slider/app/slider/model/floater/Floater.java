@@ -27,7 +27,9 @@ import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.FloaterUpdate;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.ui.UserInterface;
-import mobile.slider.app.slider.util.Anim;
+import mobile.slider.app.slider.model.Anim;
+import mobile.slider.app.slider.ui.activity.Setup;
+import mobile.slider.app.slider.ui.activity.Slider;
 import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
@@ -51,12 +53,24 @@ public class Floater extends SView {
         genDeviceStateRunnable();
     }
     public void genDeviceStateRunnable() {
+        final Runnable common = new Runnable() {
+            @Override
+            public void run() {
+                if (!Setup.hasAllReqPermissions(SystemOverlay.service)) {
+                    SystemOverlay.service.stopSelf();
+                }
+
+                if (Slider.running && getVisibility() == View.VISIBLE) {
+                    hideFloater();
+                }
+            }
+        };
         if (Util.VERSION < 26) {
             final boolean phoneStatus = Util.isLocked(SystemOverlay.service);
             deviceStateRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (!UserInterface.running()) {
+                    if (!UserInterface.running() && !Slider.running) {
                         if (getVisibility() == View.INVISIBLE) {
                             if (Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
                                 showFloater(SHOW_DELAY);
@@ -71,11 +85,18 @@ public class Floater extends SView {
                         }
                     }
                     if (phoneStatus != Util.isLocked(SystemOverlay.service.getApplicationContext())) {
-                        createFloater(SystemOverlay.floater.getVisibility(),SHOW_DELAY);
+                        int visibility = SystemOverlay.floater.getVisibility();
+                        createFloater(View.INVISIBLE);
+
+                        if (visibility == View.VISIBLE) {
+                            SystemOverlay.floater.showFloater(SHOW_DELAY);
+                        }
+
                         if (floaterMovement.garbage != null) {
                             floaterMovement.garbage.sContainer.remove();
                         }
                     }
+                    common.run();
                 }
             };
             SystemOverlay.periodicRunnableHandler.tasks.add(deviceStateRunnable);
@@ -83,7 +104,7 @@ public class Floater extends SView {
             deviceStateRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (!UserInterface.running()) {
+                    if (!UserInterface.running() && !Slider.running) {
                         if (getVisibility() == View.INVISIBLE) {
                             if (!Util.isLocked(SystemOverlay.service.getApplicationContext()) && Util.isScreenOn(SystemOverlay.service.getApplicationContext())) {
                                 showFloater(SHOW_DELAY);
@@ -97,6 +118,7 @@ public class Floater extends SView {
                             }
                         }
                     }
+                    common.run();
                 }
             };
             SystemOverlay.periodicRunnableHandler.tasks.add(deviceStateRunnable);
@@ -124,7 +146,7 @@ public class Floater extends SView {
         }
         return (int)floaterPos;
     }
-    public static void createFloater(int visibility, int delay) {
+    public static void createFloater(int visibility) {
         if (SystemOverlay.floater != null) {
             if (SystemOverlay.floater.floaterMovement.currentlyInTouch) {
                 SystemOverlay.floater.floaterMovement.forceUp();
@@ -175,16 +197,6 @@ public class Floater extends SView {
         fEdit.addRule(RelativeLayout.CENTER_VERTICAL);
         fEdit.addRule(innerG);
         fEdit.save();
-
-        if (visibility == View.VISIBLE) {
-            SystemOverlay.floater.setVisibility(View.INVISIBLE);
-            SystemOverlay.floater.updateVisibility();
-            SystemOverlay.floater.showFloater(delay);
-        }else{
-            SystemOverlay.floater.setVisibility(View.VISIBLE);
-            SystemOverlay.floater.updateVisibility();
-            SystemOverlay.floater.hideFloater();
-        }
     }
 
     private void updateVisibility() {
@@ -281,10 +293,11 @@ public class Floater extends SView {
                     SettingsUtil.setLastFloaterUpdate(originalLastFloaterUpdate);
                     SettingsUtil.setFloaterPos(originalY);
                     SettingsUtil.setFloaterGravity(originalGravity);
-                    Floater.createFloater(View.INVISIBLE,0);
+                    Floater.createFloater(View.INVISIBLE);
                     ToastMessage.toast(c, ToastMessage.HIDING_FLOATER);
                 }else{
-                    Floater.createFloater(Floater.this.getVisibility(),0);
+                    Floater.createFloater(View.INVISIBLE);
+                    SystemOverlay.floater.showFloater(0);
                 }
                 garbage.sContainer.remove();
             }else{
@@ -387,6 +400,9 @@ public class Floater extends SView {
     public void hideFloater() {
         if (currentAnim != null) {
             currentAnim.cancel();
+        }
+        if (floaterMovement.currentlyInTouch) {
+            floaterMovement.forceUp();
         }
         floaterMovement.enableTouch(false);
         setVisibility(View.INVISIBLE);

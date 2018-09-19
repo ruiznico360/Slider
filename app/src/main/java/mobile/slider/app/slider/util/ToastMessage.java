@@ -56,32 +56,13 @@ public class ToastMessage {
         textParams.height = RelativeLayout.LayoutParams.MATCH_PARENT;
         toast.updateViewLayout(text, textParams);
 
-        text.startAnimation(AnimationUtils.loadAnimation(c, R.anim.fade_in));
-        remove = new Runnable() {
+        toast.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Animation a = AnimationUtils.loadAnimation(c, R.anim.fade_out);
-                a.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE)).removeView(toast);
-                        currentToast = null;
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                });
-                text.startAnimation(a);
+                ((WindowManager) c.getSystemService(Context.WINDOW_SERVICE)).removeView(toast);
+                currentToast = null;
             }
-        };
-        toast.postDelayed(remove,5000);
+        }, 5000);
         currentToast = toast;
     }
 }
