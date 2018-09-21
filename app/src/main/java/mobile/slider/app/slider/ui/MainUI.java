@@ -40,10 +40,10 @@ public class MainUI {
 
 
     public int wUnit(int percent) {
-        return (int)(UserInterface.UI.width / 100f * percent);
+        return (int)(UserInterface.UI.container.width() / 100f * percent);
     }
     public int hUnit(int percent) {
-        return (int)(UserInterface.UI.height / 100f * percent);
+        return (int)(UserInterface.relativeHeight() / 100f * percent);
     }
 
     public void remove() {
@@ -65,7 +65,7 @@ public class MainUI {
         Util.generateViewId(uiIndicatorText.view);
 
         SView.RLayout edit = uiIndicatorText.openRLayout();
-        edit.setTopM(hUnit(3));
+        edit.setTopM(hUnit(UserInterface.TITLE_TOP_MARGIN));
         edit.setWidth(wUnit(100));
         edit.setHeight(ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.quick_apps_title), (int) edit.toWidth));
         edit.save();
@@ -256,112 +256,77 @@ public class MainUI {
         edit.save();
     }
     public class QuickApps {
+        public int C_HEIGHT = 100;
+
         public void setup() {
             final SView container = new SView(new RelativeLayout(c), quickApps.view);
             container.plot(wUnit(100), ScrollView.LayoutParams.WRAP_CONTENT);
-            int[] drawables = new int[]{R.drawable.quick_apps_phone,R.drawable.quick_apps_sms,R.drawable.quick_apps_internet,R.drawable.quick_apps_calculator,R.drawable.quick_apps_contacts};
-            for (int i = 0; i < drawables.length; i++) {
-                final Item item = genItem(container.view);
-                ImageUtil.setImageDrawable(item.appIcon.view, drawables[i]);
 
-                if (i == 0) {
-                    item.appIcon.view.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            final Anim anim = new Anim(c, inner, 150);
-                            anim.hideAfter = true;
-                            if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-                                anim.addTranslate(inner.width(),0);
-                            }else{
-                                anim.addTranslate(-inner.width(),0);
-                            }
-                            UserInterface.UI.touchEnabled = false;
-                            anim.setEnd(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (!anim.cancelled) {
-                                        remove();
-                                        int toWidth = UserInterface.relativeWidth() / 2;
-                                        UserInterface.UI.resize(toWidth, UserInterface.relativeHeight());
+            addPhone(0,container);
+            addSMS(1,container);
+            addCalculator(2,container);
+            addInternet(3,container);
+            addContacts(4,container);
+            addSettings(5,container);
 
-                                        final Anim anim = new Anim(c, inner, 100);
-                                        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-                                            anim.addTranslate(toWidth, -toWidth, 0, 0);
-                                        } else {
-                                            anim.addTranslate(-toWidth, toWidth, 0, 0);
-                                        }
-                                        anim.setStart(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                inner.view.setVisibility(View.VISIBLE);
-                                            }
-                                        });
-                                        anim.setEnd(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                UserInterface.UI.touchEnabled = true;
-                                            }
-                                        });
-                                        UserInterface.UI.container.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                anim.start();
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                            anim.start();
-                        }
-                    });
-                    SView.RLayout edit = item.container.openRLayout();
-                    edit.setTopM(i * item.container.height() + wUnit(15)).save();
-                }else if (i == 4) {
-                    SView.RLayout edit = item.container.openRLayout();
-                    edit.setTopM(i * item.container.height() + wUnit(15)).setHeight(item.container.height() + hUnit(10)).save();
+        }
+        public void addPhone(int pos, SView container) {
+            final Item item = genItem(container.view);
+            item.container.openRLayout().setTopM(((int)(pos * wUnit(C_HEIGHT))) + wUnit(15)).save();
+            ImageUtil.setImageDrawable(item.appIcon.view, R.drawable.quick_apps_phone);
+        }
+        public void addSMS(int pos, SView container) {
+            final Item item = genItem(container.view);
+            item.container.openRLayout().setTopM(((int) (pos * wUnit(C_HEIGHT))) + wUnit(15)).save();
+            ImageUtil.setImageDrawable(item.appIcon.view, R.drawable.quick_apps_sms);
 
-                    final SView text = new SView(new TextView(c), item.container.view);
-                    text.plot();
-                    text.openRLayout().setHeight(hUnit(10)).setWidth(item.container.width()).addRule(RelativeLayout.ALIGN_PARENT_BOTTOM).save();
-                    item.appIcon.view.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            ArrayList<Contact> cList = new ArrayList<Contact>();
-                            Contact.retrieveContacts(cList);
-                            int sel = new Random().nextInt(cList.size());
-                            ((ImageView)item.appIcon.view).setImageBitmap(cList.get(sel).getPhoto());
-                            ((TextView)text.view).setText(cList.get(sel).name);
-                        }
-                    });
-
-                }else if (i == 1) {
-                    SView.RLayout edit = item.container.openRLayout();
-                    edit.setTopM(i * item.container.height() + wUnit(15)).setHeight(item.container.height() + hUnit(10)).save();
-                    item.appIcon.view.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            ((InputMethodManager) c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(0,1);
-                        }
-                    });
-                    item.appIcon.view.setOnLongClickListener(new View.OnLongClickListener() {
-                        @Override
-                        public boolean onLongClick(View v) {
-                            ((InputMethodManager) c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(1,0);
-                            return false;
-                        }
-                    });
-                }else{
-                    SView.RLayout edit = item.container.openRLayout();
-                    edit.setTopM(i * item.container.height() + wUnit(15)).save();
+            item.appIcon.view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ((InputMethodManager) c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(0,1);
                 }
-            }
+            });
+            item.appIcon.view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    ((InputMethodManager) c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(1,0);
+                    return false;
+                }
+            });
+        }
+        public void addInternet(int pos, SView container) {
+            final Item item = genItem(container.view);
+            item.container.openRLayout().setTopM(((int) (pos * wUnit(C_HEIGHT))) + wUnit(15)).save();
+            ImageUtil.setImageDrawable(item.appIcon.view, R.drawable.quick_apps_internet);
+        }
+        public void addCalculator(int pos, SView container) {
+            final Item item = genItem(container.view);
+            item.container.openRLayout().setTopM(((int) (pos * wUnit(C_HEIGHT))) + wUnit(15)).save();
+            ImageUtil.setImageDrawable(item.appIcon.view, R.drawable.quick_apps_calculator);
+        }
+        public void addContacts(int pos, SView container) {
+            final Item item = genItem(container.view);
+            item.container.openRLayout().setTopM(((int) (pos * wUnit(C_HEIGHT))) + wUnit(15)).save();
+            ImageUtil.setImageDrawable(item.appIcon.view, R.drawable.quick_apps_contacts);
+
+            item.appIcon.view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    UserInterface.UI.launchNewWindow(UserInterface.CONTACTS_WINDOW);
+                }
+            });
+        }
+        public void addSettings(int pos, SView container) {
+            final Item item = genItem(container.view);
+            item.container.openRLayout().setTopM(((int) (pos * wUnit(C_HEIGHT))) + wUnit(15)).save();
+            ImageUtil.setImageDrawable(item.appIcon.view, R.drawable.quick_apps_settings);
         }
         private Item genItem(View parent) {
             Item item;
 
             SView container = new SView(new RelativeLayout(c), parent);
             container.plot();
-            container.openRLayout().addRule(RelativeLayout.CENTER_HORIZONTAL).setWidth(wUnit(85)).setHeight(wUnit(100)).save();
+            container.openRLayout().addRule(RelativeLayout.CENTER_HORIZONTAL).setWidth(wUnit(85)).setHeight(wUnit(C_HEIGHT)).save();
 
             SView appIcon = new SView(new RoundedImageView(c), container.view);
             appIcon.plot(container.width(), container.width());

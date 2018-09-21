@@ -8,6 +8,7 @@ import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 
 import mobile.slider.app.slider.model.Anim;
+import mobile.slider.app.slider.util.Util;
 
 public class SView {
     public View view;

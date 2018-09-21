@@ -7,6 +7,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
@@ -18,13 +19,16 @@ import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.model.Anim;
+import mobile.slider.app.slider.ui.Contacts.ContactsUI;
 import mobile.slider.app.slider.util.Util;
 
 public class UserInterface {
+    public static final String CONTACTS_WINDOW = "CONTACTS_WINDOW";
+    public static final int  TITLE_TOP_MARGIN = 3;
+
     public static UserInterface UI;
 
     public Context c;
-    public float width, height;
     public Runnable deviceStateRunnable;
     public SWindowLayout container;
     public SView inner;
@@ -77,15 +81,10 @@ public class UserInterface {
         edit.setWidth(width);
         edit.setHeight(height);
         edit.save();
-
-        this.height = height;
-        this.width = width;
     }
     public void setup() {
         running = true;
         int size = relativeWidth() / 4;
-        height = relativeHeight();
-        width = size;
 
         final WindowManager.LayoutParams params = SystemOverlay.newWindow(true);
         params.width = size;
@@ -236,6 +235,72 @@ public class UserInterface {
                 UI = null;
                 running = false;
                 SystemOverlay.floater.showFloater(Floater.SHOW_DELAY);
+            }
+        });
+        anim.start();
+    }
+
+    public void launchNewWindow(String windowID) {
+        final Runnable end;
+
+        if (windowID.equals(CONTACTS_WINDOW)) {
+            end = new Runnable() {
+                @Override
+                public void run() {
+                    new ContactsUI(c).setup();
+                }
+            };
+        }else{
+            end = new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            };
+        }
+
+        final Anim anim = new Anim(c, inner, 150);
+        anim.hideAfter = true;
+        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+            anim.addTranslate(inner.width(),0);
+        }else{
+            anim.addTranslate(-inner.width(),0);
+        }
+        UserInterface.UI.touchEnabled = false;
+        anim.setEnd(new Runnable() {
+            @Override
+            public void run() {
+                if (!anim.cancelled) {
+                    ((ViewGroup)inner.view).removeAllViews();
+                    end.run();
+
+                    final Anim anim = new Anim(c, inner, 100);
+                    int toWidth = UserInterface.UI.container.width();
+
+                    if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+                        anim.addTranslate(toWidth, -toWidth, 0, 0);
+                    } else {
+                        anim.addTranslate(-toWidth, toWidth, 0, 0);
+                    }
+                    anim.setStart(new Runnable() {
+                        @Override
+                        public void run() {
+                            inner.view.setVisibility(View.VISIBLE);
+                        }
+                    });
+                    anim.setEnd(new Runnable() {
+                        @Override
+                        public void run() {
+                            UserInterface.UI.touchEnabled = true;
+                        }
+                    });
+                    UserInterface.UI.container.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            anim.start();
+                        }
+                    });
+                }
             }
         });
         anim.start();
