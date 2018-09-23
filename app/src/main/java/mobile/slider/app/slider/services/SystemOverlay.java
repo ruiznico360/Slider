@@ -26,6 +26,7 @@ import android.widget.RemoteViews;
 import java.util.ArrayList;
 
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.model.contact.Contact;
 import mobile.slider.app.slider.model.floater.Floater;
 import mobile.slider.app.slider.model.window.Window;
 import mobile.slider.app.slider.settings.SettingsWriter;
@@ -62,6 +63,14 @@ public class SystemOverlay extends Service {
         if (Setup.hasAllReqPermissions(this)) {
             super.onCreate();
             processIntent(intent);
+            periodicRunnableHandler.tasks.add(new Runnable() {
+                @Override
+                public void run() {
+                    if (!Setup.hasAllReqPermissions(SystemOverlay.service)) {
+                        SystemOverlay.service.stopSelf();
+                    }
+                }
+            });
             startInForeground();
 //            startJob();
         }else{
@@ -139,6 +148,15 @@ public class SystemOverlay extends Service {
         if (!SettingsWriter.running) {
             SettingsWriter.init(getApplicationContext());
         }
+
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                Contact.contacts = Contact.retrieveContacts();
+                Contact.retrieveContactInfo();
+            }
+        };
+        thread.start();
 
         periodicRunnableHandler = new PeriodicRunnableHandler();
         periodicRunnableHandler.start();
@@ -223,6 +241,21 @@ public class SystemOverlay extends Service {
     public class PeriodicRunnableHandler {
         public Handler handler = new Handler();
         public ArrayList<Runnable> tasks = new ArrayList<>();
+        public Runnable sysTask = new Runnable() {
+            @Override
+            public void run() {
+                Thread thread = new Thread() {
+                    @Override
+                    public void run() {
+                        if (!UserInterface.running()) {
+                            Contact.contacts = Contact.retrieveContacts();
+                            Contact.retrieveContactInfo();
+                        }
+                    }
+                };
+                thread.start();
+            }
+        };
 
         public void start() {
             //add window hider
@@ -235,6 +268,14 @@ public class SystemOverlay extends Service {
                     handler.postDelayed(this,500);
                 }
             },500);
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    sysTask.run();
+                    new Handler().postDelayed(this,5000);
+                }
+            }, 5000);
         }
     }
 }

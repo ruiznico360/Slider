@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
+import android.opengl.Visibility;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.support.v7.widget.AppCompatImageView;
@@ -56,10 +57,6 @@ public class Floater extends SView {
         final Runnable common = new Runnable() {
             @Override
             public void run() {
-                if (!Setup.hasAllReqPermissions(SystemOverlay.service)) {
-                    SystemOverlay.service.stopSelf();
-                }
-
                 if (Slider.running && getVisibility() == View.VISIBLE) {
                     hideFloater();
                 }
@@ -225,7 +222,7 @@ public class Floater extends SView {
             touchListener = new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, final MotionEvent event) {
-                    if (touchEnabled) {
+                    if (touchEnabled && SystemOverlay.floater == Floater.this) {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             down(event);
                         } else if ((event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) && currentlyInTouch) {

@@ -114,6 +114,9 @@ public class Util {
             return false;
         }
     }
+    public static int randomColor() {
+        return Color.rgb(new Random().nextInt(255), new Random().nextInt(255), new Random().nextInt(255));
+    }
     public static int generateViewId(View v) {
         AtomicInteger sNextGeneratedId = new AtomicInteger(1);
         int result;

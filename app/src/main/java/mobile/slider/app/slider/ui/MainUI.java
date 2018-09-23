@@ -33,9 +33,8 @@ public class MainUI {
     public ViewGroup mainLayout;
     public Context c;
 
-    public MainUI(Context context, SView inner) {
+    public MainUI(Context context) {
         this.c = context;
-        this.inner = inner;
     }
 
 
@@ -51,6 +50,7 @@ public class MainUI {
     }
 
     public void setup() {
+        this.inner = UserInterface.UI.inner;
         mainLayout = (ViewGroup)inner.view;
 
         logo = new SView(new ImageView(c), mainLayout);

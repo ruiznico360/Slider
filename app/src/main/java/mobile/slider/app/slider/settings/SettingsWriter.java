@@ -3,6 +3,7 @@ package mobile.slider.app.slider.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import mobile.slider.app.slider.model.contact.Contact;
 import mobile.slider.app.slider.settings.resources.AppTheme;
 import mobile.slider.app.slider.settings.resources.FloaterIcon;
 import mobile.slider.app.slider.settings.resources.FloaterUpdate;
@@ -19,6 +20,7 @@ public class SettingsWriter {
     public static void init(Context c) {
         appContext = c;
         refreshSettings();
+
         running = true;
     }
     protected static void refreshSettings() {

@@ -1,6 +1,9 @@
 package mobile.slider.app.slider.ui;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -26,12 +29,6 @@ public class UIView {
             }
             return super.dispatchKeyEventPreIme(event);
         }
-
-        @Override
-        public boolean dispatchKeyEvent(KeyEvent event) {
-
-            return super.dispatchKeyEvent(event);
-        }
     }
 
     public static class MHScrollView extends HorizontalScrollView {
@@ -49,20 +46,32 @@ public class UIView {
     }
 
     public static class MScrollView extends ScrollView {
+        private Runnable scrollEvent;
+        public int prevScrollY = 0;
         public MScrollView(Context c) {
             super(c);
 
+            scrollEvent = new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            };
+
             this.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
-                int scrollY = 0;
                 @Override
                 public void onScrollChanged() {
                     if (UserInterface.shouldMove()) {
-                        scrollY = MScrollView.this.getScrollY();
+                        scrollEvent.run();
+                        prevScrollY = MScrollView.this.getScrollY();
                     }else{
-                        smoothScrollTo(0,scrollY);
+                        smoothScrollTo(0,prevScrollY);
                     }
                 }
             });
+        }
+        public void setScrollEvent(Runnable r) {
+            scrollEvent = r;
         }
         @Override
         public boolean onTouchEvent(MotionEvent event) {

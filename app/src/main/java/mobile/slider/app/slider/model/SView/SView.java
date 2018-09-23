@@ -61,7 +61,7 @@ public class SView {
                 }else {
                     view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
-                new Handler().postDelayed(r,1);
+                r.run();
             }
         });
     }

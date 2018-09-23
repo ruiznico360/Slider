@@ -14,6 +14,7 @@ import android.widget.RelativeLayout;
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.model.SView.SWindowLayout;
+import mobile.slider.app.slider.model.contact.Contact;
 import mobile.slider.app.slider.model.floater.Floater;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
@@ -24,6 +25,8 @@ import mobile.slider.app.slider.util.Util;
 
 public class UserInterface {
     public static final String CONTACTS_WINDOW = "CONTACTS_WINDOW";
+    public static final String UI_WINDOW = "UI_WINDOW";
+
     public static final int  TITLE_TOP_MARGIN = 3;
 
     public static UserInterface UI;
@@ -33,6 +36,7 @@ public class UserInterface {
     public SWindowLayout container;
     public SView inner;
     public MainUI mainUI;
+    public String currentView;
     public boolean touchEnabled = true, running = false;
 
     public UserInterface(Context c) {
@@ -50,6 +54,7 @@ public class UserInterface {
 
         UI = new UserInterface(SystemOverlay.service);
         UI.setup();
+
     }
 
     public static boolean shouldMove() {
@@ -108,22 +113,37 @@ public class UserInterface {
             }
         }
         container = new SWindowLayout(new UIView.UIContainer(c));
+        UserInterface.UI.container.layout.setVisibility(View.INVISIBLE);
         inner = new SView(new RelativeLayout(c), container.layout);
+
+        UserInterface.UI.container.plot(params);
+        inner.plot();
 
         inner.view.setBackgroundColor(SettingsUtil.getBackgroundColor());
 
-        container.layout.setOnTouchListener(new View.OnTouchListener() {
+        SView.Layout editor = inner.openLayout();
+        editor.setWidth(RelativeLayout.LayoutParams.MATCH_PARENT);
+        editor.setHeight(RelativeLayout.LayoutParams.MATCH_PARENT);
+        editor.save();
+
+
+        mainUI = new MainUI(c);
+        mainUI.setup();
+
+        genDeviceStateRunnable();
+
+        UserInterface.UI.container.layout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (shouldMove()) {
+                if (UserInterface.shouldMove()) {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         int[] loc = new int[2];
-                        container.layout.getLocationOnScreen(loc);
+                        UserInterface.UI.container.layout.getLocationOnScreen(loc);
                         int rx = (int) event.getRawX();
                         int x = loc[0];
-                        int w = container.width();
+                        int w = UserInterface.UI.container.width();
                         if (rx < x || rx > x + w ) {
-                            UI.remove();
+                            UserInterface.UI.remove();
                         }
                     }
                     return false;
@@ -132,21 +152,6 @@ public class UserInterface {
             }
         });
 
-        container.plot(params);
-        inner.plot();
-        container.layout.setVisibility(View.INVISIBLE);
-
-        SView.Layout editor = inner.openLayout();
-        editor.setWidth(RelativeLayout.LayoutParams.MATCH_PARENT);
-        editor.setHeight(RelativeLayout.LayoutParams.MATCH_PARENT);
-        editor.save();
-
-        mainUI = new MainUI(c, inner);
-        mainUI.setup();
-
-        genDeviceStateRunnable();
-
-        //view inv until start
         Anim anim = new Anim(SystemOverlay.service, inner, 75);
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             anim.addTranslate(inner.width(), -inner.width(),0,0);
@@ -166,12 +171,17 @@ public class UserInterface {
             }
         });
         touchEnabled = false;
+        currentView = UI_WINDOW;
         anim.start();
     }
 
     public void backPressed() {
         if (shouldMove()) {
-            remove();
+            if (UserInterface.UI.currentView.equals(UserInterface.UI_WINDOW)) {
+                remove();
+            }else if (UserInterface.UI.currentView.equals(UserInterface.CONTACTS_WINDOW)) {
+                UserInterface.UI.launchNewWindow(UserInterface.UI_WINDOW);
+            }
         }
     }
 
@@ -221,6 +231,7 @@ public class UserInterface {
         }
         deviceStateRunnable = null;
 
+
         Anim anim = new Anim(SystemOverlay.service, inner, 150);
         if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
             anim.addTranslate(inner.width(),0);
@@ -238,6 +249,8 @@ public class UserInterface {
             }
         });
         anim.start();
+
+        SystemOverlay.periodicRunnableHandler.sysTask.run();
     }
 
     public void launchNewWindow(String windowID) {
@@ -250,7 +263,15 @@ public class UserInterface {
                     new ContactsUI(c).setup();
                 }
             };
-        }else{
+        }else if (windowID.equals(UI_WINDOW)) {
+            end = new Runnable() {
+                @Override
+                public void run() {
+                    new MainUI(c).setup();
+                }
+            };
+        }
+        else{
             end = new Runnable() {
                 @Override
                 public void run() {
@@ -258,6 +279,7 @@ public class UserInterface {
                 }
             };
         }
+        UserInterface.UI.currentView = windowID;
 
         final Anim anim = new Anim(c, inner, 150);
         anim.hideAfter = true;
@@ -312,8 +334,15 @@ public class UserInterface {
         return false;
     }
     public static Anim uiAnim(Context c, SView view, int duration) {
-        Anim a = new Anim(c,view,duration);
-        a.addTag(Anim.OVERRIDE, UI.inner.view);
+        final Anim a = new Anim(c,view,duration);
+        a.setCondition(new Runnable() {
+            @Override
+            public void run() {
+                if (!shouldMove()) {
+                    a.cancel();
+                }
+            }
+        });
         return a;
     }
 
