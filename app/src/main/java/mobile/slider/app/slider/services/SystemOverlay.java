@@ -244,6 +244,7 @@ public class SystemOverlay extends Service {
         public Runnable sysTask = new Runnable() {
             @Override
             public void run() {
+                final long start = SystemClock.uptimeMillis();
                 Thread thread = new Thread() {
                     @Override
                     public void run() {

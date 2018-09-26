@@ -380,7 +380,7 @@ public class ContactsUI {
             container.plot();
             container.openRLayout().setWidth(pWidth(80)).setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT).setLeftM(pWidth(10)).save();
 
-            SView appIcon = new SView(new ImageView(c), container.view);
+            final SView appIcon = new SView(new ImageView(c), container.view);
             ImageUtil.setImageDrawable(appIcon.view, R.drawable.contact_icon);
             appIcon.plot(container.width(), container.width());
 
@@ -408,6 +408,7 @@ public class ContactsUI {
                     .save();
 
             item = new Item(container, appIcon, firstName, lastName);
+
             return item;
         }
         public class Item {

@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -18,6 +19,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
 import android.os.Build;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -44,31 +46,6 @@ public class ImageUtil {
         }else{
             view.setBackgroundDrawable(d);
         }
-    }
-
-    public static Bitmap drawChar(float sizePerc, float marginPerc, String text, Bitmap output) {
-        sizePerc /= 100f;
-        marginPerc /= 100f;
-
-        Bitmap bitmap = Bitmap.createBitmap(output.getWidth(), output.getHeight(),
-                Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(bitmap);
-
-        Paint p = new Paint();
-        p.setAntiAlias(true);
-//        Paint paint = new Paint();
-//        Typeface bold = Typeface.create(ARIAL, Typeface.DEFAULT_BOLD);
-//        paint.setTypeface(bold);
-
-        p.setTextSize(bitmap.getHeight());
-        p.setColor(Color.WHITE);
-
-        c.drawRect(0,0,bitmap.getWidth(), bitmap.getHeight(),p);
-
-        p.setColor(Color.BLACK  );
-        c.drawText(text, marginPerc * bitmap.getHeight(), bitmap.getHeight(), p);
-
-        return bitmap;
     }
 
     public static ShapeDrawable backgroundGradientTop(View container) {

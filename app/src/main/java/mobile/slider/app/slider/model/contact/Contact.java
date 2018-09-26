@@ -113,7 +113,6 @@ public class Contact {
     }
     public void loadPhoto() {
         Bitmap b = BitmapFactory.decodeResource(SystemOverlay.service.getResources(), R.drawable.contact_icon);
-        b = ImageUtil.drawChar(100, 0,"@\uD83D\uDDFB", b);
         try {
             b = MediaStore.Images.Media.getBitmap(SystemOverlay.service.getContentResolver(), Uri.parse(photoURI));
         }catch (Exception e) { }
