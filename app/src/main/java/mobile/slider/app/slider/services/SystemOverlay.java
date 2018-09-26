@@ -248,8 +248,10 @@ public class SystemOverlay extends Service {
                     @Override
                     public void run() {
                         if (!UserInterface.running()) {
-                            Contact.contacts = Contact.retrieveContacts();
-                            Contact.retrieveContactInfo();
+                            if (Contact.loadedContactInfo) {
+                                Contact.contacts = Contact.retrieveContacts();
+                                Contact.retrieveContactInfo();
+                            }
                         }
                     }
                 };

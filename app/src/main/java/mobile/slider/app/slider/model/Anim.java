@@ -145,7 +145,9 @@ public class Anim {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            finishAnim();
+                            if (!cancelled) {
+                                finishAnim();
+                            }
                         }
                     },24);
                 }

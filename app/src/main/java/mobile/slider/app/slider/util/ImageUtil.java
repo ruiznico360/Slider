@@ -11,6 +11,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -43,6 +44,31 @@ public class ImageUtil {
         }else{
             view.setBackgroundDrawable(d);
         }
+    }
+
+    public static Bitmap drawChar(float sizePerc, float marginPerc, String text, Bitmap output) {
+        sizePerc /= 100f;
+        marginPerc /= 100f;
+
+        Bitmap bitmap = Bitmap.createBitmap(output.getWidth(), output.getHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bitmap);
+
+        Paint p = new Paint();
+        p.setAntiAlias(true);
+//        Paint paint = new Paint();
+//        Typeface bold = Typeface.create(ARIAL, Typeface.DEFAULT_BOLD);
+//        paint.setTypeface(bold);
+
+        p.setTextSize(bitmap.getHeight());
+        p.setColor(Color.WHITE);
+
+        c.drawRect(0,0,bitmap.getWidth(), bitmap.getHeight(),p);
+
+        p.setColor(Color.BLACK  );
+        c.drawText(text, marginPerc * bitmap.getHeight(), bitmap.getHeight(), p);
+
+        return bitmap;
     }
 
     public static ShapeDrawable backgroundGradientTop(View container) {

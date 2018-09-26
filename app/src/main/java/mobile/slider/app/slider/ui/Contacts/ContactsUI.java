@@ -19,6 +19,7 @@ import android.widget.TextView;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.Anim;
@@ -36,7 +37,7 @@ public class ContactsUI {
     public int titleMargin, aScrollerHeight;
     public SView mainLayout;
 
-    public SView contactContainer, title, alphabetScroller, loading;
+    public SView contactContainer, title, alphabetScroller, alphabetScrollerContainer, loading;
 
     public int wUnit(int percent) {
         return (int)(UserInterface.UI.container.width() / 100f * percent);
@@ -54,7 +55,8 @@ public class ContactsUI {
         mainLayout.plot(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
         title = new SView(new ImageView(c), mainLayout.view);
-        alphabetScroller = new SView(new ImageView(c), mainLayout.view);
+        alphabetScrollerContainer = new SView(new RelativeLayout(c), mainLayout.view);
+        alphabetScroller = new SView(new RelativeLayout(c), alphabetScrollerContainer.view);
         contactContainer = new SView(new UIView.MScrollView(c), mainLayout.view);
         loading = new SView(new ProgressBar(c), mainLayout.view);
 
@@ -79,14 +81,21 @@ public class ContactsUI {
                 .addRule(RelativeLayout.BELOW, title.view.getId())
                 .save();
 
-        alphabetScroller.plot();
-        alphabetScroller.view.setVisibility(View.INVISIBLE);
-        alphabetScroller.view.setBackgroundColor(Color.BLUE);
-        alphabetScroller.openRLayout()
-                .setWidth(wUnit(25))
-                .setHeight(aScrollerHeight)
+        alphabetScrollerContainer.plot();
+        alphabetScrollerContainer.view.setVisibility(View.INVISIBLE);
+        alphabetScrollerContainer.openRLayout()
+                .setWidth(wUnit(33))
+                .setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT)
                 .addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
-                .setTopM(titleMargin)
+                .addRule(RelativeLayout.BELOW, title.view.getId())
+                .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                .setBottomM(aScrollerHeight)
+                .save();
+
+        alphabetScroller.plot();
+        alphabetScroller.openRLayout()
+                .setWidth(RelativeLayout.LayoutParams.MATCH_PARENT)
+                .setHeight(aScrollerHeight)
                 .save();
 
         loading.plot();
@@ -97,12 +106,21 @@ public class ContactsUI {
                 .addRule(RelativeLayout.CENTER_VERTICAL)
                 .save();
 
+        SView alphabetScrollerContainerBG = new SView(new RelativeLayout(c),alphabetScrollerContainer.view);
+        alphabetScrollerContainerBG.plot();
+        alphabetScrollerContainerBG.view.setBackgroundColor(Color.argb(90,0,0,255));
+        alphabetScrollerContainerBG.openRLayout().setWidth(wUnit(25)).setHeight(RelativeLayout.LayoutParams.MATCH_PARENT).addRule(RelativeLayout.ALIGN_PARENT_RIGHT).save();
+
+        SView alphabetScrollerBG = new SView(new RelativeLayout(c),alphabetScroller.view);
+        alphabetScrollerBG.plot();
+        alphabetScrollerBG.view.setBackgroundColor(Color.rgb(0,0,255));
+        alphabetScrollerBG.openRLayout().setWidth(wUnit(25)).setHeight(RelativeLayout.LayoutParams.MATCH_PARENT).addRule(RelativeLayout.ALIGN_PARENT_RIGHT).save();
         new ContactScroller().setup();
     }
 
     public class ContactScroller {
         public int loadedItems;
-        public boolean scrollerInUse = false, touchEnabled = false;
+        public boolean scrollerInUse = false, alphabetScrollerInUse = false, touchEnabled = false;
 
         public void setup() {
             final SView container = new SView(new RelativeLayout(c), contactContainer.view);
@@ -110,49 +128,115 @@ public class ContactsUI {
             final Runnable setUpContactList = new Runnable() {
                 @Override
                 public void run() {
-                    for (int i = 0; i < Contact.contacts.size(); i++) {
-                        items.add(genItem(container));
+                    Iterator<Contact> contactIterator = Contact.contacts.iterator();
 
-                        if (i != 0) {
-                            SView.RLayout edit = items.get(i).container.openRLayout();
-                            edit.addRule(RelativeLayout.BELOW, items.get(i - 1).container.view.getId());
+                    int cAdded = 0;
+                    int index = 0;
+                    Character prevCharacter = null;
+                    while (cAdded < Contact.contacts.size()) {
+                        char start = Contact.contacts.get(cAdded).name.charAt(0);
+
+                        if (Character.isLetter(start)) {
+                            if (prevCharacter == null || start != prevCharacter) {
+                                Item item = genItem(container);
+                                item.contactItem = false;
+                                ((TextView)item.lastName.view).setText(start + "");
+                                items.add(item);
+
+                                if (index != 0) {
+                                    SView.RLayout edit = items.get(index).container.openRLayout();
+                                    edit.addRule(RelativeLayout.BELOW, items.get(index - 1).container.view.getId());
+                                    edit.setTopM(wUnit(15));
+                                    edit.save();
+                                }
+                                index++;
+                            }
+                        }else {
+                            if (Character.isDigit(start)) {
+                                if (prevCharacter == null || !Character.isDigit(prevCharacter)) {
+                                    Item item = genItem(container);
+                                    item.contactItem = false;
+                                    ((TextView) item.lastName.view).setText("#");
+                                    items.add(item);
+
+                                    if (index != 0) {
+                                        SView.RLayout edit = items.get(index).container.openRLayout();
+                                        edit.addRule(RelativeLayout.BELOW, items.get(index - 1).container.view.getId());
+                                        edit.setTopM(wUnit(15));
+                                        edit.save();
+                                    }
+                                    index++;
+                                }
+                            } else {
+                                if (prevCharacter == null || Character.isDigit(prevCharacter) || Character.isLetter(prevCharacter)) {
+                                    Item item = genItem(container);
+                                    item.contactItem = false;
+                                    ((TextView) item.lastName.view).setText("&");
+                                    items.add(item);
+
+                                    if (index != 0) {
+                                        SView.RLayout edit = items.get(index).container.openRLayout();
+                                        edit.addRule(RelativeLayout.BELOW, items.get(index - 1).container.view.getId());
+                                        edit.setTopM(wUnit(15));
+                                        edit.save();
+                                    }
+                                    index++;
+                                }
+                            }
+                        }
+
+                        items.add(genItem(container));
+                        if (index != 0) {
+                            SView.RLayout edit = items.get(index).container.openRLayout();
+                            edit.addRule(RelativeLayout.BELOW, items.get(index - 1).container.view.getId());
                             edit.setTopM(wUnit(15));
                             edit.save();
                         }
 
-                        Contact c = Contact.contacts.get(i);
-                        String firstName = "", lastName = "";
+                        prevCharacter = start;
+                        index++;
+                        cAdded++;
+                    }
+                    while (contactIterator.hasNext()) {
+                        Contact current = contactIterator.next();
+                        for (int i = 0; i < items.size(); i++) {
+                            if (items.get(i).contactItem) {
+                                String firstName = "", lastName = "";
 
-                        String name = c.name;
-                        String[] arr = name.split(" ");
+                                String name = current.name;
+                                String[] arr = name.split(" ");
 
-                        if (arr.length < 2) {
-                            firstName = arr[0];
-                        } else {
-                            firstName = arr[0];
-                            lastName = arr[arr.length - 1];
-                        }
-
-                        ((TextView) items.get(i).firstName.view).setText(firstName);
-                        ((TextView) items.get(i).lastName.view).setText(lastName);
-                        ((ImageView) items.get(i).appIcon.view).setImageBitmap(Contact.contacts.get(i).photo);
-
-                        if (Contact.contacts.size() - 1 == i) {
-                            loading.view.setVisibility(View.INVISIBLE);
-                            contactContainer.view.setVisibility(View.VISIBLE);
-                            touchEnabled = true;
-                        }
-                        final int num = i;
-                        items.get(i).appIcon.view.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                String numbers = "";
-                                for (String s : Contact.contacts.get(num).numbers) {
-                                    numbers += "\n     " + s;
+                                if (arr.length < 2) {
+                                    firstName = arr[0];
+                                } else {
+                                    firstName = arr[0];
+                                    lastName = arr[arr.length - 1];
                                 }
-                                Util.log(numbers.length() == 0 ? "No numbers attached to " + Contact.contacts.get(num).name + " " + Contact.contacts.get(num).id : Contact.contacts.get(num).name + " " + Contact.contacts.get(num).id + "\'s numbers:" + numbers);
+
+                                ((TextView) items.get(i).firstName.view).setText(firstName);
+                                ((TextView) items.get(i).lastName.view).setText(lastName);
+                                ((ImageView) items.get(i).appIcon.view).setImageBitmap(current.photo);
+
+                                if (i == items.size() - 1) {
+                                    loading.view.setVisibility(View.INVISIBLE);
+                                    contactContainer.view.setVisibility(View.VISIBLE);
+                                    touchEnabled = true;
+                                }else{
+                                    current = contactIterator.next();
+                                }
                             }
-                        });
+//                        final int num = i;
+//                        items.get(i).appIcon.view.setOnClickListener(new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View v) {
+//                                String numbers = "";
+//                                for (String s : Contact.contacts.get(num).numbers) {
+//                                    numbers += "\n     " + s;
+//                                }
+//                                Util.log(numbers.length() == 0 ? "No numbers attached to " + Contact.contacts.get(num).name + " " + Contact.contacts.get(num).id : Contact.contacts.get(num).name + " " + Contact.contacts.get(num).id + "\'s numbers:" + numbers);
+//                            }
+//                        });
+                        }
                     }
                 }
             };
@@ -186,10 +270,10 @@ public class ContactsUI {
                     if (touchEnabled) {
                         if (event.getAction() == MotionEvent.ACTION_MOVE) {
                            scrollerInUse = true;
-                            if (alphabetScroller.currentAnim != null) {
-                                alphabetScroller.currentAnim.cancel();
+                            if (alphabetScrollerContainer.currentAnim != null) {
+                                alphabetScrollerContainer.currentAnim.cancel();
                             }
-                            alphabetScroller.view.setVisibility(View.VISIBLE);
+                            alphabetScrollerContainer.view.setVisibility(View.VISIBLE);
                         } else if (event.getAction() == MotionEvent.ACTION_UP) {
                             scrollerInUse = false;
                             final Handler handler = new Handler();
@@ -198,15 +282,15 @@ public class ContactsUI {
 
                                 @Override
                                 public void run() {
-                                    if (UserInterface.running() && !scrollerInUse) {
+                                    if (UserInterface.running() && !scrollerInUse && !alphabetScrollerInUse) {
                                         if (contactContainer.view.getScrollY() == prevScrollY) {
-                                            Anim anim = UserInterface.uiAnim(c, alphabetScroller, 100);
+                                            Anim anim = UserInterface.uiAnim(c, alphabetScrollerContainer, 100);
                                             anim.delay = 1000;
                                             anim.addAlpha(Anim.FADE_OUT);
                                             anim.setEnd(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    alphabetScroller.view.setVisibility(View.INVISIBLE);
+                                                    alphabetScrollerContainer.view.setVisibility(View.INVISIBLE);
                                                 }
                                             });
                                             anim.start();
@@ -225,23 +309,52 @@ public class ContactsUI {
                 }
             });
 
-//            alphabetScroller.view.setOnTouchListener(new View.OnTouchListener() {
-//                @Override
-//                public boolean onTouch(View v, MotionEvent event) {
-//                    touchEnabled = !touchEnabled;
-//                    Util.log("touched " + touchEnabled);
-//                    return true;
-//                }
-//            });
+            alphabetScroller.view.setOnTouchListener(new View.OnTouchListener() {
+                public int yOffset;
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        yOffset = (int) event.getRawY() - alphabetScroller.y();
+                        alphabetScrollerInUse = true;
+                        touchEnabled = false;
+                        if (alphabetScrollerContainer.currentAnim != null) {
+                            alphabetScrollerContainer.currentAnim.cancel();
+                        }
+                        alphabetScrollerContainer.view.setVisibility(View.VISIBLE);
+
+                        ((UIView.MScrollView)contactContainer.view).smoothScrollTo(0, ((UIView.MScrollView)contactContainer.view).prevScrollY);
+                    }else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                        float perc = (event.getRawY() - yOffset - alphabetScrollerContainer.y()) / (float) (alphabetScrollerContainer.height() - ((alphabetScroller.height())));
+
+                        if (perc < 0) perc = 0;
+                        if (perc > 1) perc = 1;
+
+                        alphabetScroller.openRLayout().setTopM((int) ((alphabetScrollerContainer.height() - (alphabetScroller.height())) * perc)).setHeight(aScrollerHeight).save();
+                        ((UIView.MScrollView)contactContainer.view).smoothScrollTo(0, (int)(perc * (container.height() - alphabetScrollerContainer.height())));
+
+                    }else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        touchEnabled = true;
+                        alphabetScrollerInUse = false;
+
+                        Anim anim = UserInterface.uiAnim(c, alphabetScrollerContainer, 100);
+                        anim.delay = 1000;
+                        anim.addAlpha(Anim.FADE_OUT);
+                        anim.setEnd(new Runnable() {
+                            @Override
+                            public void run() {
+                                alphabetScrollerContainer.view.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        anim.start();
+                    }
+                    return true;
+                }
+            });
             ((UIView.MScrollView) contactContainer.view).setScrollEvent(new Runnable() {
                 @Override
                 public void run() {
-                    if (touchEnabled) {
-                        float perc = contactContainer.view.getScrollY() / (float) (container.height() - contactContainer.height());
-                        alphabetScroller.openRLayout().setTopM(titleMargin + (int) ((contactContainer.height() - alphabetScroller.height()) * perc)).setHeight(aScrollerHeight).save();
-                    }else{
-                        ((UIView.MScrollView)contactContainer.view).smoothScrollTo(0, ((UIView.MScrollView)contactContainer.view).prevScrollY);
-                    }
+                    float perc = contactContainer.view.getScrollY() / (float) (container.height() - alphabetScrollerContainer.height());
+                    alphabetScroller.openRLayout().setTopM((int) ((alphabetScrollerContainer.height() - (alphabetScroller.height())) * perc)).setHeight(aScrollerHeight).save();
                 }
             });
 
@@ -249,8 +362,8 @@ public class ContactsUI {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                     if (oldBottom != bottom) {
-                        float perc = contactContainer.view.getScrollY() / (float)(container.height() - contactContainer.height());
-                        alphabetScroller.openRLayout().setTopM(titleMargin + (int)((contactContainer.height() -  alphabetScroller.height()) * perc)).setHeight(aScrollerHeight).save();
+                        float perc = contactContainer.view.getScrollY() / (float)(container.height() - alphabetScrollerContainer.height());
+                        alphabetScroller.openRLayout().setTopM((int)((alphabetScrollerContainer.height() -  (alphabetScroller.height())) * perc)).setHeight(aScrollerHeight).save();
                     }
                 }
             });
@@ -267,7 +380,7 @@ public class ContactsUI {
             container.plot();
             container.openRLayout().setWidth(pWidth(80)).setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT).setLeftM(pWidth(10)).save();
 
-            SView appIcon = new SView(new RoundedImageView(c), container.view);
+            SView appIcon = new SView(new ImageView(c), container.view);
             ImageUtil.setImageDrawable(appIcon.view, R.drawable.contact_icon);
             appIcon.plot(container.width(), container.width());
 
@@ -299,6 +412,7 @@ public class ContactsUI {
         }
         public class Item {
             public SView container, appIcon, firstName, lastName;
+            public boolean contactItem = true;
 
             public Item(SView container, SView appIcon, SView firstName, SView lastName) {
                 this.container = container;

@@ -72,11 +72,12 @@ public class Util {
     }
 
     public static void logM(Object... args) {
-        String s = "MULTI-LOG";
-        for (Object j : args) {
-            s = s + " " + j.toString();
+        String s = "MULTI-LOG: " + args[0].toString();
+
+        for (int i = 1; i < args.length; i++) {
+            s = s + " NEXT ITEM " + args[i].toString();
         }
-        Util.log(s);
+        Util.log(s + " END OF MULTI-LOG");
     }
     public static void log(Object s) {
         Log.d("SliderLog", s + "");
