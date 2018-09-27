@@ -26,15 +26,22 @@ public class Contact {
     public static boolean loadedContactIds = false;
     public static boolean loadedContactInfo = false;
 
-    public String id;
-    public String name;
+    public String id, displayName,photoURI, firstName, lastName;
     public ArrayList<String> numbers = new ArrayList<>();
-    public String photoURI;
     public Bitmap photo;
 
-    public Contact(String name, String id) {
-        this.name = name;
+    public Contact(String displayName, String id) {
+        this.displayName = displayName;
         this.id = id;
+
+        String[] arr = displayName.split(" ");
+
+        if (arr.length < 2) {
+            firstName = arr[0];
+        } else {
+            firstName = arr[0];
+            lastName = arr[arr.length - 1];
+        }
     }
 
     public static ArrayList<Contact> retrieveContacts() {
@@ -101,7 +108,7 @@ public class Contact {
     public static void retrieveContactInfo() {
         loadedContactInfo = false;
         for (int i = 0; i < contacts.size(); i++) {
-            Cursor pCur = SystemOverlay.service.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME +" = ?", new String[]{contacts.get(i).name}, null);
+            Cursor pCur = SystemOverlay.service.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME +" = ?", new String[]{contacts.get(i).displayName}, null);
             while (pCur.moveToNext()) {
                 contacts.get(i).numbers.add(pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
                 contacts.get(i).photoURI = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
@@ -112,7 +119,9 @@ public class Contact {
         loadedContactInfo = true;
     }
     public void loadPhoto() {
-        Bitmap b = BitmapFactory.decodeResource(SystemOverlay.service.getResources(), R.drawable.contact_icon);
+        Bitmap b = BitmapFactory.decodeResource(SystemOverlay.service.getResources(), R.drawable.contact_icon_background);
+        String initials = firstName.charAt(0) + (lastName != null ? lastName.charAt(0) + "" : "");
+        b = ImageUtil.drawChar(50,50,initials.toUpperCase(),b);
         try {
             b = MediaStore.Images.Media.getBitmap(SystemOverlay.service.getContentResolver(), Uri.parse(photoURI));
         }catch (Exception e) { }

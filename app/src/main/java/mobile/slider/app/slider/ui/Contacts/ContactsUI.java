@@ -2,7 +2,10 @@ package mobile.slider.app.slider.ui.Contacts;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.media.Image;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -134,14 +137,20 @@ public class ContactsUI {
                     int index = 0;
                     Character prevCharacter = null;
                     while (cAdded < Contact.contacts.size()) {
-                        char start = Contact.contacts.get(cAdded).name.charAt(0);
+                        char start = Contact.contacts.get(cAdded).displayName.charAt(0);
 
                         if (Character.isLetter(start)) {
                             if (prevCharacter == null || start != prevCharacter) {
                                 Item item = genItem(container);
+                                item.appIcon.openRLayout().setHeight(item.appIcon.height() *.75f).setWidth(item.appIcon.width() * .75f).addRule(RelativeLayout.CENTER_VERTICAL).save();
                                 item.contactItem = false;
-                                ((TextView)item.lastName.view).setText(start + "");
                                 items.add(item);
+
+                                Bitmap b = Bitmap.createBitmap(item.appIcon.width(), item.appIcon.height(), Bitmap.Config.ARGB_8888);
+                                Paint p = new Paint();
+                                p.setColor(Color.RED);
+                                new Canvas(b).drawRect(0,0,b.getWidth(),b.getHeight(),p);
+                                ((ImageView)item.appIcon.view).setImageBitmap(ImageUtil.drawChar(80,50,(start+"").toUpperCase(),b));
 
                                 if (index != 0) {
                                     SView.RLayout edit = items.get(index).container.openRLayout();
@@ -155,9 +164,15 @@ public class ContactsUI {
                             if (Character.isDigit(start)) {
                                 if (prevCharacter == null || !Character.isDigit(prevCharacter)) {
                                     Item item = genItem(container);
+                                    item.appIcon.openRLayout().setHeight(item.appIcon.height() *.75f).setWidth(item.appIcon.width() * .75f).addRule(RelativeLayout.CENTER_VERTICAL).save();
                                     item.contactItem = false;
-                                    ((TextView) item.lastName.view).setText("#");
                                     items.add(item);
+
+                                    Bitmap b = Bitmap.createBitmap(item.appIcon.width(), item.appIcon.height(), Bitmap.Config.ARGB_8888);
+                                    Paint p = new Paint();
+                                    p.setColor(Color.RED);
+                                    new Canvas(b).drawRect(0,0,b.getWidth(),b.getHeight(),p);
+                                    ((ImageView)item.appIcon.view).setImageBitmap(ImageUtil.drawChar(80,50,"#",b));
 
                                     if (index != 0) {
                                         SView.RLayout edit = items.get(index).container.openRLayout();
@@ -170,9 +185,15 @@ public class ContactsUI {
                             } else {
                                 if (prevCharacter == null || Character.isDigit(prevCharacter) || Character.isLetter(prevCharacter)) {
                                     Item item = genItem(container);
+                                    item.appIcon.openRLayout().setHeight(item.appIcon.height() *.75f).setWidth(item.appIcon.width() * .75f).addRule(RelativeLayout.CENTER_VERTICAL).save();
                                     item.contactItem = false;
-                                    ((TextView) item.lastName.view).setText("&");
                                     items.add(item);
+
+                                    Bitmap b = Bitmap.createBitmap(item.appIcon.width(), item.appIcon.height(), Bitmap.Config.ARGB_8888);
+                                    Paint p = new Paint();
+                                    p.setColor(Color.RED);
+                                    new Canvas(b).drawRect(0,0,b.getWidth(),b.getHeight(),p);
+                                    ((ImageView)item.appIcon.view).setImageBitmap(ImageUtil.drawChar(80,50,"&",b));
 
                                     if (index != 0) {
                                         SView.RLayout edit = items.get(index).container.openRLayout();
@@ -201,20 +222,8 @@ public class ContactsUI {
                         Contact current = contactIterator.next();
                         for (int i = 0; i < items.size(); i++) {
                             if (items.get(i).contactItem) {
-                                String firstName = "", lastName = "";
-
-                                String name = current.name;
-                                String[] arr = name.split(" ");
-
-                                if (arr.length < 2) {
-                                    firstName = arr[0];
-                                } else {
-                                    firstName = arr[0];
-                                    lastName = arr[arr.length - 1];
-                                }
-
-                                ((TextView) items.get(i).firstName.view).setText(firstName);
-                                ((TextView) items.get(i).lastName.view).setText(lastName);
+                                ((TextView) items.get(i).firstName.view).setText(current.firstName);
+                                ((TextView) items.get(i).lastName.view).setText(current.lastName != null ? current.lastName : "");
                                 ((ImageView) items.get(i).appIcon.view).setImageBitmap(current.photo);
 
                                 if (i == items.size() - 1) {
@@ -225,17 +234,6 @@ public class ContactsUI {
                                     current = contactIterator.next();
                                 }
                             }
-//                        final int num = i;
-//                        items.get(i).appIcon.view.setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                String numbers = "";
-//                                for (String s : Contact.contacts.get(num).numbers) {
-//                                    numbers += "\n     " + s;
-//                                }
-//                                Util.log(numbers.length() == 0 ? "No numbers attached to " + Contact.contacts.get(num).name + " " + Contact.contacts.get(num).id : Contact.contacts.get(num).name + " " + Contact.contacts.get(num).id + "\'s numbers:" + numbers);
-//                            }
-//                        });
                         }
                     }
                 }
@@ -380,9 +378,10 @@ public class ContactsUI {
             container.plot();
             container.openRLayout().setWidth(pWidth(80)).setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT).setLeftM(pWidth(10)).save();
 
-            final SView appIcon = new SView(new ImageView(c), container.view);
+            final SView appIcon = new SView(new RoundedImageView(c), container.view);
             ImageUtil.setImageDrawable(appIcon.view, R.drawable.contact_icon);
-            appIcon.plot(container.width(), container.width());
+            appIcon.plot();
+            appIcon.openRLayout().setWidth(container.width()).setHeight(container.width()).addRule(RelativeLayout.CENTER_HORIZONTAL).save();
 
             SView firstName = new SView(new TextView(c), container.view);
             ((TextView) firstName.view).setMaxLines(1);

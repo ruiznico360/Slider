@@ -1,5 +1,6 @@
 package mobile.slider.app.slider.util;
 
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -46,6 +47,25 @@ public class ImageUtil {
         }else{
             view.setBackgroundDrawable(d);
         }
+    }
+
+    public static Bitmap drawChar(float sizePerc, float marginPerc, String text, Bitmap output) {
+        sizePerc /= 100f;
+        marginPerc /= 100f;
+
+        Paint p = new Paint();
+        p.setTextSize((int)(output.getHeight() * sizePerc));
+        Bitmap bitmap = output.copy(Bitmap.Config.ARGB_8888, true);
+        Canvas c = new Canvas(bitmap);
+
+        Rect bounds = new Rect();
+        p.getTextBounds(text,0,text.length(),bounds);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setColor(Color.WHITE);
+        c.drawText(text,(marginPerc * output.getWidth()),(bitmap.getHeight() - (p.ascent() + p.descent())) / 2,p);
+
+
+        return bitmap;
     }
 
     public static ShapeDrawable backgroundGradientTop(View container) {
