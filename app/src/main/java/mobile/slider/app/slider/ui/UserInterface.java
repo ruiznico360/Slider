@@ -3,6 +3,8 @@ package mobile.slider.app.slider.ui;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -21,10 +23,12 @@ import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.model.Anim;
 import mobile.slider.app.slider.ui.Contacts.ContactsUI;
+import mobile.slider.app.slider.ui.Web.WebUI;
 import mobile.slider.app.slider.util.Util;
 
 public class UserInterface {
     public static final String CONTACTS_WINDOW = "CONTACTS_WINDOW";
+    public static final String WEB_WINDOW = "WEB_WINDOW";
     public static final String UI_WINDOW = "UI_WINDOW";
 
     public static final int  TITLE_TOP_MARGIN = 3;
@@ -181,6 +185,8 @@ public class UserInterface {
                 remove();
             }else if (UserInterface.UI.currentView.equals(UserInterface.CONTACTS_WINDOW)) {
                 UserInterface.UI.launchNewWindow(UserInterface.UI_WINDOW);
+            }else if (UserInterface.UI.currentView.equals(UserInterface.WEB_WINDOW)) {
+                UserInterface.UI.launchNewWindow(UserInterface.UI_WINDOW);
             }
         }
     }
@@ -270,8 +276,14 @@ public class UserInterface {
                     new MainUI(c).setup();
                 }
             };
-        }
-        else{
+        }else if (windowID.equals(WEB_WINDOW)){
+            end = new Runnable() {
+                @Override
+                public void run() {
+                    new WebUI(c).setup();
+                }
+            };
+        }else{
             end = new Runnable() {
                 @Override
                 public void run() {
@@ -294,20 +306,22 @@ public class UserInterface {
             public void run() {
                 if (!anim.cancelled) {
                     ((ViewGroup)inner.view).removeAllViews();
+
+                    int preWidth = UserInterface.UI.container.width();
                     end.run();
 
                     final Anim anim = new Anim(c, inner, 100);
-                    int toWidth = UserInterface.UI.container.width();
-
-                    if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
-                        anim.addTranslate(toWidth, -toWidth, 0, 0);
-                    } else {
-                        anim.addTranslate(-toWidth, toWidth, 0, 0);
-                    }
+                    anim.delay = preWidth != UserInterface.UI.container.width() ? 100 : 0;
                     anim.setStart(new Runnable() {
                         @Override
                         public void run() {
                             inner.view.setVisibility(View.VISIBLE);
+                            if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+                                anim.inFromRight();
+                            } else {
+                                anim.inFromLeft();
+                            }
+
                         }
                     });
                     anim.setEnd(new Runnable() {

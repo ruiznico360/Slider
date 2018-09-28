@@ -50,6 +50,7 @@ public class MainUI {
     }
 
     public void setup() {
+        UserInterface.UI.resize(UserInterface.relativeWidth() / 4, Util.screenHeight());
         this.inner = UserInterface.UI.inner;
         mainLayout = (ViewGroup)inner.view;
 
@@ -262,12 +263,14 @@ public class MainUI {
             final SView container = new SView(new RelativeLayout(c), quickApps.view);
             container.plot(wUnit(100), ScrollView.LayoutParams.WRAP_CONTENT);
 
+            Util.log("generating");
             addPhone(0,container);
             addSMS(1,container);
             addCalculator(2,container);
             addInternet(3,container);
             addContacts(4,container);
             addSettings(5,container);
+            Util.log("generating");
 
         }
         public void addPhone(int pos, SView container) {
@@ -298,6 +301,13 @@ public class MainUI {
             final Item item = genItem(container.view);
             item.container.openRLayout().setTopM(((int) (pos * wUnit(C_HEIGHT))) + wUnit(15)).save();
             ImageUtil.setImageDrawable(item.appIcon.view, R.drawable.quick_apps_internet);
+
+            item.appIcon.view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    UserInterface.UI.launchNewWindow(UserInterface.WEB_WINDOW);
+                }
+            });
         }
         public void addCalculator(int pos, SView container) {
             final Item item = genItem(container.view);

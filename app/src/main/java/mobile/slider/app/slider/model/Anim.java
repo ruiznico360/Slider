@@ -10,6 +10,7 @@ import android.widget.ScrollView;
 import java.util.ArrayList;
 
 import mobile.slider.app.slider.model.SView.SView;
+import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.Util;
 
 public class Anim {
@@ -52,6 +53,7 @@ public class Anim {
         }
         return false;
     }
+
     public void setHideAfter() {
         hideAfter = true;
     }
@@ -162,15 +164,16 @@ public class Anim {
         view.currentAnim = null;
         currentAnims.remove(Anim.this);
 
-        if (onEnd != null) {
-            onEnd.run();
-        }
         if (translate != null) {
             view.view.setTranslationX(0);
             view.view.setTranslationY(0);
         }
         if (alpha != null) {
             view.view.setAlpha(1);
+        }
+
+        if (onEnd != null) {
+            onEnd.run();
         }
     }
     public void setStart(Runnable r) {
@@ -179,6 +182,15 @@ public class Anim {
 
     public void setEnd(Runnable r) {
         this.onEnd = r;
+    }
+
+    public void inFromRight() {
+        Util.log("ANIM " + view.width());
+        addTranslate(view.width(), -view.width(),0,0);
+    }
+    public void inFromLeft() {
+        addTranslate(-view.width(), +view.width(),0,0);
+
     }
 
     private class Translate {

@@ -67,9 +67,9 @@ public class Contact {
             } finally {
                 cursor.close();
             }
-            loadedContactIds = true;
         }
         alphabetize(letterNames, numNames, unicodes, contacts);
+        loadedContactIds = true;
 
         return contacts;
 
