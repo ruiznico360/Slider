@@ -25,17 +25,21 @@ import mobile.slider.app.slider.model.Anim;
 import mobile.slider.app.slider.model.RoundedImageView;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.model.contact.Contact;
+import mobile.slider.app.slider.ui.UIClass;
 import mobile.slider.app.slider.ui.UIView;
 import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;
 
-public class ContactsUI {
+public class ContactsUI extends UIClass {
     public Context c;
     public int titleMargin, aScrollerHeight;
     public SView mainLayout;
-
     public SView contactScroller, title, alphabetScroller, alphabetScrollerLetter, loading, contactContainer;
+
+    public String getID() {
+        return UserInterface.CONTACTS_WINDOW;
+    }
 
     public int wUnit(int percent) {
         return (int)(UserInterface.UI.container.width() / 100f * percent);
@@ -49,7 +53,7 @@ public class ContactsUI {
     }
 
     public void setup() {
-        UserInterface.UI.resize(UserInterface.relativeWidth() / 4, Util.screenHeight());
+        UserInterface.UI.resize(UserInterface.relativeWidth() / 4);
         mainLayout = new SView(new RelativeLayout(c), UserInterface.UI.inner.view);
         mainLayout.plot(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
@@ -122,6 +126,12 @@ public class ContactsUI {
         new ContactScroller().setup();
     }
 
+    public void backPressed() {
+        UserInterface.UI.launchNewWindow(UserInterface.UI_WINDOW);
+    }
+    public void remove() {
+
+    }
     public class ContactScroller {
         public boolean scrollerInUse = false, alphabetScrollerInUse = false, touchEnabled = false;
 

@@ -19,11 +19,13 @@ import mobile.slider.app.slider.util.Util;
 public class UIView {
 
     public static class UIContainer extends RelativeLayout {
-        public UIContainer(Context c){ super(c); }
+        public UIContainer(Context c){
+            super(c);
+        }
 
         @Override
         public boolean dispatchKeyEventPreIme(KeyEvent event) {
-            if ((event.getKeyCode() == KeyEvent.KEYCODE_BACK) || (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) || (event.getKeyCode() == KeyEvent.KEYCODE_HOME)) {
+            if (((event.getKeyCode() == KeyEvent.KEYCODE_BACK) || (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) || (event.getKeyCode() == KeyEvent.KEYCODE_HOME)) && event.getAction() == KeyEvent.ACTION_DOWN) {
                 if (UserInterface.running()) UserInterface.UI.backPressed();
                 return true;
             }

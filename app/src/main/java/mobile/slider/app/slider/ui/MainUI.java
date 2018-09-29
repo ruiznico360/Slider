@@ -27,11 +27,15 @@ import mobile.slider.app.slider.model.contact.Contact;
 import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;
 
-public class MainUI {
+public class MainUI extends UIClass{
     public boolean canMoveUISelector = true;
     public SView inner, uiSelector, yourApps, quickApps, miniWindows, logo, uiPos, uiIndicatorText;
     public ViewGroup mainLayout;
     public Context c;
+
+    public String getID() {
+        return UserInterface.UI_WINDOW;
+    }
 
     public MainUI(Context context) {
         this.c = context;
@@ -46,11 +50,14 @@ public class MainUI {
     }
 
     public void remove() {
-        mainLayout.removeAllViews();
+
     }
 
+    public void backPressed() {
+        UserInterface.UI.remove();
+    }
     public void setup() {
-        UserInterface.UI.resize(UserInterface.relativeWidth() / 4, Util.screenHeight());
+        UserInterface.UI.resize(UserInterface.relativeWidth() / 4);
         this.inner = UserInterface.UI.inner;
         mainLayout = (ViewGroup)inner.view;
 
@@ -263,14 +270,12 @@ public class MainUI {
             final SView container = new SView(new RelativeLayout(c), quickApps.view);
             container.plot(wUnit(100), ScrollView.LayoutParams.WRAP_CONTENT);
 
-            Util.log("generating");
             addPhone(0,container);
             addSMS(1,container);
             addCalculator(2,container);
             addInternet(3,container);
             addContacts(4,container);
             addSettings(5,container);
-            Util.log("generating");
 
         }
         public void addPhone(int pos, SView container) {

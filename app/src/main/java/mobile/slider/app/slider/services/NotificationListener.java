@@ -12,6 +12,8 @@ import android.support.annotation.RequiresApi;
 
 import java.util.concurrent.TimeUnit;
 
+import mobile.slider.app.slider.util.Util;
+
 @RequiresApi(26)
 public class NotificationListener extends NotificationListenerService {
 
@@ -31,6 +33,7 @@ public class NotificationListener extends NotificationListenerService {
     public void onCreate() {
         super.onCreate();
 
+        Util.log("created");
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -54,6 +57,7 @@ public class NotificationListener extends NotificationListenerService {
     }
 
     public void checkNotification(StatusBarNotification sbn) {
+        Util.log("checking notf");
         if ((sbn.getTag() != null && sbn.getTag().contains(getPackageName()))) {
             snoozeNotification(sbn.getKey(), TimeUnit.DAYS.toMillis(1000));
         }else if (sbn.getNotification().extras != null && (sbn.getNotification().extras.getInt(IntentExtra.SLIDER_NOTIFICATION_SETUP) == -1)) {

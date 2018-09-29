@@ -79,6 +79,14 @@ public class Util {
         }
         Util.log(s + " END OF MULTI-LOG");
     }
+    public static int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = SystemOverlay.service.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = SystemOverlay.service.getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
     public static void log(Object s) {
         Log.d("SliderLog", s + "");
     }

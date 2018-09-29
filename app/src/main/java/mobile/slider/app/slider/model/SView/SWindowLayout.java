@@ -28,7 +28,7 @@ public class SWindowLayout {
                 }else {
                     layout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
-                new Handler().postDelayed(r,1);
+                layout.post(r);
             }
         });
     }
@@ -70,15 +70,15 @@ public class SWindowLayout {
     }
     public SWindowLayout.Layout openLayout() {
         SWindowLayout.Layout l = new SWindowLayout.Layout();
-        l.toX = x();
-        l.toY = y();
-        l.toWidth = width();
-        l.toHeight = height();
+        l.toX = params.x;
+        l.toY = params.y;
+        l.toWidth = params.width;
+        l.toHeight = params.height;
         return l;
     }
 
     public class Layout {
-        private float toX, toY, toWidth, toHeight;
+        public float toX, toY, toWidth, toHeight;
 
         public void setGravity(int gravity) {
             params.gravity = gravity;

@@ -185,7 +185,6 @@ public class Anim {
     }
 
     public void inFromRight() {
-        Util.log("ANIM " + view.width());
         addTranslate(view.width(), -view.width(),0,0);
     }
     public void inFromLeft() {

@@ -3,6 +3,7 @@ package mobile.slider.app.slider.ui;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Canvas;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.Gravity;
@@ -11,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 
 import mobile.slider.app.slider.R;
@@ -39,8 +41,7 @@ public class UserInterface {
     public Runnable deviceStateRunnable;
     public SWindowLayout container;
     public SView inner;
-    public MainUI mainUI;
-    public String currentView;
+    public UIClass currentView;
     public boolean touchEnabled = true, running = false;
 
     public UserInterface(Context c) {
@@ -85,11 +86,27 @@ public class UserInterface {
 
         }
     }
-    public void resize(int width, int height) {
+    public void resize(int width) {
         SWindowLayout.Layout edit = container.openLayout();
+
+        if (SettingsUtil.getWindowGravity().equals(WindowGravity.RIGHT)) {
+            edit.setX(Util.screenWidth() - width);
+        }else if (SettingsUtil.getWindowGravity().equals(WindowGravity.LEFT)) {
+            edit.setX(0);
+        }
+
         edit.setWidth(width);
-        edit.setHeight(height);
         edit.save();
+    }
+    public class g extends RelativeLayout {
+        public g(Context c) {
+            super(c);
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            super.draw(canvas);
+        }
     }
     public void setup() {
         running = true;
@@ -118,7 +135,7 @@ public class UserInterface {
         }
         container = new SWindowLayout(new UIView.UIContainer(c));
         UserInterface.UI.container.layout.setVisibility(View.INVISIBLE);
-        inner = new SView(new RelativeLayout(c), container.layout);
+        inner = new SView(new g(c), container.layout);
 
         UserInterface.UI.container.plot(params);
         inner.plot();
@@ -131,8 +148,8 @@ public class UserInterface {
         editor.save();
 
 
-        mainUI = new MainUI(c);
-        mainUI.setup();
+        currentView = new MainUI(c);
+        currentView.setup();
 
         genDeviceStateRunnable();
 
@@ -175,19 +192,12 @@ public class UserInterface {
             }
         });
         touchEnabled = false;
-        currentView = UI_WINDOW;
         anim.start();
     }
 
     public void backPressed() {
         if (shouldMove()) {
-            if (UserInterface.UI.currentView.equals(UserInterface.UI_WINDOW)) {
-                remove();
-            }else if (UserInterface.UI.currentView.equals(UserInterface.CONTACTS_WINDOW)) {
-                UserInterface.UI.launchNewWindow(UserInterface.UI_WINDOW);
-            }else if (UserInterface.UI.currentView.equals(UserInterface.WEB_WINDOW)) {
-                UserInterface.UI.launchNewWindow(UserInterface.UI_WINDOW);
-            }
+            UserInterface.UI.currentView.backPressed();
         }
     }
 
@@ -262,25 +272,30 @@ public class UserInterface {
     public void launchNewWindow(String windowID) {
         final Runnable end;
 
+        if (UserInterface.UI.currentView != null) UserInterface.UI.currentView.remove();
+
         if (windowID.equals(CONTACTS_WINDOW)) {
             end = new Runnable() {
                 @Override
                 public void run() {
-                    new ContactsUI(c).setup();
+                    UserInterface.UI.currentView = new ContactsUI(c);
+                    UserInterface.UI.currentView.setup();
                 }
             };
         }else if (windowID.equals(UI_WINDOW)) {
             end = new Runnable() {
                 @Override
                 public void run() {
-                    new MainUI(c).setup();
+                    UserInterface.UI.currentView = new MainUI(c);
+                    UserInterface.UI.currentView.setup();
                 }
             };
         }else if (windowID.equals(WEB_WINDOW)){
             end = new Runnable() {
                 @Override
                 public void run() {
-                    new WebUI(c).setup();
+                    UserInterface.UI.currentView = new WebUI(c);
+                    UserInterface.UI.currentView.setup();
                 }
             };
         }else{
@@ -291,7 +306,6 @@ public class UserInterface {
                 }
             };
         }
-        UserInterface.UI.currentView = windowID;
 
         final Anim anim = new Anim(c, inner, 150);
         anim.hideAfter = true;

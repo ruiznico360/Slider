@@ -24,13 +24,13 @@ public class SView {
     public int x() {
         int[] loc = new int[2];
         view.getLocationOnScreen(loc);
-        return loc[0];
+        return loc[0] - (int)view.getTranslationX();
 
     }
     public int y() {
         int[] loc = new int[2];
         view.getLocationOnScreen(loc);
-        return loc[1];
+        return loc[1] - (int)view.getTranslationY();
     }
     public int width() {
         if (view.getMeasuredWidth() > 0) {
@@ -61,7 +61,7 @@ public class SView {
                 }else {
                     view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
-                r.run();
+                view.post(r);
             }
         });
     }
