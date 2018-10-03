@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -20,7 +21,15 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.model.Anim;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.ui.UIClass;
@@ -30,7 +39,7 @@ import mobile.slider.app.slider.util.Util;
 
 public class WebUI extends UIClass {
     public Context c;
-    public SView mainLayout, web, webContainer,loading, searchBarLayout, searchEdit, clearButton;
+    public SView mainLayout, web, webContainer,loading, searchBarLayout, logo, searchEdit, clearButton;
     public int searchBarHeight;
 
     public String getID() {
@@ -49,7 +58,7 @@ public class WebUI extends UIClass {
 
         webContainer = new SView(new RelativeLayout(c), mainLayout.view);
         webContainer.view.setBackgroundColor(Color.rgb(220,220,220));
-        webContainer.view.setPadding(wUnit(2),0,wUnit(2),wUnit(2));
+        webContainer.view.setPadding(wUnit(2),0,wUnit(2),0);
         webContainer.plot();
         webContainer.openRLayout()
                 .setWidth(wUnit(100))
@@ -72,10 +81,19 @@ public class WebUI extends UIClass {
                 .addRule(RelativeLayout.CENTER_IN_PARENT)
                 .save();
 
+        logo = new SView(new ImageView(c), mainLayout.view);
+        ImageUtil.setImageDrawable(logo.view, R.drawable.powered_by_google);
+        logo.plot(wUnit(100), ImageUtil.getRelativeHeight(ImageUtil.getDrawable(R.drawable.powered_by_google),wUnit(100)));
+
         searchBarLayout = new SView(new RelativeLayout(c), mainLayout.view);
         searchBarLayout.view.setBackgroundColor(Color.rgb(220,220,220));
         searchBarLayout.view.setPadding(wUnit(2),wUnit(2),wUnit(2),wUnit(2));
-        searchBarLayout.plot(wUnit(100),searchBarHeight);
+        searchBarLayout.plot();
+        searchBarLayout.openRLayout()
+                .setWidth(wUnit(100))
+                .setHeight(searchBarHeight)
+                .setTopM(logo.height())
+                .save();
 
         searchEdit = new SView(Util.customEdit(c), searchBarLayout.view);
         ((EditText)searchEdit.view).setImeOptions(EditorInfo.IME_ACTION_SEARCH);
@@ -85,7 +103,7 @@ public class WebUI extends UIClass {
         searchEdit.plot();
         searchEdit.openRLayout()
                 .setWidth(RelativeLayout.LayoutParams.MATCH_PARENT)
-                .setHeight(wUnit(25))
+                .setHeight(RelativeLayout.LayoutParams.MATCH_PARENT)
                 .addRule(RelativeLayout.CENTER_VERTICAL)
                 .save();
 
@@ -119,6 +137,28 @@ public class WebUI extends UIClass {
             }
         });
 
+        mainLayout.view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                if (oldBottom != bottom && logo.view.getVisibility() == View.VISIBLE) {
+                    if (logo.height() + searchBarHeight > mainLayout.height()) {
+                        searchBarLayout.openRLayout().setTopM(mainLayout.height() - searchBarHeight).setHeight(searchBarHeight).save();
+                    }else{
+                        searchBarLayout.openRLayout().setTopM(logo.height()).save();
+                    }
+                }
+            }
+        });
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (UserInterface.running()) {
+                    Util.log(searchBarLayout.y() + "omegalul");
+                    new Handler().postDelayed(this,5);
+                }
+            }
+        },5);
         ((TextView) searchEdit.view).addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
@@ -141,13 +181,14 @@ public class WebUI extends UIClass {
         });
 
         ((WebView)web.view).setWebViewClient(new WebViewClient() {
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if ((url.contains("http://www.google.") && url.contains("/search?")) || (url.contains("https://www.google.") && url.contains("/search?"))) {
-                    ((EditText)searchEdit.view).setText(unpackSearch(url));
+                if ((url.contains("http://www.google.") || url.contains("https://www.google.")) && url.contains("/search?") && !url.contains("/search?nomo")) {
+                    ((EditText)searchEdit.view).setText(unpackSearch(url.substring(url.indexOf("q=") + 2,url.indexOf("&", url.indexOf("q=")))));
                     return false;
                 }else {
-                    final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url.substring(url.indexOf("q=") + 2,url.indexOf("&"))));
+                    final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                     if (Util.isLocked(c)) {
@@ -210,9 +251,31 @@ public class WebUI extends UIClass {
         if (searchEdit != null && searchEdit.view.hasFocus()) {
             hideKeyboard();
         }
-        String url = "http://www.google.com/search?q=" + packSearch(((EditText)searchEdit.view).getText().toString());
-        ((WebView)web.view).loadUrl(url);
+        final String url = "http://www.google.com/search?q=" + packSearch(((EditText)searchEdit.view).getText().toString());
         ((EditText)searchEdit.view).setText(unpackSearch(url.substring(url.indexOf("q=") + 2,url.length())));
+
+        if (logo.view.getVisibility() == View.VISIBLE) {
+            final Anim a = UserInterface.uiAnim(c,searchBarLayout,100);
+            a.setEnd(new Runnable() {
+                @Override
+                public void run() {
+                    ((WebView)web.view).loadUrl(url);
+                    searchBarLayout.openRLayout().setTopM(0).save();
+                }
+            });
+            a.setStart(new Runnable() {
+                @Override
+                public void run() {
+                    a.addTranslate(0,-searchBarLayout.openRLayout().topM);
+                    logo.view.setVisibility(View.INVISIBLE);
+                }
+            });
+            a.start();
+        }else{
+            Util.log("loading");
+            loadHTML(url);
+            ((WebView)web.view).loadUrl(url);
+        }
     }
     public void backPressed() {
         if (searchEdit != null && searchEdit.view.hasFocus()) {
@@ -230,5 +293,39 @@ public class WebUI extends UIClass {
         InputMethodManager imm = (InputMethodManager)c.getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(searchEdit.view.getWindowToken(), 0);
         searchEdit.view.clearFocus();
+    }
+    public static String loadHTML(final String link) {
+        final StringBuilder html = new StringBuilder();
+        new Thread() {
+            @Override
+            public void run () {
+                URL url;
+                InputStream is = null;
+                BufferedReader br;
+                String line;
+
+                try {
+                    url = new URL(link);
+                    is = url.openStream();  // throws an IOException
+                    br = new BufferedReader(new InputStreamReader(is));
+
+                    while ((line = br.readLine()) != null) {
+                        html.append(line);
+                    }
+                } catch (MalformedURLException mue) {
+                    mue.printStackTrace();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                } finally {
+                    try {
+                        if (is != null) is.close();
+                    } catch (IOException ioe) {
+                        // nothing to see here
+                    }
+                }
+                Util.log("ALLO " + html.toString());
+            }
+        }.start();
+        return html.toString();
     }
 }
