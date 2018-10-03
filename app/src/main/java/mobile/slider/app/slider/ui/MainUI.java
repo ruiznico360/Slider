@@ -41,14 +41,6 @@ public class MainUI extends UIClass{
         this.c = context;
     }
 
-
-    public int wUnit(int percent) {
-        return (int)(UserInterface.UI.container.width() / 100f * percent);
-    }
-    public int hUnit(int percent) {
-        return (int)(UserInterface.relativeHeight() / 100f * percent);
-    }
-
     public void remove() {
 
     }
@@ -57,7 +49,7 @@ public class MainUI extends UIClass{
         UserInterface.UI.remove();
     }
     public void setup() {
-        UserInterface.UI.resize(UserInterface.relativeWidth() / 4);
+        UserInterface.UI.resize(Util.displayWidth() / 4);
         this.inner = UserInterface.UI.inner;
         mainLayout = (ViewGroup)inner.view;
 
@@ -318,6 +310,13 @@ public class MainUI extends UIClass{
             final Item item = genItem(container.view);
             item.container.openRLayout().setTopM(((int) (pos * wUnit(C_HEIGHT))) + wUnit(15)).save();
             ImageUtil.setImageDrawable(item.appIcon.view, R.drawable.quick_apps_calculator);
+
+            item.appIcon.view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    UserInterface.UI.launchNewWindow(UserInterface.CALCULATOR_WINDOW);
+                }
+            });
         }
         public void addContacts(int pos, SView container) {
             final Item item = genItem(container.view);

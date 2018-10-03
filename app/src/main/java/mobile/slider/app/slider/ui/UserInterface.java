@@ -24,6 +24,7 @@ import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 import mobile.slider.app.slider.settings.resources.WindowGravity;
 import mobile.slider.app.slider.model.Anim;
+import mobile.slider.app.slider.ui.Calculator.CalculatorUI;
 import mobile.slider.app.slider.ui.Contacts.ContactsUI;
 import mobile.slider.app.slider.ui.Web.WebUI;
 import mobile.slider.app.slider.util.Util;
@@ -32,6 +33,7 @@ public class UserInterface {
     public static final String CONTACTS_WINDOW = "CONTACTS_WINDOW";
     public static final String WEB_WINDOW = "WEB_WINDOW";
     public static final String UI_WINDOW = "UI_WINDOW";
+    public static final String CALCULATOR_WINDOW = "CALCULATOR_WINDOW";
 
     public static final int  TITLE_TOP_MARGIN = 3;
 
@@ -69,23 +71,6 @@ public class UserInterface {
             return false;
         }
     }
-
-    public static int relativeWidth() {
-        if (Util.screenHeight() > Util.screenWidth()) {
-            return Util.screenWidth();
-        }else{
-            return Util.screenHeight();
-
-        }
-    }
-    public static int relativeHeight() {
-        if (Util.screenHeight() > Util.screenWidth()) {
-            return Util.screenHeight();
-        }else{
-            return Util.screenWidth();
-
-        }
-    }
     public void resize(int width) {
         SWindowLayout.Layout edit = container.openLayout();
 
@@ -110,7 +95,7 @@ public class UserInterface {
     }
     public void setup() {
         running = true;
-        int size = relativeWidth() / 4;
+        int size = Util.displayWidth() / 4;
 
         final WindowManager.LayoutParams params = SystemOverlay.newWindow(true);
         params.width = size;
@@ -295,6 +280,14 @@ public class UserInterface {
                 @Override
                 public void run() {
                     UserInterface.UI.currentView = new WebUI(c);
+                    UserInterface.UI.currentView.setup();
+                }
+            };
+        }else if (windowID.equals(CALCULATOR_WINDOW)){
+            end = new Runnable() {
+                @Override
+                public void run() {
+                    UserInterface.UI.currentView = new CalculatorUI(c);
                     UserInterface.UI.currentView.setup();
                 }
             };

@@ -1,5 +1,6 @@
 package mobile.slider.app.slider.util;
 
+import android.annotation.TargetApi;
 import android.app.KeyguardManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,9 +16,11 @@ import android.support.v4.app.NotificationCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.EditText;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,6 +63,22 @@ public class Util {
             }
         };
     }
+    public static int displayWidth() {
+        if (Util.screenHeight() > Util.screenWidth()) {
+            return Util.screenWidth();
+        }else{
+            return Util.screenHeight();
+
+        }
+    }
+    public static int displayHeight() {
+        if (Util.screenHeight() > Util.screenWidth()) {
+            return Util.screenHeight();
+        }else{
+            return Util.screenWidth();
+
+        }
+    }
     public static int screenWidth() {
         DisplayMetrics dm = new DisplayMetrics();
         ((WindowManager) SystemOverlay.service.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
@@ -100,9 +119,12 @@ public class Util {
         NotificationManager nManager = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(NOTIFICATION_ID, builder.build());
     }
+    public static EditText customEdit(Context c) {
+        return (EditText) ((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.edittext_custom,null);
+    }
     public static boolean isLocked(Context c) {
         KeyguardManager myKM = (KeyguardManager) c.getSystemService(Context.KEYGUARD_SERVICE);
-        if( myKM.inKeyguardRestrictedInputMode()) {
+        if(myKM.inKeyguardRestrictedInputMode()) {
             return true;
         } else {
             return false;

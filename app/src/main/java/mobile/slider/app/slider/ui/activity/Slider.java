@@ -32,7 +32,8 @@ public class Slider extends Activity {
         if (Setup.hasAllReqPermissions(this)) {
             setupActivity();
         }else{
-            launchingSetup = true;            launchSetupActivity();
+            launchingSetup = true;
+            launchSetupActivity();
         }
     }
 

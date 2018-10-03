@@ -41,19 +41,12 @@ public class ContactsUI extends UIClass {
         return UserInterface.CONTACTS_WINDOW;
     }
 
-    public int wUnit(int percent) {
-        return (int)(UserInterface.UI.container.width() / 100f * percent);
-    }
-    public int hUnit(int percent) {
-        return (int)(UserInterface.UI.container.height() / 100f * percent);
-    }
-
     public ContactsUI(Context c) {
         this.c = c;
     }
 
     public void setup() {
-        UserInterface.UI.resize(UserInterface.relativeWidth() / 4);
+        UserInterface.UI.resize(Util.displayWidth() / 4);
         mainLayout = new SView(new RelativeLayout(c), UserInterface.UI.inner.view);
         mainLayout.plot(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
