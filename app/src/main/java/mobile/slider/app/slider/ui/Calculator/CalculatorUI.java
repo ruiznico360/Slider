@@ -3,7 +3,9 @@ package mobile.slider.app.slider.ui.Calculator;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -44,15 +46,69 @@ public class CalculatorUI extends UIClass {
         new CalcSetup().setup();
     }
     public class CalcSetup {
-        public SView numberText, answerText, deleteButton, equalButton;
+        public SView numberText, answerText, operatorsLayout;
         public ArrayList<SView> operators;
-        public int operatorsHeight;
+        public int operatorsTotalHeight, operatorHeight, operatorWidth;
 
         public void setup() {
-            operatorsHeight = hUnit(60);
+            operators = new ArrayList<>();
+            operatorsTotalHeight = hUnit(60);
+            operatorHeight = operatorsTotalHeight / 5;
+            operatorWidth = (int)(calcLayout.width() / 4f);
+            setupOperators();
 
         }
         public void setupOperators() {
+            operatorsLayout = new SView(new RelativeLayout(c), calcLayout.view);
+            operatorsLayout.view.setBackgroundColor(Color.GREEN);
+            Util.generateViewId(operatorsLayout.view);
+            operatorsLayout.plot();
+            operatorsLayout.openRLayout()
+                    .setWidth(operatorWidth * 4)
+                    .setHeight(operatorsTotalHeight)
+                    .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                    .save();
+
+            SView equalButton = new SView(new ImageView(c), operatorsLayout.view);
+            equalButton.view.setBackgroundColor(Color.RED);
+            operators.add(equalButton);
+            equalButton.plot();
+            equalButton.openRLayout()
+                    .setHeight(operatorHeight)
+                    .setWidth(operatorWidth * 4)
+                    .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                    .save();
+
+            SView deleteButton = new SView(new ImageView(c), calcLayout.view);
+            deleteButton.view.setBackgroundColor(Color.YELLOW);
+            Util.generateViewId(deleteButton.view);
+            operators.add(deleteButton);
+            deleteButton.plot();
+            deleteButton.openRLayout()
+                    .setHeight(operatorHeight / 2)
+                    .setWidth(operatorWidth / 2)
+                    .addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+                    .addRule(RelativeLayout.ABOVE, operatorsLayout.view.getId())
+                    .save();
+
+            answerText = new SView(new TextView(c), calcLayout.view);
+            answerText.view.setBackgroundColor(Color.BLACK);
+            Util.generateViewId(answerText.view);
+            answerText.plot();
+            answerText.openRLayout()
+                    .setHeight(operatorHeight / 2)
+                    .setWidth(operatorWidth * 4)
+                    .addRule(RelativeLayout.ABOVE, deleteButton.view.getId())
+                    .save();
+
+            numberText = new SView(new TextView(c), calcLayout.view);
+            numberText.view.setBackgroundColor(Color.BLUE);
+            numberText.plot();
+            numberText.openRLayout()
+                    .setHeight(operatorHeight)
+                    .setWidth(operatorWidth * 4)
+                    .addRule(RelativeLayout.ABOVE, answerText.view.getId())
+                    .save();
         }
         public int hUnit(float perc) {
             return (int) ((perc / 100f) * calcHeight);
