@@ -60,6 +60,7 @@ public class SystemOverlay extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Util.log("starting service");
         if (Setup.hasAllReqPermissions(this)) {
             super.onCreate();
             processIntent(intent);

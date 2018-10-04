@@ -25,8 +25,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.Anim;
@@ -150,15 +154,15 @@ public class WebUI extends UIClass {
             }
         });
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (UserInterface.running()) {
-                    Util.log(searchBarLayout.y() + "omegalul");
-                    new Handler().postDelayed(this,5);
-                }
-            }
-        },5);
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (UserInterface.running()) {
+//                    Util.log(searchBarLayout.y() + "omegalul");
+//                    new Handler().postDelayed(this,5);
+//                }
+//            }
+//        },5);
         ((TextView) searchEdit.view).addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
@@ -272,8 +276,6 @@ public class WebUI extends UIClass {
             });
             a.start();
         }else{
-            Util.log("loading");
-            loadHTML(url);
             ((WebView)web.view).loadUrl(url);
         }
     }
@@ -293,39 +295,5 @@ public class WebUI extends UIClass {
         InputMethodManager imm = (InputMethodManager)c.getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(searchEdit.view.getWindowToken(), 0);
         searchEdit.view.clearFocus();
-    }
-    public static String loadHTML(final String link) {
-        final StringBuilder html = new StringBuilder();
-        new Thread() {
-            @Override
-            public void run () {
-                URL url;
-                InputStream is = null;
-                BufferedReader br;
-                String line;
-
-                try {
-                    url = new URL(link);
-                    is = url.openStream();  // throws an IOException
-                    br = new BufferedReader(new InputStreamReader(is));
-
-                    while ((line = br.readLine()) != null) {
-                        html.append(line);
-                    }
-                } catch (MalformedURLException mue) {
-                    mue.printStackTrace();
-                } catch (IOException ioe) {
-                    ioe.printStackTrace();
-                } finally {
-                    try {
-                        if (is != null) is.close();
-                    } catch (IOException ioe) {
-                        // nothing to see here
-                    }
-                }
-                Util.log("ALLO " + html.toString());
-            }
-        }.start();
-        return html.toString();
     }
 }
