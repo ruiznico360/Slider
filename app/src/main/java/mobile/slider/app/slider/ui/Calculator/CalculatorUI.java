@@ -21,6 +21,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.logging.Handler;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.SView.SView;
@@ -36,13 +37,18 @@ public class CalculatorUI extends UIClass {
     public SView mainLayout, calcLayout;
 
     public enum ID {
-        BRACKET(R.drawable.calculator_bracket), SQROOT(R.drawable.calculator_sqroot), POW(R.drawable.calculator_pow), CLEAR(R.drawable.calculator_clear), SEVEN(R.drawable.calculator_seven), EIGHT(R.drawable.calculator_eight), NINE(R.drawable.calculator_nine), DIVIDE(R.drawable.calculator_divide), FOUR(R.drawable.calculator_four), FIVE(R.drawable.calculator_five), SIX(R.drawable.calculator_six), MULT(R.drawable.calculator_mult), ONE(R.drawable.calculator_one), TWO(R.drawable.calculator_two), THREE(R.drawable.calculator_three), SUB(R.drawable.calculator_sub)
-        , NEGATE(R.drawable.calculator_negate), ZERO(R.drawable.calculator_zero), DEC(R.drawable.calculator_dec), ADD(R.drawable.calculator_add), EQUAL(R.drawable.calculator_equal), DELETE(R.drawable.calculator_delete);
+        BRACKET(R.drawable.calculator_bracket), SQROOT(R.drawable.calculator_sqroot), POW(R.drawable.calculator_pow), CLEAR(R.drawable.calculator_clear), SEVEN(R.drawable.calculator_seven,7), EIGHT(R.drawable.calculator_eight,8), NINE(R.drawable.calculator_nine,9), DIVIDE(R.drawable.calculator_divide), FOUR(R.drawable.calculator_four,4), FIVE(R.drawable.calculator_five,5), SIX(R.drawable.calculator_six,6), MULT(R.drawable.calculator_mult), ONE(R.drawable.calculator_one,1), TWO(R.drawable.calculator_two,2), THREE(R.drawable.calculator_three,3), SUB(R.drawable.calculator_sub)
+        , NEGATE(R.drawable.calculator_negate), ZERO(R.drawable.calculator_zero,0), DEC(R.drawable.calculator_dec), ADD(R.drawable.calculator_add), EQUAL(R.drawable.calculator_equal), DELETE(R.drawable.calculator_delete);
 
         public int drawableRes;
+        public int numValue = -1;
 
         ID(int drawableRes) {
             this.drawableRes = drawableRes;
+        }
+        ID(int drawableRes, int numValue) {
+            this.drawableRes = drawableRes;
+            this.numValue = numValue;
         }
     }
 
@@ -192,9 +198,6 @@ public class CalculatorUI extends UIClass {
             numberText.openLayout().save();
             ((TextView) numberText.view).setMaxLines(1);
             ((TextView) numberText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(numberText.height() * .75));
-
-
-
         }
         public int hUnit(float perc) {
             return (int) ((perc / 100f) * calcHeight);
@@ -217,14 +220,45 @@ public class CalculatorUI extends UIClass {
         }
         public class CalcHandler {
             public String calculation = "";
-            int i = 0;
-            public void handle(ID id) {
-                ((UIView.MHScrollView)numberLayout.view).smoothScrollTo(numberText.width() - numberLayout.width(),0);
-                ((UIView.MHScrollView)answerLayout.view).smoothScrollTo(answerText.width() - answerLayout.width(),0);
 
-                i++;
-                ((TextView) numberText.view).setText(((TextView) numberText.view).getText().toString() + i);
-                ((TextView) answerText.view).setText(((TextView) answerText.view).getText().toString() + i);
+            public void handle(ID id) {
+                TextView number = ((TextView)numberText.view);
+                TextView answer = ((TextView)answerText.view);
+
+                if (id.numValue == -1) {
+                    if (id == ID.DELETE) {
+                        calculation = calculation.length() != 0 ? calculation.substring(0, calculation.length() - 1) : calculation;
+                    }else if (id == ID.CLEAR) {
+                        calculation = "";
+                    }else if (id == ID.EQUAL) {
+                        calculation = "13";
+                    }
+                }else{
+                    calculation += id.numValue;
+                }
+
+
+                number.setText(calculation);
+                answer.setText(answer());
+
+                answerText.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((UIView.MHScrollView)numberLayout.view).smoothScrollTo(numberText.width() - numberLayout.width(),0);
+                        ((UIView.MHScrollView)answerLayout.view).smoothScrollTo(answerText.width() - answerLayout.width(),0);
+                    }
+                });
+            }
+            public String answer() {
+                return calculation;
+            }
+            public boolean isNum(String num) {
+                try {
+                    Double.parseDouble(num);
+                    return true;
+                }catch (Exception e) {
+                    return false;
+                }
             }
         }
     }
