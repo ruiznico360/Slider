@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.webkit.WebView;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.floater.Floater;
@@ -77,7 +78,7 @@ public class Slider extends Activity {
     }
     public void setupActivity() {
         checkForServiceEnabled();
-        setContentView(R.layout.notification_layout);
+        setContentView(R.layout.activity_permissions_interface);
     }
     public void launchSetupActivity() {
         terminateInvalidService();

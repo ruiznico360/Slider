@@ -448,11 +448,12 @@ public class Floater extends SView {
         anim.start();
     }
 
-    public void updateFloater() {
+    public void updateFloater(int orientation) {
         SWindowLayout.Layout editor = sContainer.openLayout();
         editor.setY(floaterPosY());
         editor.setX(floaterPosX(sContainer.width()));
         editor.save();
+        currentOrientation = orientation;
     }
     public class Garbage extends SView{
         public SView trash;

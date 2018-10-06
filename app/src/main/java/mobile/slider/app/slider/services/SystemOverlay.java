@@ -100,9 +100,8 @@ public class SystemOverlay extends Service {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (newConfig.orientation != floater.currentOrientation) {
-            floater.updateFloater();
+            floater.updateFloater(newConfig.orientation);
         }
-        floater.currentOrientation = newConfig.orientation;
         if (ToastMessage.currentToast != null) {
             ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(ToastMessage.currentToast);
             ToastMessage.currentToast.removeCallbacks(ToastMessage.remove);

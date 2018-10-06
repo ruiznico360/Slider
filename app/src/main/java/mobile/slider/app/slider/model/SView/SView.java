@@ -73,9 +73,9 @@ public class SView {
         view.setVisibility(View.INVISIBLE);
         container.removeView(view);
     }
-    public void plot(int width, int height) {
-        params = new ViewGroup.LayoutParams(width,height);
-        container.addView(view, params);
+    public void plot(float width, float height) {
+        container.addView(view,Math.round(width),Math.round(height));
+        params = view.getLayoutParams();
     }
     public Layout openLayout() {
         params = view.getLayoutParams();
@@ -172,8 +172,8 @@ public class SView {
             return leftM;
         }
 
-        public RLayout setLeftM(int leftM) {
-            this.leftM = leftM;
+        public RLayout setLeftM(float leftM) {
+            this.leftM = Math.round(leftM);
             return this;
         }
 
@@ -181,8 +181,8 @@ public class SView {
             return topM;
         }
 
-        public RLayout setTopM(int topM) {
-            this.topM = topM;
+        public RLayout setTopM(float topM) {
+            this.topM = Math.round(topM);
             return this;
         }
 
@@ -190,8 +190,8 @@ public class SView {
             return rightM;
         }
 
-        public RLayout setRightM(int rightM) {
-            this.rightM = rightM;
+        public RLayout setRightM(float rightM) {
+            this.rightM = Math.round(rightM);
             return this;
         }
 
@@ -199,8 +199,8 @@ public class SView {
             return bottomM;
         }
 
-        public RLayout setBottomM(int bottomM) {
-            this.bottomM = bottomM;
+        public RLayout setBottomM(float bottomM) {
+            this.bottomM = Math.round(bottomM);
             return this;
         }
     }
