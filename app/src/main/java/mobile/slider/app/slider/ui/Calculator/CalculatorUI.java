@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.logging.Handler;
 
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.model.Anim;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.ui.UIClass;
 import mobile.slider.app.slider.ui.UIView;
@@ -32,23 +33,35 @@ import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;
 
 public class CalculatorUI extends UIClass {
+    public final float TEXT_SIZE = 0.75f;
+    public static final int operatorRGB = Color.rgb(66, 134, 244);
     public Context c;
     public int calcHeight;
-    public SView mainLayout, calcLayout;
+    public SView mainLayout, calcLayout,numberText, answerText,answerLayout, numberLayout, operatorsLayout, textLayout;
+    public ArrayList<SView> operators;
+    public float operatorsTotalHeight, operatorHeight, operatorWidth;
+    public CalcHandler calcHandler;
 
     public enum ID {
-        BRACKET(R.drawable.calculator_bracket), SQROOT(R.drawable.calculator_sqroot), POW(R.drawable.calculator_pow), CLEAR(R.drawable.calculator_clear), SEVEN(R.drawable.calculator_seven,7), EIGHT(R.drawable.calculator_eight,8), NINE(R.drawable.calculator_nine,9), DIVIDE(R.drawable.calculator_divide), FOUR(R.drawable.calculator_four,4), FIVE(R.drawable.calculator_five,5), SIX(R.drawable.calculator_six,6), MULT(R.drawable.calculator_mult), ONE(R.drawable.calculator_one,1), TWO(R.drawable.calculator_two,2), THREE(R.drawable.calculator_three,3), SUB(R.drawable.calculator_sub)
-        , NEGATE(R.drawable.calculator_negate), ZERO(R.drawable.calculator_zero,0), DEC(R.drawable.calculator_dec), ADD(R.drawable.calculator_add), EQUAL(R.drawable.calculator_equal), DELETE(R.drawable.calculator_delete);
+        BRACKET(R.drawable.calculator_bracket,"("), SQROOT(R.drawable.calculator_sqroot,"√"), POW(R.drawable.calculator_pow,"^"), CLEAR(R.drawable.calculator_clear,""), SEVEN(R.drawable.calculator_seven,7), EIGHT(R.drawable.calculator_eight,8), NINE(R.drawable.calculator_nine,9), DIVIDE(R.drawable.calculator_divide,"÷"), FOUR(R.drawable.calculator_four,4), FIVE(R.drawable.calculator_five,5), SIX(R.drawable.calculator_six,6), MULT(R.drawable.calculator_mult,"x"), ONE(R.drawable.calculator_one,1), TWO(R.drawable.calculator_two,2), THREE(R.drawable.calculator_three,3), SUB(R.drawable.calculator_sub,"-")
+        , NEGATE(R.drawable.calculator_negate,""), ZERO(R.drawable.calculator_zero,0), DEC(R.drawable.calculator_dec,"."), ADD(R.drawable.calculator_add,"+"), EQUAL(R.drawable.calculator_equal,""), DELETE(R.drawable.calculator_delete,"");
 
         public int drawableRes;
-        public int numValue = -1;
+        public String numValue;
+        public static final String NUM_VALUES = "[1234567890]", OPERATOR_VALUES = "[÷^x+-]";
 
-        ID(int drawableRes) {
-            this.drawableRes = drawableRes;
-        }
-        ID(int drawableRes, int numValue) {
+        ID(int drawableRes, String numValue) {
             this.drawableRes = drawableRes;
             this.numValue = numValue;
+        }
+        ID(int drawableRes, int numValue) {
+            this(drawableRes, numValue + "");
+        }
+        public boolean isNumber() {
+            return numValue.matches(NUM_VALUES);
+        }
+        public boolean isBasicOperator() {
+            return numValue.matches(OPERATOR_VALUES);
         }
     }
 
@@ -59,6 +72,7 @@ public class CalculatorUI extends UIClass {
         return UserInterface.CALCULATOR_WINDOW;
     }
     public void setup() {
+        calcHandler = new CalcHandler(this);
         UserInterface.UI.resize(Util.displayWidth() / 2);
         mainLayout = new SView(new RelativeLayout(c), UserInterface.UI.inner.view);
         mainLayout.view.setBackgroundColor(Color.WHITE);
@@ -67,6 +81,7 @@ public class CalculatorUI extends UIClass {
         calcHeight = Util.screenHeight() - Util.getStatusBarHeight();
 
         calcLayout = new SView(new RelativeLayout(c), mainLayout.view);
+        calcLayout.view.setBackgroundColor(Color.GREEN);
         calcLayout.plot();
         calcLayout.openRLayout()
                 .setWidth(wUnit(100))
@@ -76,13 +91,7 @@ public class CalculatorUI extends UIClass {
         new CalcSetup().setup();
     }
     public class CalcSetup {
-        public SView numberText, answerText,answerLayout, numberLayout, operatorsLayout, textLayout;
-        public ArrayList<SView> operators;
-        public float operatorsTotalHeight, operatorHeight, operatorWidth;
-        public CalcHandler calcHandler;
-
         public void setup() {
-            calcHandler = new CalcHandler();
             operators = new ArrayList<>();
             operatorsTotalHeight = hUnit(70);
             operatorHeight = operatorsTotalHeight / 6f;
@@ -94,6 +103,7 @@ public class CalculatorUI extends UIClass {
         public void setupMainOperators() {
             operatorsLayout = new SView(new RelativeLayout(c), calcLayout.view);
             operatorsLayout.plot();
+            operatorsLayout.view.setBackgroundColor(Color.WHITE);
             operatorsLayout.openRLayout()
                     .setWidth(operatorWidth * 4)
                     .setHeight(operatorsTotalHeight)
@@ -102,7 +112,7 @@ public class CalculatorUI extends UIClass {
 
             SView equalButton = new SView(new ImageView(c), operatorsLayout.view);
             ImageUtil.setImageDrawable(equalButton.view, ID.EQUAL.drawableRes);
-            equalButton.view.setBackgroundColor(Color.CYAN);
+            equalButton.view.setBackgroundColor(operatorRGB);
             operators.add(equalButton);
             equalButton.plot();
             equalButton.openRLayout()
@@ -110,12 +120,12 @@ public class CalculatorUI extends UIClass {
                     .setWidth(operatorWidth * 4)
                     .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
                     .save();
-            equalButton.view.setOnClickListener(new View.OnClickListener() {
+            equalButton.view.setOnTouchListener(Util.darkenAsPressed(new Runnable() {
                 @Override
-                public void onClick(View v) {
+                public void run() {
                     calcHandler.handle(ID.EQUAL);
                 }
-            });
+            },true));
 
             Iterator <ID> ids = Arrays.asList(ID.values()).iterator();
 
@@ -135,20 +145,26 @@ public class CalculatorUI extends UIClass {
                             .setLeftM(leftMargin)
                             .save();
 
-                    operator.view.setOnClickListener(new View.OnClickListener() {
+                    operator.view.setOnTouchListener(Util.darkenAsPressed(new Runnable() {
                         @Override
-                        public void onClick(View v) {
+                        public void run() {
                             calcHandler.handle(id);
                         }
-                    });
+                    },true));
                 }
             }
         }
         public void setupTextLayout() {
             float totalHeight = hUnit(100) - operatorsTotalHeight;
-            float totalWidth = operatorWidth * 4;
+            float totalWidth = operatorWidth * 4 - 4;
             textLayout = new SView(new RelativeLayout(c), calcLayout.view);
-            textLayout.plot(totalWidth, totalHeight);
+            textLayout.view.setBackgroundColor(Color.WHITE);
+            textLayout.plot();
+            textLayout.openRLayout()
+                    .setWidth(totalWidth)
+                    .setHeight(totalHeight)
+                    .addRule(RelativeLayout.CENTER_HORIZONTAL)
+                    .save();
 
             SView deleteButton = new SView(new ImageView(c), textLayout.view);
             ImageUtil.setImageDrawable(deleteButton.view, ID.DELETE.drawableRes);
@@ -160,36 +176,36 @@ public class CalculatorUI extends UIClass {
                     .addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
                     .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
                     .save();
-            deleteButton.view.setOnClickListener(new View.OnClickListener() {
+            deleteButton.view.setOnTouchListener(Util.darkenAsPressed(new Runnable() {
                 @Override
-                public void onClick(View v) {
+                public void run() {
                     calcHandler.handle(ID.DELETE);
                 }
-            });
+            },true));
 
             answerLayout = new SView(new UIView.MHScrollView(c), textLayout.view);
             ((UIView.MHScrollView) answerLayout.view).setHorizontalScrollBarEnabled(false);
             answerLayout.plot();
             answerLayout.openRLayout()
                     .setHeight(totalHeight / 4)
-                    .setWidth(totalWidth)
+                    .setWidth(RelativeLayout.LayoutParams.MATCH_PARENT)
                     .setTopM(totalHeight / 2)
                     .save();
 
             answerText = new SView(new TextView(c), answerLayout.view);
+            ((TextView)answerText.view).setTextColor(operatorRGB);
             answerText.plot(ScrollView.LayoutParams.WRAP_CONTENT, answerLayout.height());
             ((UIView.MHScrollView.LayoutParams)answerText.params).gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
             answerText.openLayout().save();
             ((TextView) answerText.view).setMaxLines(1);
-            ((TextView) answerText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(answerText.height() * .75));
+            ((TextView) answerText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(answerText.height() * TEXT_SIZE));
 
             numberLayout = new SView(new UIView.MHScrollView(c), textLayout.view);
-            numberLayout.view.setBackgroundColor(Color.GREEN);
             ((UIView.MHScrollView) numberLayout.view).setHorizontalScrollBarEnabled(false);
             numberLayout.plot();
             numberLayout.openRLayout()
                     .setHeight(totalHeight / 2)
-                    .setWidth(totalWidth)
+                    .setWidth(RelativeLayout.LayoutParams.MATCH_PARENT)
                     .save();
 
             numberText = new SView(new TextView(c), numberLayout.view);
@@ -197,7 +213,7 @@ public class CalculatorUI extends UIClass {
             ((UIView.MHScrollView.LayoutParams)numberText.params).gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
             numberText.openLayout().save();
             ((TextView) numberText.view).setMaxLines(1);
-            ((TextView) numberText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(numberText.height() * .75));
+            ((TextView) numberText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(numberText.height() * TEXT_SIZE));
         }
         public int hUnit(float perc) {
             return (int) ((perc / 100f) * calcHeight);
@@ -217,49 +233,6 @@ public class CalculatorUI extends UIClass {
             Rect dest = new Rect((int)operatorWidth / 2 - destSize / 2,(int)operatorHeight / 2 - destSize / 2,(int)operatorWidth / 2 + destSize / 2,(int)operatorHeight / 2 + destSize / 2);
             canvas.drawBitmap(calc, new Rect(0,0,calc.getWidth(),calc.getHeight()), dest, p);
             return b;
-        }
-        public class CalcHandler {
-            public String calculation = "";
-
-            public void handle(ID id) {
-                TextView number = ((TextView)numberText.view);
-                TextView answer = ((TextView)answerText.view);
-
-                if (id.numValue == -1) {
-                    if (id == ID.DELETE) {
-                        calculation = calculation.length() != 0 ? calculation.substring(0, calculation.length() - 1) : calculation;
-                    }else if (id == ID.CLEAR) {
-                        calculation = "";
-                    }else if (id == ID.EQUAL) {
-                        calculation = "13";
-                    }
-                }else{
-                    calculation += id.numValue;
-                }
-
-
-                number.setText(calculation);
-                answer.setText(answer());
-
-                answerText.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        ((UIView.MHScrollView)numberLayout.view).smoothScrollTo(numberText.width() - numberLayout.width(),0);
-                        ((UIView.MHScrollView)answerLayout.view).smoothScrollTo(answerText.width() - answerLayout.width(),0);
-                    }
-                });
-            }
-            public String answer() {
-                return calculation;
-            }
-            public boolean isNum(String num) {
-                try {
-                    Double.parseDouble(num);
-                    return true;
-                }catch (Exception e) {
-                    return false;
-                }
-            }
         }
     }
 

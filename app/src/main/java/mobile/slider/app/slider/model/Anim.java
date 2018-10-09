@@ -29,6 +29,7 @@ public class Anim {
     private Runnable onStart, onEnd, condition;
     private Translate translate;
     private Alpha alpha;
+    private Scale scale;
     public boolean cancelled = false, hideAfter = false;
 
     public Anim(Context c, SView view, int duration) {
@@ -77,6 +78,22 @@ public class Anim {
         translate.yOffset = yOffset;
     }
 
+    public void addScale(float initX, float xOffset, float initY, float yOffset) {
+        scale = new Scale();
+        scale.initX = initX;
+        scale.xOffset = xOffset;
+        scale.initY = initY;
+        scale.yOffset = yOffset;
+        scale.pivotX = 0;
+    }
+    public void addScale(float initX, float xOffset, float initY, float yOffset, int pivotX) {
+        scale = new Scale();
+        scale.initX = initX;
+        scale.xOffset = xOffset;
+        scale.initY = initY;
+        scale.yOffset = yOffset;
+        scale.pivotX = pivotX;
+    }
 
     public void addAlpha(String type) {
         alpha = new Alpha();
@@ -114,12 +131,24 @@ public class Anim {
                             view.view.setTranslationX(translate.initX);
                             view.view.setTranslationY(translate.initY);
                         }
+                        if (scale != null) {
+                            view.view.setPivotY(0);
+                            view.view.setPivotX(scale.pivotX);
+                            view.view.setScaleX(scale.initX);
+                            view.view.setScaleY(scale.initY);
+                        }
                     }
                     if (translate != null) {
                         float incrementX = (float)translate.xOffset / speed;
                         float incrementY = (float)translate.yOffset / speed;
                         view.view.setTranslationX(translate.initX + incrementX * (float)counter);
                         view.view.setTranslationY(translate.initY + incrementY * (float)counter);
+                    }
+                    if (scale != null) {
+                        float incrementX = (float)scale.xOffset / speed;
+                        float incrementY = (float)scale.yOffset / speed;
+                        view.view.setScaleX(scale.initX + incrementX * (float)counter);
+                        view.view.setScaleY(scale.initY + incrementY * (float)counter);
                     }
                     if (alpha != null) {
                         float increment = 1f / speed;
@@ -136,6 +165,10 @@ public class Anim {
                     if (translate != null) {
                         view.view.setTranslationX(translate.initX + translate.xOffset);
                         view.view.setTranslationY(translate.initY + translate.yOffset);
+                    }
+                    if (scale != null) {
+                        view.view.setScaleX(scale.initX + scale.xOffset);
+                        view.view.setScaleY(scale.initY + scale.yOffset);
                     }
                     if (alpha != null) {
                         if (alpha.type.equals(FADE_IN)) {
@@ -168,6 +201,11 @@ public class Anim {
             view.view.setTranslationX(0);
             view.view.setTranslationY(0);
         }
+        if (scale != null) {
+            view.view.setPivotX(0);
+            view.view.setScaleX(1);
+            view.view.setScaleY(1);
+        }
         if (alpha != null) {
             view.view.setAlpha(1);
         }
@@ -198,7 +236,10 @@ public class Anim {
     private class Alpha {
         public String type;
     }
-
+    private class Scale {
+        public float initX, xOffset, initY, yOffset;
+        public int pivotX;
+    }
     public class AnimTag {
         public String key;
         public Object value;

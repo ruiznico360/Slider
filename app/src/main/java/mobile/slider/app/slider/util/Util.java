@@ -6,8 +6,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.display.DisplayManager;
 import android.media.RingtoneManager;
 import android.os.Build;
@@ -21,6 +25,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,31 +40,63 @@ import static android.content.Context.POWER_SERVICE;
 public class Util {
     public static final int VERSION = Build.VERSION.SDK_INT;
 
-    public static View.OnTouchListener darkenAsPressed(final Runnable onClick) {
+    public static View.OnTouchListener darkenAsPressed(final Runnable onClick, final boolean hasBitmap) {
         return new View.OnTouchListener() {
-            private boolean movable = true;
+            private boolean oob;
             private Rect bounds;
+            private Bitmap original;
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    v.setBackgroundColor(Color.parseColor("#50d3d3d3"));
-                    movable = true;
+                    if (hasBitmap) {
+                        ((ImageView)v).setDrawingCacheEnabled(true);
+                        original = ((ImageView)v).getDrawingCache();
+                    }else{
+                        original = null;
+                    }
+
+                    setDarkened(v,true);
+                    oob = false;
                     bounds = new Rect(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
                 }
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
                     if(!bounds.contains(v.getLeft() + (int) event.getX(), v.getTop() + (int) event.getY())){
-                        movable = false;
+                        oob = true;
                     }else{
-                        movable = true;
+                        oob = false;
                     }
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (movable) {
+                    if (!oob) {
                         onClick.run();
                     }
-                    v.setBackgroundColor(Color.TRANSPARENT);
+                    setDarkened(v,false);
                 }
                 return true;
+            }
+            public void setDarkened(View v, boolean dark) {
+                if (hasBitmap) {
+                    if (dark) {
+                        Bitmap b = Bitmap.createBitmap(v.getWidth(), v.getHeight(), Bitmap.Config.ARGB_8888);
+                        Paint p = new Paint();
+                        Canvas c = new Canvas(b);
+
+                        p.setColor(Color.argb(100,50,50,50));
+                        c.drawBitmap(original,(b.getWidth() - original.getWidth()) / 2,(b.getHeight() - original.getHeight()) / 2,p);
+                        c.drawRect(0,0,b.getWidth(),b.getHeight(),p);
+
+                        ((ImageView)v).setImageBitmap(b);
+                    }else{
+                        ((ImageView)v).setImageBitmap(original);
+                    }
+                }else{
+                    if (dark) {
+                        v.setBackgroundColor(Color.parseColor("#50d3d3d3"));
+                    }else{
+                        v.setBackgroundColor(Color.TRANSPARENT);
+                    }
+                }
             }
         };
     }
@@ -105,6 +142,9 @@ public class Util {
             result = SystemOverlay.service.getResources().getDimensionPixelSize(resourceId);
         }
         return result;
+    }
+    public static String hex(int color) {
+        return String.format("#%06X", (0xFFFFFF & color));
     }
     public static void log(Object s) {
         Log.d("SliderLog", s + "");
