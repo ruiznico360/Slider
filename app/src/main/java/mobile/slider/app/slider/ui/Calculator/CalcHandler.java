@@ -26,7 +26,6 @@ public class CalcHandler {
         final TextView number = ((TextView)calc.numberText.view);
         final TextView answer = ((TextView)calc.answerText.view);
         String answerValue = "",numberValue = "";
-        Util.log(currentNum);
 
         if (!id.isNumber()) {
             if (id == CalculatorUI.ID.EQUAL) {
@@ -72,13 +71,18 @@ public class CalcHandler {
                                 int loc = 0;
                                 for (int i = calculation.length() - 1; i >= 0; i--) {
                                     String s = calculation.substring(i,i + 1);
+                                    Util.log("current s " + s);
                                     if (!s.matches(CalculatorUI.ID.NUM_VALUES) && !s.equals(".")) {
                                         loc = i + 1;
                                         break;
                                     }
                                 }
                                 currentNum = calculation.substring(loc,calculation.length());
+                            }else{
+                                currentNum = "";
                             }
+                        }else{
+                            currentNum = "";
                         }
                     }
                 }else if (id == CalculatorUI.ID.CLEAR) {
@@ -119,7 +123,6 @@ public class CalcHandler {
                     }else{
                         if (currentNum.equals("")) {
                             String prev = calculation.substring(calculation.length() - 1, calculation.length());
-                            Util.log(prev);
                             if (prev.matches(CalculatorUI.ID.OPERATOR_VALUES) || prev.equals("(")) {
                                 calculation += "(";
                             }else{
@@ -144,7 +147,7 @@ public class CalcHandler {
                         calculation += operation;
                     }else if (currentNum.equals("")) {
                         String prev = calculation.substring(calculation.length() - 1, calculation.length());
-                        if (id == CalculatorUI.ID.SQROOT && !prev.matches(CalculatorUI.ID.OPERATOR_VALUES) && !prev.equals("(")) {
+                        if (!prev.matches(CalculatorUI.ID.OPERATOR_VALUES) && !prev.equals("(")) {
                             calculation += CalculatorUI.ID.MULT.numValue + operation;
                         }else{
                             calculation += operation;
@@ -158,9 +161,8 @@ public class CalcHandler {
                                 break;
                             }
                         }
-                        calculation = calculation.substring(0, loc) + operation + calculation.substring(loc, calculation.length()) + ")";
+                        calculation = calculation.substring(0, loc) + operation + calculation.substring(loc, calculation.length());
                     }
-                    currentNum = "";
                 }
 
                 prevEqual = false;
@@ -236,6 +238,7 @@ public class CalcHandler {
                 finalNumberText += val;
             }
         }
+        Util.log(currentNum);
         number.setText(Html.fromHtml(finalNumberText), TextView.BufferType.SPANNABLE);
         answer.setText(answerValue);
     }

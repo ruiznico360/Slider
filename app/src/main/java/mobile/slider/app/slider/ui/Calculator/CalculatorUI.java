@@ -81,7 +81,7 @@ public class CalculatorUI extends UIClass {
         calcHeight = Util.screenHeight() - Util.getStatusBarHeight();
 
         calcLayout = new SView(new RelativeLayout(c), mainLayout.view);
-        calcLayout.view.setBackgroundColor(Color.GREEN);
+        calcLayout.view.setBackgroundColor(Color.GRAY);
         calcLayout.plot();
         calcLayout.openRLayout()
                 .setWidth(wUnit(100))
