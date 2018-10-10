@@ -209,7 +209,7 @@ public class CalculatorUI extends UIClass {
                     .save();
 
             numberText = new SView(new TextView(c), numberLayout.view);
-            numberText.plot(ScrollView.LayoutParams.WRAP_CONTENT, numberLayout.width() / 2 < numberLayout.height() ? numberLayout.width() / 2 : (int) (numberLayout.height()));
+            numberText.plot(ScrollView.LayoutParams.WRAP_CONTENT, numberLayout.width() / 3 < numberLayout.height() ? numberLayout.width() / 3 : (int) (numberLayout.height()));
             ((UIView.MHScrollView.LayoutParams)numberText.params).gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
             numberText.openLayout().save();
             ((TextView) numberText.view).setMaxLines(1);
