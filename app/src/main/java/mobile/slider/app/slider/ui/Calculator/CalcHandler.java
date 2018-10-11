@@ -4,6 +4,9 @@ import android.content.Context;
 import android.text.Html;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 import mobile.slider.app.slider.model.Anim;
 import mobile.slider.app.slider.ui.UIView;
 import mobile.slider.app.slider.ui.UserInterface;
@@ -42,7 +45,8 @@ public class CalcHandler {
                     float yOffset = (((float)calc.numberText.height()) / calc.answerText.height()) - 1;
                     float xOffset = (((float)calc.answerText.width()) / calc.answerText.height() * calc.numberText.height()) / calc.answerText.width() - 1;
 
-                    a.addScale(1,xOffset,1,yOffset, calc.answerLayout.width());
+                    int pivot = calc.answerText.width() > calc.answerLayout.width() ? 0 : calc.answerLayout.width();
+                    a.addScale(1,xOffset,1,yOffset, pivot);
                     a.addTranslate(0,(int)(calc.numberText.y() - calc.answerLayout.y()));
 
                     a.setEnd(new Runnable() {
@@ -62,7 +66,7 @@ public class CalcHandler {
                         @Override
                         public void run() {
                             ((UIView.MHScrollView)calc.numberLayout.view).scrollTo(calc.numberText.width() - calc.numberLayout.width(),0);
-                            ((UIView.MHScrollView)calc.answerLayout.view).scrollTo(calc.answerText.width() - calc.answerLayout.width(),0);
+                            ((UIView.MHScrollView)calc.answerLayout.view).scrollTo(0,0);
                             a.start();
                         }
                     });
@@ -136,7 +140,7 @@ public class CalcHandler {
                     }else{
                         if (currentNum.equals("")) {
                             String prev = calculation.substring(calculation.length() - 1, calculation.length());
-                            if (prev.matches(CalculatorUI.ID.OPERATOR_VALUES) || prev.equals("(")) {
+                            if (prev.matches(CalculatorUI.ID.OPERATOR_VALUES) || prev.equals("(") || prev.equals(CalculatorUI.ID.SQROOT.numValue)) {
                                 calculation += "(";
                             }else{
                                 if (leftBrackets() > rightBrackets()) {
@@ -247,6 +251,15 @@ public class CalcHandler {
             answer.setText("");
         }
     }
+    public double parse(String num) throws NumberFormatException{
+        if (num.contains("E")) {
+            NumberFormat formatter = new DecimalFormat("0.00000000000");
+            String string = formatter.format(num);
+            return Double.parseDouble(string);
+        }else{
+            return Double.parseDouble(num);
+        }
+    }
     public String answer() {
         String answer = calculation;
         int i = 0;
@@ -257,12 +270,17 @@ public class CalcHandler {
                 answer = ERROR;
                 break;
             }
+//            else if (answer.contains("E")) {
+//                answer = answer.substring(0, answer.indexOf("E")) + CalculatorUI.ID.MULT.numValue + "10" + CalculatorUI.ID.POW.numValue + "(" + answer.substring(answer.indexOf("E") + 1 ,answer.length()) + ")";
+//                break;
+//            }
             i++;
         }
 
         return answer;
     }
     public String reduce(String equation) {
+        Util.log("reducing "+ equation);
         if (equation.contains("(")) {
             int leftBLoc = equation.lastIndexOf("(");
             int rightBLoc = equation.length();
@@ -278,48 +296,178 @@ public class CalcHandler {
             String bracketEquation = equation.substring(leftBLoc + 1, rightBLoc == equation.length() ? rightBLoc : rightBLoc);
 
             equation = equation.substring(0,leftBLoc) + reduce(bracketEquation) + equation.substring(rightBLoc == equation.length() ? rightBLoc : rightBLoc + 1, equation.length());
-//            Util.log(equation);
         }else{
             CalculatorUI.ID[] order = new CalculatorUI.ID[]{CalculatorUI.ID.SQROOT, CalculatorUI.ID.POW,CalculatorUI.ID.DIVIDE, CalculatorUI.ID.MULT, CalculatorUI.ID.SUB, CalculatorUI.ID.ADD};
 
+            boolean contLoop = true;
+            while (contLoop) {
+                contLoop = false;
+                for (CalculatorUI.ID id : order) {
+                    if (isNum(equation)) break;
+                    if (equation.contains(CalculatorUI.ID.SQROOT.numValue)) {
+                        int i = equation.lastIndexOf(CalculatorUI.ID.SQROOT.numValue);
+                        if (i == equation.length() - 1) {
+                            return ERROR;
+                        } else {
+                            boolean readNum = false;
+                            int start = i + 1;
+                            int end = equation.length();
+                            double num;
 
-            for (CalculatorUI.ID id : order) {
-                if (equation.contains(CalculatorUI.ID.SQROOT.numValue)) {
-                    int i = equation.lastIndexOf(CalculatorUI.ID.SQROOT.numValue);
-                    if (i == equation.length() - 1) {
-                        return ERROR;
-                    }else {
-                        int start = i + 1;
-                        int end = equation.length();
-                        for (int n = start; n < equation.length(); n++) {
-                            String prev = equation.substring(n, n + 1);
-                            if (prev.equals(CalculatorUI.ID.SUB.numValue)) {
-                                if (n != start) {
+
+                            for (int n = i + 1; n < equation.length(); n++) {
+                                String prev = equation.substring(n, n + 1);
+                                if (prev.matches(CalculatorUI.ID.NUM_VALUES)) {
+                                    readNum = true;
+                                } else if (prev.equals(CalculatorUI.ID.SUB.numValue)) {
+                                    if (readNum) {
+                                        end = n;
+                                        break;
+                                    }
+                                } else if ((!prev.matches(CalculatorUI.ID.NUM_VALUES) && !prev.equals("."))) {
                                     end = n;
+                                    break;
                                 }
-                            }else if ((!prev.matches(CalculatorUI.ID.NUM_VALUES) && !prev.equals("."))) {
-                                end = n;
                             }
+
+                            String sq = equation.substring(start, end);
+
+                            int negTracker = 1;
+                            for (int n = 0; n < sq.length(); n++) {
+                                if (sq.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
+                                    negTracker *= -1;
+                                }
+                            }
+                            sq = sq.replace(CalculatorUI.ID.SUB.numValue, "");
+                            try {
+                                num = Double.parseDouble(sq) * negTracker;
+                            } catch (Exception e) {
+                                return ERROR;
+                            }
+                            equation = equation.substring(0, i) + Math.sqrt(num) + equation.substring(end, equation.length());
+                            contLoop = true;
                         }
-                        String sq = equation.substring(start,end);
-                        if (sq.equals(CalculatorUI.ID.SUB.numValue)) sq = "-1";
-                        return equation.substring(0, i) + Math.sqrt(Double.parseDouble(sq)) + equation.substring(end, equation.length());
+                    } else if (equation.contains(id.numValue)) {
+                        int i = equation.indexOf(id.numValue);
+                        if (id == CalculatorUI.ID.SUB) {
+                            boolean negateFix = true;
+                            int indexOfNum = equation.length();
+                            for (int p = 0; p < equation.length(); p++) {
+                                String s = equation.substring(p, p + 1);
+                                if (s.matches(CalculatorUI.ID.NUM_VALUES) || s.equals(".")) {
+                                    if (p - indexOfNum > 1) {
+                                        negateFix = false;
+                                        break;
+                                    }
+                                    indexOfNum = p;
+                                }
+                            }
+                            if (negateFix) {
+                                String negTracker = "";
+                                for (int n = 0; n < equation.length(); n++) {
+                                    if (equation.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
+                                        negTracker = negTracker.equals("") ? "-" : "";
+                                    }
+                                }
+                                equation = equation.replace(CalculatorUI.ID.SUB.numValue, "");
+                                return negTracker + equation;
+                            }
+                            if (i == 0 || !equation.substring(i - 1, i).matches(CalculatorUI.ID.NUM_VALUES))
+                                continue;
+                        }
+                        if (i == equation.length() - 1) {
+                            return ERROR;
+                        } else {
+                            double num1 = 0, num2 = 0;
+
+                            int end = i;
+                            int start = 0;
+                            int trueStart = 0, trueEnd = 0;
+
+                            for (int n = i - 1; n >= 0; n--) {
+                                String prev = equation.substring(n, n + 1);
+                                if (prev.equals(CalculatorUI.ID.SUB.numValue)) {
+                                    if (n != 0 && equation.substring(n - 1, n).matches(CalculatorUI.ID.NUM_VALUES)) {
+                                        start = n + 1;
+                                        break;
+                                    }
+                                } else if ((!prev.matches(CalculatorUI.ID.NUM_VALUES) && !prev.equals("."))) {
+                                    start = n + 1;
+                                    break;
+                                }
+                            }
+
+                            trueStart = start;
+                            String sq = equation.substring(start, end);
+
+                            int negTracker = 1;
+                            for (int n = 0; n < sq.length(); n++) {
+                                if (sq.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
+                                    negTracker *= -1;
+                                }
+                            }
+                            sq = sq.replace(CalculatorUI.ID.SUB.numValue, "");
+                            Util.log(sq + " NUM 1");
+                            try {
+                                num1 = Double.parseDouble(sq) * negTracker;
+                            } catch (Exception e) {
+                                return ERROR;
+                            }
+
+                            boolean readNum = false;
+                            start = i + 1;
+                            end = equation.length();
+
+
+                            for (int n = i + 1; n < equation.length(); n++) {
+                                String prev = equation.substring(n, n + 1);
+                                if (prev.matches(CalculatorUI.ID.NUM_VALUES)) {
+                                    readNum = true;
+                                } else if (prev.equals(CalculatorUI.ID.SUB.numValue)) {
+                                    if (readNum) {
+                                        end = n;
+                                        break;
+                                    }
+                                } else if ((!prev.matches(CalculatorUI.ID.NUM_VALUES) && !prev.equals("."))) {
+                                    end = n;
+                                    break;
+                                }
+                            }
+
+                            trueEnd = end;
+                            sq = equation.substring(start, end);
+
+                            negTracker = 1;
+                            for (int n = 0; n < sq.length(); n++) {
+                                if (sq.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
+                                    negTracker *= -1;
+                                }
+                            }
+                            sq = sq.replace(CalculatorUI.ID.SUB.numValue, "");
+                            Util.log(sq + " NUM 2");
+                            try {
+                                num2 = Double.parseDouble(sq) * negTracker;
+                            } catch (Exception e) {
+                                return ERROR;
+                            }
+
+                            double value = 0;
+                            if (id == CalculatorUI.ID.POW) {
+                                value = Math.pow(num1, num2);
+                            } else if (id == CalculatorUI.ID.ADD) {
+                                value = num1 + num2;
+                            } else if (id == CalculatorUI.ID.SUB) {
+                                value = num1 - num2;
+                            } else if (id == CalculatorUI.ID.MULT) {
+                                value = num1 * num2;
+                            } else if (id == CalculatorUI.ID.DIVIDE) {
+                                value = num1 / num2;
+                            }
+                            Util.log(trueStart + " " + trueEnd);
+                            equation = equation.substring(0, trueStart) + value + equation.substring(trueEnd, equation.length());
+                            contLoop = true;
+                        }
                     }
-                }else if (equation.contains(id.numValue)) {
-//                    int i = equation.lastIndexOf(id.numValue);
-//                    if (i == equation.length() - 1) {
-//                        return ERROR;
-//                    }else {
-//                        int start = i + 1;
-//                        int end = equation.length();
-//                        for (int n = start; n < equation.length(); n++) {
-//                            String prev = equation.substring(n,n + 1);
-//                            if ((!prev.matches(CalculatorUI.ID.NUM_VALUES) && !prev.equals(".") || prev.equals(CalculatorUI.ID.SUB.numValue) && n != start)) {
-//                                end = n;
-//                            }
-//                        }
-//                        equation = equation.substring(0, i) + Math.sqrt(Double.parseDouble(equation.substring(start,end))) + equation.substring(end, equation.length());
-//                    }
                 }
             }
         }
