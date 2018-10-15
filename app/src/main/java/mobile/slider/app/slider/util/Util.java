@@ -48,10 +48,12 @@ public class Util {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                Util.log(event.getPointerCount());
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if (hasBitmap) {
-                        ((ImageView)v).setDrawingCacheEnabled(true);
-                        original = ((ImageView)v).getDrawingCache();
+//                        ((ImageView)v).setDrawingCacheEnabled(true);
+//                        original = ((ImageView)v).getDrawingCache();
+                        original = ((BitmapDrawable)((ImageView)v).getDrawable()).getBitmap();
                     }else{
                         original = null;
                     }
@@ -67,7 +69,7 @@ public class Util {
                         oob = false;
                     }
                 }
-                if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                     if (!oob) {
                         onClick.run();
                     }

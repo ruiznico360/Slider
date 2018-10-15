@@ -7,12 +7,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -21,13 +19,11 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.logging.Handler;
 
 import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.model.Anim;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.ui.UIClass;
-import mobile.slider.app.slider.ui.UIView;
+import mobile.slider.app.slider.model.UIView;
 import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;
@@ -88,6 +84,7 @@ public class CalculatorUI extends UIClass {
                 .setHeight(calcHeight)
                 .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
                 .save();
+
         new CalcSetup().setup();
     }
     public class CalcSetup {
@@ -120,12 +117,12 @@ public class CalculatorUI extends UIClass {
                     .setWidth(operatorWidth * 4)
                     .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
                     .save();
-            equalButton.view.setOnTouchListener(Util.darkenAsPressed(new Runnable() {
+            equalButton.view.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void run() {
+                public void onClick(View v) {
                     calcHandler.handle(ID.EQUAL);
                 }
-            },true));
+            });
 
             Iterator <ID> ids = Arrays.asList(ID.values()).iterator();
 
@@ -145,12 +142,12 @@ public class CalculatorUI extends UIClass {
                             .setLeftM(leftMargin)
                             .save();
 
-                    operator.view.setOnTouchListener(Util.darkenAsPressed(new Runnable() {
+                    operator.view.setOnClickListener(new View.OnClickListener() {
                         @Override
-                        public void run() {
+                        public void onClick(View v) {
                             calcHandler.handle(id);
                         }
-                    },true));
+                    });
                 }
             }
         }
@@ -176,15 +173,15 @@ public class CalculatorUI extends UIClass {
                     .addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
                     .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
                     .save();
-            deleteButton.view.setOnTouchListener(Util.darkenAsPressed(new Runnable() {
+            deleteButton.view.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void run() {
+                public void onClick(View v) {
                     calcHandler.handle(ID.DELETE);
                 }
-            },true));
+            });
 
             answerLayout = new SView(new UIView.MHScrollView(c), textLayout.view);
-            ((UIView.MHScrollView) answerLayout.view).setHorizontalScrollBarEnabled(false);
+//            ((UIView.MHScrollView) answerLayout.view).setHorizontalScrollBarEnabled(false);
             answerLayout.plot();
             answerLayout.openRLayout()
                     .setHeight(totalHeight / 4)
@@ -201,7 +198,7 @@ public class CalculatorUI extends UIClass {
             ((TextView) answerText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(answerText.height() * TEXT_SIZE));
 
             numberLayout = new SView(new UIView.MHScrollView(c), textLayout.view);
-            ((UIView.MHScrollView) numberLayout.view).setHorizontalScrollBarEnabled(false);
+//            ((UIView.MHScrollView) numberLayout.view).setHorizontalScrollBarEnabled(false);
             numberLayout.plot();
             numberLayout.openRLayout()
                     .setHeight(totalHeight / 2)

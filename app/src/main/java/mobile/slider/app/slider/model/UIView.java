@@ -1,4 +1,4 @@
-package mobile.slider.app.slider.ui;
+package mobile.slider.app.slider.model;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -14,6 +14,7 @@ import android.widget.ScrollView;
 
 import java.util.Collection;
 
+import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.Util;
 
 public class UIView {

@@ -26,7 +26,7 @@ import mobile.slider.app.slider.model.RoundedImageView;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.model.contact.Contact;
 import mobile.slider.app.slider.ui.UIClass;
-import mobile.slider.app.slider.ui.UIView;
+import mobile.slider.app.slider.model.UIView;
 import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.ImageUtil;
 import mobile.slider.app.slider.util.Util;

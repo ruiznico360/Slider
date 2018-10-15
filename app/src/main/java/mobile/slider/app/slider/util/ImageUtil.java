@@ -58,8 +58,6 @@ public class ImageUtil {
         Bitmap bitmap = output.copy(Bitmap.Config.ARGB_8888, true);
         Canvas c = new Canvas(bitmap);
 
-        Rect bounds = new Rect();
-        p.getTextBounds(text,0,text.length(),bounds);
         p.setTextAlign(Paint.Align.CENTER);
         p.setColor(Color.WHITE);
         c.drawText(text,(marginPerc * output.getWidth()),(bitmap.getHeight() - (p.ascent() + p.descent())) / 2,p);
