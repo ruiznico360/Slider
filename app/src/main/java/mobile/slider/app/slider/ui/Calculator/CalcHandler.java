@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.text.Html;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
@@ -22,6 +23,7 @@ public class CalcHandler {
     public String calculation = "";
     public String currentNum = "";
     boolean prevEqual = false;
+    public String prevAnsDisplay = "NULL", prevAnsValue = "NULL";
 
     public CalcHandler(CalculatorUI calculator) {
         this.calc = calculator;
@@ -39,10 +41,14 @@ public class CalcHandler {
             if (id == CalculatorUI.ID.EQUAL) {
                 prevEqual = true;
                 if (!isNum(calculation)) {
-                    currentNum = answer();
-                    calculation = answer();
+                    String answerValue = answerValue();
+                    currentNum = simplifyAns(answerValue);
+                    calculation = currentNum;
                     numberValue = "";
                     showAns = true;
+
+                    prevAnsValue = answerValue;
+                    prevAnsDisplay = calculation;
 
                     calc.answerText.post(new Runnable() {
                         @Override
@@ -249,7 +255,7 @@ public class CalcHandler {
 
         number.setText(Html.fromHtml(finalNumberText), TextView.BufferType.SPANNABLE);
         if (showAns) {
-            String ans = answer();
+            String ans = simplifyAns(answerValue());
             answer.setText(getError(ans) != null && getError(ans).equals(ERROR) ? "" : ans);
         }else{
             answer.setText("");
@@ -285,8 +291,12 @@ public class CalcHandler {
         return Double.parseDouble(num);
     }
 
-    public String answer() {
+    public String answerValue() {
         String answer = calculation;
+        if (answer.startsWith(prevAnsDisplay)) {
+            answer = answer.replaceFirst(prevAnsDisplay, prevAnsValue);
+        }
+
         int i = 0;
         do {
             answer = reduce(answer);
@@ -301,7 +311,7 @@ public class CalcHandler {
             i++;
         }while (!isNum(answer) && i < 101);
 
-        return simplifyAns(answer);
+        return new Operation().derationalize(new Operation().gen(answer)).numerator.toPlainString();
     }
     public String simplifyAns(String answer) {
         final int scientificDisplayDec = 4;
@@ -410,6 +420,7 @@ public class CalcHandler {
             while (contLoop) {
                 contLoop = false;
                 for (CalculatorUI.ID id : order) {
+//                    Util.log(equation);
 //                    if (getError(equation) != null) return getError(equation);
 
                     if (isNum(equation)) break;
@@ -421,7 +432,6 @@ public class CalcHandler {
                             boolean readNum = false;
                             int start = i + 1;
                             int end = equation.length();
-                            Double num;
 
 
                             for (int n = i + 1; n < equation.length(); n++) {
@@ -441,25 +451,36 @@ public class CalcHandler {
 
                             String sq = equation.substring(start, end);
 
-                            int negTracker = 1;
+                            String negTracker = "";
                             for (int n = 0; n < sq.length(); n++) {
                                 if (sq.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
-                                    negTracker *= -1;
+                                    negTracker = negTracker.equals("") ? "-" : "";
                                 }
                             }
+
+                            String value;
                             sq = sq.replace(CalculatorUI.ID.SUB.numValue, "");
-                            try {
-                                num = parse(sq) * negTracker;
-                            } catch (Exception e) {
+
+                            Operation op = new Operation();
+
+                            if (op.newOP(negTracker + sq, + 0.5 + "")) {
                                 return ERROR;
                             }
-                            String value;
-                            double d = Math.pow(num, 0.5);
-                            if (getError(d + "") != null) {
-                                value = getError(d + "");
-                            } else {
-                                value = BigDecimal.valueOf(d).toPlainString();
-                            }
+                            value = op.pow();
+//                            Double num;
+
+//                            try {
+//                                num = parse(sq) * negTracker;
+//                            } catch (Exception e) {
+//                                return ERROR;
+//                            }
+//                            double d = Math.pow(num, 0.5);
+//                            if (getError(d + "") != null) {
+//                                value = getError(d + "");
+//                            } else {
+//                                value = BigDecimal.valueOf(d).toPlainString();
+//                            }
+
                             equation = equation.substring(0, i) + value + equation.substring(end, equation.length());
                             contLoop = true;
                             break;
@@ -499,7 +520,7 @@ public class CalcHandler {
                         if (i == equation.length() - 1) {
                             return ERROR;
                         } else {
-                            Double num1, num2;
+                            String num1, num2;
 
                             int end = i;
                             int start = 0;
@@ -521,18 +542,15 @@ public class CalcHandler {
                             trueStart = start;
                             String sq = equation.substring(start, end);
 
-                            int negTracker = 1;
+                            String negTracker = "";
                             for (int n = 0; n < sq.length(); n++) {
                                 if (sq.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
-                                    negTracker *= -1;
+                                    negTracker = negTracker.equals("") ? "-" : "";
                                 }
                             }
                             sq = sq.replace(CalculatorUI.ID.SUB.numValue, "");
-                            try {
-                                num1 = parse(sq) * negTracker;
-                            } catch (Exception e) {
-                                return ERROR;
-                            }
+
+                            num1 = negTracker + sq;
 
                             boolean readNum = false;
                             start = i + 1;
@@ -557,40 +575,35 @@ public class CalcHandler {
                             trueEnd = end;
                             sq = equation.substring(start, end);
 
-                            negTracker = 1;
+                            negTracker = "";
                             for (int n = 0; n < sq.length(); n++) {
                                 if (sq.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
-                                    negTracker *= -1;
+                                    negTracker = negTracker.equals("") ? "-" : "";
                                 }
                             }
                             sq = sq.replace(CalculatorUI.ID.SUB.numValue, "");
-                            try {
-                                num2 = parse(sq) * negTracker;
-                            } catch (Exception e) {
+
+                            num2 = negTracker + sq;
+
+                            String value = null;
+
+                            Operation operation = new Operation();
+
+                            if (operation.newOP(num1, num2)) {
                                 return ERROR;
                             }
-                            String value = null;
 
                             try {
                                 if (id == CalculatorUI.ID.POW) {
-                                    double d = Math.pow(num1, num2);
-                                    if (getError(d + "") != null) {
-                                        value = getError(d + "");
-                                    } else {
-                                        value = BigDecimal.valueOf(d).toPlainString();
-                                    }
+                                    value = operation.pow();
                                 } else if (id == CalculatorUI.ID.ADD) {
-                                    value = BigDecimal.valueOf(num1).add(BigDecimal.valueOf(num2), MC).toPlainString();
+                                    value = operation.add();
                                 } else if (id == CalculatorUI.ID.SUB) {
-                                    value = BigDecimal.valueOf(num1).subtract(BigDecimal.valueOf(num2), MC).toPlainString();
+                                    value = operation.subtract();
                                 } else if (id == CalculatorUI.ID.MULT) {
-                                    value = BigDecimal.valueOf(num1).multiply(BigDecimal.valueOf(num2), MC).toPlainString();
+                                    value = operation.mult();
                                 } else if (id == CalculatorUI.ID.DIVIDE) {
-                                    if (num2 == 0) {
-                                        value = getError((num1 / num2) + "");
-                                    } else {
-                                        value = BigDecimal.valueOf(num1).divide(BigDecimal.valueOf(num2), MC).toPlainString();
-                                    }
+                                    value = operation.divide();
                                 }
                             }catch (NumberFormatException e) {
                                 return POS_INFINITY;
@@ -608,7 +621,13 @@ public class CalcHandler {
     public boolean isNum(String num) {
         if (num.equals("")) return true;
         try {
-            Double.parseDouble(num);
+            if (num.contains("/")) {
+                Operation o = new Operation();
+                Double.parseDouble(o.numerator(num));
+                Double.parseDouble(o.denominator(num));
+            }else{
+                Double.parseDouble(num);
+            }
             return true;
         }catch (Exception e) {
             return false;
@@ -627,5 +646,126 @@ public class CalcHandler {
             if (calculation.charAt(i) == ')') num++;
         }
         return num;
+    }
+    public class Operation {
+        Value num1, num2;
+
+        public boolean newOP(String num1, String num2) {
+            this.num1 = gen(num1);
+            this.num2 = gen(num2);
+
+            if (this.num1 == null || this.num2 == null) {
+                return true;
+            }
+            return false;
+        }
+        public Value gen(String num) {
+            Value val = new Value();
+            if (num.contains("/")) {
+                try {
+                    val.numerator = BigDecimal.valueOf(parse(numerator(num)));
+                    val.denominator = BigDecimal.valueOf(parse(denominator(num)));
+                }catch(Exception e) {
+                    return null;
+                }
+            }else {
+                try {
+                    val.numerator = BigDecimal.valueOf(parse(num));
+                    val.denominator = BigDecimal.valueOf(1);
+                }catch(Exception e) {
+                    return null;
+                }
+            }
+            return val;
+        }
+        public String pow() {
+            num2 = derationalize(num2);
+
+            String value;
+            double numerV = Math.pow(num1.numerator.doubleValue(), num2.numerator.doubleValue());
+
+            if (getError(numerV + "") != null) {
+                return getError(numerV + "");
+            }
+
+            value = BigDecimal.valueOf(numerV).toPlainString();
+
+            if (!num1.isRational()) {
+                double denomV = Math.pow(num1.denominator.doubleValue(), num2.numerator.doubleValue());
+
+                if (getError(denomV + "") != null) {
+                    return getError(denomV + "");
+                }
+
+                value = "/" + BigDecimal.valueOf(denomV).toPlainString();
+            }
+            return value;
+        }
+        public String mult() {
+            Value newVal = new Value();
+            newVal.numerator = num1.numerator.multiply(num2.numerator);
+            newVal.denominator = num1.denominator.multiply(num2.denominator);
+
+            if (newVal.isRational()) {
+                return derationalize(newVal).numerator.toPlainString();
+            }else{
+                return newVal.numerator + "/" + newVal.denominator;
+            }
+
+        }
+        public String divide() {
+            Util.log("dividing " + this.num1.numerator + " " + this.num1.denominator + " " + this.num2.numerator + " " + this.num2.denominator);
+
+            if (num2.numerator.doubleValue() == 0) {
+                return getError((derationalize(num1).numerator.doubleValue() / derationalize(num2).numerator.doubleValue()) + "");
+            }
+            Value newVal = new Value();
+            newVal.numerator = num1.numerator.multiply(num2.denominator);
+            newVal.denominator = num1.denominator.multiply(num2.numerator);
+
+            if (newVal.isRational()) {
+                return derationalize(newVal).numerator.toPlainString();
+            }else{
+                return newVal.numerator + "/" + newVal.denominator;
+            }
+        }
+        public String add() {
+            Value newVal = new Value();
+            if (num1.denominator.equals(num2.denominator)) {
+                newVal.denominator = num1.denominator;
+                newVal.numerator = num1.numerator.add(num2.numerator);
+            }else{
+                newVal.denominator = num1.denominator.multiply(num2.denominator);
+                newVal.numerator = num1.numerator.multiply(num2.denominator).add(num2.numerator.multiply(num1.denominator));
+            }
+
+            if (newVal.isRational()) {
+                return derationalize(newVal).numerator.toPlainString();
+            }else{
+                return newVal.numerator + "/" + newVal.denominator;
+            }
+        }
+        public String subtract() {
+            num2.numerator = num2.numerator.multiply(BigDecimal.valueOf(-1));
+            return add();
+        }
+        public Value derationalize(Value num) {
+            Value v = new Value();
+            v.numerator = num.numerator.divide(num.denominator, MC);
+            v.denominator = BigDecimal.valueOf(1);
+            return v;
+        }
+        public String numerator(String num) {
+            return num.substring(0,num.indexOf("/"));
+        }
+        public String denominator(String num) {
+            return num.substring(num.indexOf("/") + 1, num.length());
+        }
+    }
+    public class Value {
+        public BigDecimal numerator,denominator;
+        public boolean isRational() {
+            return denominator.doubleValue() == 1 || numerator.divide(denominator, MC).multiply(denominator,MC).compareTo(numerator) == 0;
+        }
     }
 }

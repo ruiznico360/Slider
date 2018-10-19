@@ -44,7 +44,7 @@ public class CalculatorUI extends UIClass {
 
         public int drawableRes;
         public String numValue;
-        public static final String NUM_VALUES = "[E0123456789]", OPERATOR_VALUES = "[÷^x+-]";
+        public static final String NUM_VALUES = "[E0123456789/]", OPERATOR_VALUES = "[÷^x+-]";
 
         ID(int drawableRes, String numValue) {
             this.drawableRes = drawableRes;
