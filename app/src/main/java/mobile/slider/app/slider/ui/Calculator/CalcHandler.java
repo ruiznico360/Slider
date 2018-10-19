@@ -271,6 +271,7 @@ public class CalcHandler {
         }
     }
     public String getError(String answer) {
+        if (answer.length() == 0) return ERROR;
         if (answer.contains(ERROR) || answer.contains(NAN) || answer.contains(POS_INFINITY)) {
             if (answer.equals(ERROR)) {
                 return ERROR;
@@ -293,9 +294,9 @@ public class CalcHandler {
 
     public String answerValue() {
         String answer = calculation;
-        if (answer.startsWith(prevAnsDisplay)) {
-            answer = answer.replaceFirst(prevAnsDisplay, prevAnsValue);
-        }
+//        if (answer.startsWith(prevAnsDisplay)) {
+//            answer = answer.replaceFirst(prevAnsDisplay, prevAnsValue);
+//        }
 
         int i = 0;
         do {
@@ -307,7 +308,6 @@ public class CalcHandler {
             if (getError(answer) != null) {
                 return getError(answer);
             }
-
             i++;
         }while (!isNum(answer) && i < 101);
 
@@ -398,6 +398,7 @@ public class CalcHandler {
         return negative ? "(-" + answer : answer;
     }
     public String reduce(String equation) {
+        if (equation.length() == 0) return ERROR;
         if (equation.contains("(")) {
             int leftBLoc = equation.lastIndexOf("(");
             int rightBLoc = equation.length();
@@ -409,10 +410,35 @@ public class CalcHandler {
                 }
             }
 
-            String bracket = equation.substring(leftBLoc, rightBLoc == equation.length() ? rightBLoc : rightBLoc + 1);
             String bracketEquation = equation.substring(leftBLoc + 1, rightBLoc == equation.length() ? rightBLoc : rightBLoc);
 
-            equation = equation.substring(0,leftBLoc) + reduce(bracketEquation) + equation.substring(rightBLoc == equation.length() ? rightBLoc : rightBLoc + 1, equation.length());
+            Util.log(equation + " " + leftBLoc + " " + rightBLoc);
+            String start;
+            if (leftBLoc != 0 && equation.substring(leftBLoc - 1,leftBLoc).equals(CalculatorUI.ID.SUB.numValue)) {
+                String reduce = reduce(bracketEquation);
+                String negTracker = "-";
+                for (int n = 0; n < reduce.length(); n++) {
+                    if (reduce.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
+                        negTracker = negTracker.equals("") ? "-" : "";
+                    }
+                }
+                reduce = reduce.replace("-", "");
+
+                if (negTracker.equals("-")) {
+                    start = equation.substring(0, leftBLoc - 1) + negTracker + reduce;
+                }else{
+                   if (leftBLoc > 1 && equation.substring(leftBLoc - 2, leftBLoc - 1).equals(CalculatorUI.ID.NUM_VALUES)) {
+                       start = equation.substring(0, leftBLoc - 1) + "+" + reduce;
+                   }else {
+                       start = equation.substring(0, leftBLoc - 1) + negTracker + reduce;
+                   }
+                }
+                Util.log("WUNKY " + start + " " + reduce);
+            }else{
+                start = equation.substring(0,leftBLoc) + reduce(bracketEquation);
+                Util.log("FUNKY " + start);
+            }
+            equation = start + equation.substring(rightBLoc == equation.length() ? rightBLoc : rightBLoc + 1, equation.length());
         }else{
             CalculatorUI.ID[] order = new CalculatorUI.ID[]{CalculatorUI.ID.SQROOT, CalculatorUI.ID.POW,CalculatorUI.ID.DIVIDE, CalculatorUI.ID.MULT, CalculatorUI.ID.SUB, CalculatorUI.ID.ADD};
 
@@ -488,38 +514,65 @@ public class CalcHandler {
                     } else if (equation.contains(id.numValue)) {
                         int i = equation.indexOf(id.numValue);
                         if (id == CalculatorUI.ID.SUB) {
-                            boolean negateFix = true;
-                            int indexOfNum = equation.length();
-                            if (equation.substring(0, 1).equals(CalculatorUI.ID.SUB.numValue)) {
-                                for (int p = 0; p < equation.length(); p++) {
-                                    String s = equation.substring(p, p + 1);
-                                    if (s.matches(CalculatorUI.ID.NUM_VALUES) || s.equals(".")) {
-                                        if (p - indexOfNum > 1) {
-                                            negateFix = false;
-                                            break;
-                                        }
-                                        indexOfNum = p;
+                            int loc = -1;
+                            for (int p = 0; p < equation.length(); p++) {
+                                if (equation.substring(p, p + 1).equals(CalculatorUI.ID.SUB.numValue)) {
+                                    if (p == 0 || !equation.substring(p - 1, p).matches(CalculatorUI.ID.NUM_VALUES)) {
+                                        continue;
+                                    }else {
+                                        loc = p;
+                                        break;
                                     }
                                 }
-                            }else{
-                                negateFix = false;
                             }
-                            if (negateFix) {
-                                String negTracker = "";
-                                for (int n = 0; n < equation.length(); n++) {
-                                    if (equation.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
-                                        negTracker = negTracker.equals("") ? "-" : "";
-                                    }
-                                }
-                                equation = equation.replace(CalculatorUI.ID.SUB.numValue, "");
-                                return negTracker + equation;
-                            }
-                            if (i == 0 || !equation.substring(i - 1, i).matches(CalculatorUI.ID.NUM_VALUES))
+                            if (loc == -1) {
                                 continue;
+                            }else {
+                                i = loc;
+                            }
+
+//                            boolean negateFix = true;
+//                            int indexOfNum = equation.length();
+//                            if (equation.substring(0, 1).equals(CalculatorUI.ID.SUB.numValue)) {
+//                                for (int p = 0; p < equation.length(); p++) {
+//                                    String s = equation.substring(p, p + 1);
+//                                    if (s.matches(CalculatorUI.ID.NUM_VALUES) || s.equals(".")) {
+//                                        if (p - indexOfNum > 1) {
+//                                            negateFix = false;
+//                                            break;
+//                                        }
+//                                        indexOfNum = p;
+//                                    }
+//                                }
+//                            }else{
+//                                negateFix = false;
+//                            }
+//                            if (negateFix) {
+//                                String negTracker = "";
+//                                for (int n = 0; n < equation.length(); n++) {
+//                                    if (equation.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
+//                                        negTracker = negTracker.equals("") ? "-" : "";
+//                                    }
+//                                }
+//                                equation = equation.replace(CalculatorUI.ID.SUB.numValue, "");
+//                                return negTracker + equation;
+//                            }
+//                            for (int p = 0; p < equation.length(); p++) {
+//                                Util.log(i);
+//                                if (equation.substring(p, p + 1).equals(CalculatorUI.ID.SUB.numValue)) {
+//                                    if (p == 0 || !equation.substring(p - 1, p).matches(CalculatorUI.ID.NUM_VALUES)) {
+//
+//                                    }else{
+//                                        i = p;
+//                                        break;
+//                                    }
+//                                }
+//                            }
                         }
                         if (i == equation.length() - 1) {
                             return ERROR;
                         } else {
+                            Util.log(i + " " + equation);
                             String num1, num2;
 
                             int end = i;
@@ -714,7 +767,6 @@ public class CalcHandler {
 
         }
         public String divide() {
-            Util.log("dividing " + this.num1.numerator + " " + this.num1.denominator + " " + this.num2.numerator + " " + this.num2.denominator);
 
             if (num2.numerator.doubleValue() == 0) {
                 return getError((derationalize(num1).numerator.doubleValue() / derationalize(num2).numerator.doubleValue()) + "");
@@ -732,13 +784,12 @@ public class CalcHandler {
         public String add() {
             Value newVal = new Value();
             if (num1.denominator.equals(num2.denominator)) {
-                newVal.denominator = num1.denominator;
                 newVal.numerator = num1.numerator.add(num2.numerator);
+                newVal.denominator = num1.denominator;
             }else{
-                newVal.denominator = num1.denominator.multiply(num2.denominator);
                 newVal.numerator = num1.numerator.multiply(num2.denominator).add(num2.numerator.multiply(num1.denominator));
+                newVal.denominator = num1.denominator.multiply(num2.denominator);
             }
-
             if (newVal.isRational()) {
                 return derationalize(newVal).numerator.toPlainString();
             }else{
@@ -747,7 +798,9 @@ public class CalcHandler {
         }
         public String subtract() {
             num2.numerator = num2.numerator.multiply(BigDecimal.valueOf(-1));
-            return add();
+            String add = add();
+            Util.log(add);
+            return add;
         }
         public Value derationalize(Value num) {
             Value v = new Value();
@@ -765,7 +818,15 @@ public class CalcHandler {
     public class Value {
         public BigDecimal numerator,denominator;
         public boolean isRational() {
-            return denominator.doubleValue() == 1 || numerator.divide(denominator, MC).multiply(denominator,MC).compareTo(numerator) == 0;
+            if (denominator.doubleValue() == 1) return true;
+
+            try {
+                numerator.divide(denominator, MathContext.UNLIMITED);
+                Util.log(numerator + " " + denominator + " " + numerator.divide(denominator, MC).multiply(denominator,MC).toPlainString());
+                return true;
+            }catch(Exception e) {
+                return false;
+            }
         }
     }
 }
