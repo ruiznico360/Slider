@@ -1,28 +1,6 @@
 package mobile.slider.app.slider.ui.activity;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
-import java.util.HashMap;
-
-import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.services.SystemOverlay;
-import mobile.slider.app.slider.settings.Setting;
-import mobile.slider.app.slider.settings.resources.SettingInflater;
-import mobile.slider.app.slider.settings.SettingPopup;
-import mobile.slider.app.slider.settings.SettingsUtil;
-import mobile.slider.app.slider.settings.resources.SettingType;
-import mobile.slider.app.slider.services.IntentExtra;
-import mobile.slider.app.slider.util.Util;
 
 public class SettingsActivity extends Activity {
 

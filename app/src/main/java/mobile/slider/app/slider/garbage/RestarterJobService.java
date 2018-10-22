@@ -1,4 +1,4 @@
-package mobile.slider.app.slider.services;
+package mobile.slider.app.slider.garbage;
 
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
@@ -10,6 +10,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.widget.RelativeLayout;
+
+import mobile.slider.app.slider.services.SystemOverlay;
 
 @TargetApi(21)
 public class RestarterJobService extends JobService {
@@ -27,7 +29,7 @@ public class RestarterJobService extends JobService {
         if (running) {
         }else {
             Intent i = new Intent(getApplicationContext(),SystemOverlay.class);
-            i.putExtra(IntentExtra.SAFE_REBOOT_SERVICE, true);
+            i.putExtra(SystemOverlay.IntentExtra.SAFE_REBOOT_SERVICE, true);
             startService(i);
         }
         jobFinished(params, true);

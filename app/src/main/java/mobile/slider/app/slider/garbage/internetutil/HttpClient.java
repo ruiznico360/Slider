@@ -1,12 +1,4 @@
-package mobile.slider.app.slider.internetutil;
-
-import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.view.View;
-import android.view.animation.AnimationUtils;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+package mobile.slider.app.slider.garbage.internetutil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,7 +10,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Nicolas on 2016-04-16.

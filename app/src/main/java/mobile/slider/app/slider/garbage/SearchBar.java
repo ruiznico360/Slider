@@ -1,4 +1,4 @@
-package mobile.slider.app.slider.model;
+package mobile.slider.app.slider.garbage;
 
 import android.content.Context;
 import android.util.AttributeSet;

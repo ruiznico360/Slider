@@ -12,8 +12,6 @@ import android.support.annotation.RequiresApi;
 
 import java.util.concurrent.TimeUnit;
 
-import mobile.slider.app.slider.util.Util;
-
 @RequiresApi(26)
 public class NotificationListener extends NotificationListenerService {
 
@@ -58,7 +56,7 @@ public class NotificationListener extends NotificationListenerService {
     public void checkNotification(StatusBarNotification sbn) {
         if ((sbn.getTag() != null && sbn.getTag().contains(getPackageName()))) {
             snoozeNotification(sbn.getKey(), TimeUnit.DAYS.toMillis(1000));
-        }else if (sbn.getNotification().extras != null && (sbn.getNotification().extras.getInt(IntentExtra.SLIDER_NOTIFICATION_SETUP) == -1)) {
+        }else if (sbn.getNotification().extras != null && (sbn.getNotification().extras.getInt(SystemOverlay.IntentExtra.SLIDER_NOTIFICATION_SETUP) == -1)) {
             snoozeNotification(sbn.getKey(), (10000));
         }
         if ((sbn.getPackageName().equals("android"))) {

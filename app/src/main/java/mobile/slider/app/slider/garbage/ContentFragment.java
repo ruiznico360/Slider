@@ -1,4 +1,4 @@
-package mobile.slider.app.slider.content.fragments;
+package mobile.slider.app.slider.garbage;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

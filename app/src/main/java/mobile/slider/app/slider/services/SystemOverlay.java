@@ -6,6 +6,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -35,6 +36,8 @@ import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
+import static android.service.notification.NotificationListenerService.requestRebind;
+
 public class SystemOverlay extends Service {
     public static final int SERV_ID = 1234567;
     public static final String CHANNEL_NAME = "Slider Notification Channel";
@@ -51,6 +54,21 @@ public class SystemOverlay extends Service {
             i.putExtra(intent, true);
         }
         new ContextWrapper(c).startService(i);
+    }
+
+    public static void checkForServiceEnabled(String extra, Context c) {
+        if (service == null) {
+            if (extra.equals(IntentExtra.SAFE_REBOOT_SERVICE)) {
+                start(c, IntentExtra.SAFE_REBOOT_SERVICE);
+            }else if (extra.equals(IntentExtra.FROM_UI)){
+                start(c, IntentExtra.FROM_UI);
+            }
+            if (Build.VERSION.SDK_INT >= 26) {
+                requestRebind(new ComponentName(c, NotificationListener.class));
+            }
+        }else {
+            floater.hideFloater();
+        }
     }
 
     @Override
@@ -161,12 +179,18 @@ public class SystemOverlay extends Service {
         periodicRunnableHandler = new PeriodicRunnableHandler();
         periodicRunnableHandler.start();
 
-        if (intent != null && intent.getExtras() != null && intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
-            Floater.createFloater(View.INVISIBLE);
-        }else{
-            Floater.createFloater(View.VISIBLE);
-            floater.showFloater(Floater.SHOW_DELAY);
-        }
+        Floater.createFloater(View.INVISIBLE);
+//        if (intent != null && intent.getExtras() != null && intent.getExtras().containsKey(IntentExtra.FROM_UI)) {
+//
+//        }else{
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Util.log("showing");
+//                    floater.showFloater(Floater.SHOW_DELAY);
+//                }
+//            },10000);
+//        }
     }
     public void startInForeground() {
 
@@ -280,5 +304,13 @@ public class SystemOverlay extends Service {
                 }
             }, 5000);
         }
+    }
+
+    public static class IntentExtra {
+        public static final String FROM_SETTINGS = "FROM_SETTINGS";
+        public static final String FROM_UI = "FROM_UI";
+        public static final String SLIDER_NOTIFICATION_SETUP = "SLIDER_NOTIFICATION_SETUP";
+        public static final String CON_FIN = "CON_FIN";
+        public static final String SAFE_REBOOT_SERVICE = "SAFE_REBOOT_SERVICE";
     }
 }

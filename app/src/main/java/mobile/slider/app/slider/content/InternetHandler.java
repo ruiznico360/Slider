@@ -1,35 +1,5 @@
 package mobile.slider.app.slider.content;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.text.Html;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
-import org.json.JSONException;
-
-import mobile.slider.app.slider.R;
-import mobile.slider.app.slider.content.fragments.ContentFragment;
-import mobile.slider.app.slider.internetutil.HttpClient;
-import mobile.slider.app.slider.internetutil.SearchResult;
-import mobile.slider.app.slider.util.Util;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class InternetHandler {
 //    private Activity act;
 //    private ContentFragment frag;

@@ -7,7 +7,6 @@ package mobile.slider.app.slider.services;
 
         import mobile.slider.app.slider.settings.SettingsWriter;
         import mobile.slider.app.slider.ui.activity.Setup;
-        import mobile.slider.app.slider.ui.activity.Slider;
 
 public class BootReceiver extends BroadcastReceiver {
     public BootReceiver() {
@@ -17,9 +16,7 @@ public class BootReceiver extends BroadcastReceiver {
         if (SystemOverlay.service == null) {
             SettingsWriter.init(con);
             if (Setup.hasAllReqPermissions(con)) {
-                Intent i = new Intent(con, Slider.class);
-                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                con.startActivity(i);
+                SystemOverlay.checkForServiceEnabled(SystemOverlay.IntentExtra.SAFE_REBOOT_SERVICE, con);
             }
         }
     }

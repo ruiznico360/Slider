@@ -1,4 +1,4 @@
-package mobile.slider.app.slider.services;
+package mobile.slider.app.slider.garbage;
 
 import android.app.ActivityManager;
 import android.app.Service;
@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+
+import mobile.slider.app.slider.services.SystemOverlay;
 
 public class Restarter extends Service {
     public Restarter() {
@@ -27,7 +29,7 @@ public class Restarter extends Service {
         }
         if (!running) {
             Intent i = new Intent(getApplicationContext(),SystemOverlay.class);
-            i.putExtra(IntentExtra.SAFE_REBOOT_SERVICE, true);
+            i.putExtra(SystemOverlay.IntentExtra.SAFE_REBOOT_SERVICE, true);
             startService(i);
         }
         stopSelf();

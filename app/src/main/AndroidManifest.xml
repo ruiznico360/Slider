@@ -46,7 +46,7 @@
         <service android:name=".services.SystemOverlay" />
 
         <service
-            android:name=".services.RestarterJobService"
+            android:name=".garbage.RestarterJobService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 

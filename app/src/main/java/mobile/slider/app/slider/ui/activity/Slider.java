@@ -1,22 +1,15 @@
 package mobile.slider.app.slider.ui.activity;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.webkit.WebView;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.floater.Floater;
-import mobile.slider.app.slider.services.NotificationListener;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.ui.UserInterface;
-import mobile.slider.app.slider.services.IntentExtra;
 import mobile.slider.app.slider.util.Util;
-
-import static android.service.notification.NotificationListenerService.requestRebind;
 
 public class Slider extends Activity {
     public static long START_TIME;
@@ -52,24 +45,6 @@ public class Slider extends Activity {
         super.onPause();
     }
 
-    public void checkForServiceEnabled() {
-        if (SystemOverlay.service == null) {
-            if (getIntent().getExtras() != null && getIntent().hasExtra(IntentExtra.SAFE_REBOOT_SERVICE)) {
-                SystemOverlay.start(getBaseContext(), IntentExtra.SAFE_REBOOT_SERVICE);
-            }else {
-                SystemOverlay.start(getBaseContext(), IntentExtra.FROM_UI);
-            }
-            if (Build.VERSION.SDK_INT >= 26) {
-                requestRebind(new ComponentName(this, NotificationListener.class));
-            }
-        }else {
-            SystemOverlay.floater.hideFloater();
-            if (UserInterface.running()) {
-                UserInterface.UI.remove();
-            }
-        }
-    }
-
     public void terminateInvalidService() {
         if (SystemOverlay.service != null) {
             SystemOverlay.floater.hideFloater();
@@ -77,7 +52,10 @@ public class Slider extends Activity {
         }
     }
     public void setupActivity() {
-        checkForServiceEnabled();
+        SystemOverlay.checkForServiceEnabled(SystemOverlay.IntentExtra.FROM_UI, this);
+        if (UserInterface.running()) {
+            UserInterface.UI.remove();
+        }
         setContentView(R.layout.activity_permissions_interface);
     }
     public void launchSetupActivity() {
