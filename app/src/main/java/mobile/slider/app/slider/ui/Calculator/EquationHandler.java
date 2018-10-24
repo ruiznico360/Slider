@@ -11,7 +11,6 @@ public class EquationHandler {
     public static final String ERROR = "ERROR",POS_INFINITY = Double.POSITIVE_INFINITY + "", NEG_INFINITY = Double.NEGATIVE_INFINITY + "", NAN = Double.NaN + "";
 
     public static String getError(String answer) {
-        Util.log("ERROR in " + answer);
         if (answer.length() == 0) return ERROR;
         if (answer.contains(ERROR) || answer.contains(NAN) || answer.contains(POS_INFINITY)) {
             if (answer.equals(ERROR)) {
@@ -33,12 +32,11 @@ public class EquationHandler {
         return Double.parseDouble(num);
     }
 
-    public static String answerValue(String calculation) {
+    public static String answerValue(String calculation, String prevAnsDisplay, String prevAnsValue) {
         String answer = calculation;
-//        if (answer.startsWith(prevAnsDisplay)) {
-//            answer = answer.replaceFirst(prevAnsDisplay, prevAnsValue);
-//        }
-
+        if (!prevAnsDisplay.equals("")) {
+            answer = answer.replace(prevAnsDisplay, prevAnsValue);
+        }
         int i = 0;
         do {
             answer = reduce(answer);
@@ -52,12 +50,15 @@ public class EquationHandler {
             i++;
         }while (!isNum(answer) && i < 101);
 
-        return new Operation().derationalize(new Operation().gen(answer)).numerator.toPlainString();
+        return answer;
     }
     public static String simplifyAns(String answer) {
         if (getError(answer) != null) {
             return getError(answer);
         }
+
+        answer = new Operation().derationalize(new Operation().gen(answer)).numerator.toPlainString();
+
         final int scientificDisplayDec = 4;
         boolean negative = answer.contains("-");
         answer = answer.replace("-","");
@@ -468,16 +469,25 @@ public class EquationHandler {
             return val;
         }
         public String pow() {
+            boolean neg = false;
+            String numerDisplay;
+            String valuee;
+            String denomDisplay = 1 + "";
+
+            if (num2.getNumerator().doubleValue() < 0) {
+                neg = true;
+                num2.setNumerator(num2.getNumerator().multiply(BigDecimal.valueOf(-1)));
+            }
             num2 = derationalize(num2);
 
-            String value;
+
             double numerV = Math.pow(num1.getNumerator().doubleValue(), num2.getNumerator().doubleValue());
 
             if (getError(numerV + "") != null) {
                 return getError(numerV + "");
             }
 
-            value = BigDecimal.valueOf(numerV).toPlainString();
+            numerDisplay = BigDecimal.valueOf(numerV).toPlainString();
 
             if (!num1.isRational()) {
                 double denomV = Math.pow(num1.getDenominator().doubleValue(), num2.getNumerator().doubleValue());
@@ -486,9 +496,9 @@ public class EquationHandler {
                     return getError(denomV + "");
                 }
 
-                value += "/" + BigDecimal.valueOf(denomV).toPlainString();
+                denomDisplay = BigDecimal.valueOf(denomV).toPlainString();
             }
-            return value;
+            return neg ? denomDisplay + "/" + numerDisplay : numerDisplay + "/" + denomDisplay;
         }
         public String mult() {
             Value newVal = new Value();
@@ -506,7 +516,6 @@ public class EquationHandler {
 
             if (num2.getNumerator().doubleValue() == 0) {
                 double val = (derationalize(num1).getNumerator().doubleValue() / derationalize(num2).getNumerator().doubleValue());
-                Util.log(val + " VAL");
                 return getError( val + "");
             }
             Value newVal = new Value();

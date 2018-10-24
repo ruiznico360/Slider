@@ -152,12 +152,13 @@ public class CalculatorUI extends UIClass {
             }
         }
         public void setupTextLayout() {
-            float totalHeight = hUnit(100) - operatorsTotalHeight;
+            float totalHeight = hUnit(100) - operatorsTotalHeight - 4;
             float totalWidth = operatorWidth * 4 - 4;
             textLayout = new SView(new RelativeLayout(c), calcLayout.view);
             textLayout.view.setBackgroundColor(Color.WHITE);
             textLayout.plot();
             textLayout.openRLayout()
+                    .setTopM(2)
                     .setWidth(totalWidth)
                     .setHeight(totalHeight)
                     .addRule(RelativeLayout.CENTER_HORIZONTAL)

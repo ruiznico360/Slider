@@ -20,7 +20,7 @@ public class CalcHandler {
     public String calculation = "";
     public String currentNum = "";
     boolean prevEqual = false;
-    public String prevAnsDisplay = "NULL", prevAnsValue = "NULL";
+    public String prevAnsDisplay = "", prevAnsValue = "";
 
     public CalcHandler(CalculatorUI calculator) {
         this.calc = calculator;
@@ -38,14 +38,12 @@ public class CalcHandler {
             if (id == CalculatorUI.ID.EQUAL) {
                 prevEqual = true;
                 if (!EquationHandler.isNum(calculation)) {
-                    String answerValue = EquationHandler.answerValue(calculation);
+//                    Util.log(prevAnsDisplay.equals("") ? "NO PREV ANSWER" : prevAnsDisplay + "=" + prevAnsValue);
+                    final String answerValue = EquationHandler.answerValue(calculation, prevAnsDisplay, prevAnsValue);
                     currentNum = EquationHandler.simplifyAns(answerValue);
                     calculation = currentNum;
                     numberValue = "";
                     showAns = true;
-
-                    prevAnsValue = answerValue;
-                    prevAnsDisplay = calculation;
 
                     calc.answerText.post(new Runnable() {
                         @Override
@@ -74,8 +72,19 @@ public class CalcHandler {
                                     if (EquationHandler.getError(calculation) != null) {
                                         number.setText(Html.fromHtml(EquationHandler.getError(calculation).equals(EquationHandler.ERROR) ?"<font color=red>" + EquationHandler.ERROR + "</font>" : "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + calculation + "</font>"), TextView.BufferType.SPANNABLE);
                                         calculation = "";
+                                        prevAnsDisplay = "";
+                                        prevAnsValue = "";
                                     }else{
                                         number.setText(Html.fromHtml("<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + calculation + "</font>"), TextView.BufferType.SPANNABLE);
+                                        prevAnsDisplay = calculation.replace("(-","");
+
+                                        EquationHandler.Value v = new EquationHandler.Operation().gen(answerValue);
+                                        if (v.isRational()) {
+                                            prevAnsValue = prevAnsDisplay;
+                                        }else{
+                                            prevAnsValue = answerValue.replace("-","");
+                                        }
+//                                        Util.log("PREVANSVALUE " + v.getNumerator() + "/" + v.getDenominator() + " " + answerValue + " " + prevAnsDisplay);
                                     }
                                     answer.setText("");
                                 }
@@ -90,6 +99,31 @@ public class CalcHandler {
                 if (id == CalculatorUI.ID.DELETE) {
                     if (!calculation.equals("")) {
                         calculation = calculation.substring(0,calculation.length() - 1);
+
+                        if (!prevAnsDisplay.equals("")) {
+                            int start = -1;
+                            int end = -1;
+                            for (int i = 0; i < calculation.length(); i++) {
+                                String prev = calculation.substring(i, i + 1);
+                                if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".")) {
+                                    if (start == -1) {
+                                        start = i;
+                                        end = i;
+                                    }else{
+                                        end = i;
+                                    }
+                                }else {
+                                    if (start != -1) {
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (!prevAnsDisplay.equals(calculation.substring(start, end + 1))) {
+                                prevAnsDisplay = "";
+                                prevAnsValue = "";
+                            }
+                        }
                         if (calculation.length() >= 1) {
                             String prev = calculation.substring(calculation.length() - 1, calculation.length());
                             if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".")) {
@@ -111,6 +145,8 @@ public class CalcHandler {
                     }
                 }else if (id == CalculatorUI.ID.CLEAR) {
                     //fix incorrect assignation odf currentNum in delete
+                    prevAnsDisplay = "";
+                    prevAnsValue = "";
                     calculation = "";
                     currentNum = "";
                 }else if (id == CalculatorUI.ID.DEC) {
@@ -192,7 +228,18 @@ public class CalcHandler {
                                 break;
                             }
                         }
-                        calculation = calculation.substring(0, loc) + operation + calculation.substring(loc, calculation.length());
+                        if (loc > 1) {
+                            String prev = calculation.substring(loc - 2, loc);
+                            if (prev.equals("(" + CalculatorUI.ID.SUB.numValue)) {
+                                calculation = calculation.substring(0, loc - 2) + calculation.substring(loc, calculation.length());
+                            }else if (prev.equals(CalculatorUI.ID.SQROOT.numValue + CalculatorUI.ID.SUB.numValue)) {
+                                calculation = calculation.substring(0, loc - 1) + calculation.substring(loc, calculation.length());
+                            }else{
+                                calculation = calculation.substring(0, loc) + operation + calculation.substring(loc, calculation.length());
+                            }
+                        }else{
+                            calculation = calculation.substring(0, loc) + operation + calculation.substring(loc, calculation.length());
+                        }
                     }
                 }
 
@@ -252,7 +299,7 @@ public class CalcHandler {
 
         number.setText(Html.fromHtml(finalNumberText), TextView.BufferType.SPANNABLE);
         if (showAns) {
-            String ans = EquationHandler.simplifyAns(EquationHandler.answerValue(calculation));
+            String ans = EquationHandler.simplifyAns(EquationHandler.answerValue(calculation, prevAnsDisplay, prevAnsValue));
             answer.setText(EquationHandler.getError(ans) != null && EquationHandler.getError(ans).equals(EquationHandler.ERROR) ? "" : ans);
         }else{
             answer.setText("");
