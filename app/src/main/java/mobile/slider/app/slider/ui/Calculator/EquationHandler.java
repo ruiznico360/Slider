@@ -34,9 +34,12 @@ public class EquationHandler {
 
     public static String answerValue(String calculation, String prevAnsDisplay, String prevAnsValue) {
         String answer = calculation;
+
         if (!prevAnsDisplay.equals("")) {
             answer = answer.replace(prevAnsDisplay, prevAnsValue);
         }
+        Util.log("ANS " + answer);
+
         int i = 0;
         do {
             answer = reduce(answer);
@@ -548,7 +551,7 @@ public class EquationHandler {
             String add = add();
             return add;
         }
-        public Value derationalize(Value num) {
+        public static Value derationalize(Value num) {
             Value v = new Value();
             v.setNumerator(num.getNumerator().divide(num.getDenominator(), MC));
             v.setDenominator(BigDecimal.valueOf(1));
@@ -597,6 +600,9 @@ public class EquationHandler {
 
             try {
                 numerator.divide(denominator, MathContext.UNLIMITED);
+
+//                Value v = Operation.derationalize(this);
+//                if (v.getNumerator().toPlainString().contains(".") && v.getNumerator().toPlainString().length() - v.getNumerator().toPlainString().indexOf("."))
                 return true;
             }catch(Exception e) {
                 return false;

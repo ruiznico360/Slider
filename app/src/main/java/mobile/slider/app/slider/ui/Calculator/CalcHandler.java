@@ -32,7 +32,7 @@ public class CalcHandler {
         final TextView number = ((TextView)calc.numberText.view);
         final TextView answer = ((TextView)calc.answerText.view);
         boolean showAns = false;
-        String numberValue = "";
+        String numberValue;
 
         if (!id.isNumber()) {
             if (id == CalculatorUI.ID.EQUAL) {
@@ -40,8 +40,6 @@ public class CalcHandler {
                 if (!EquationHandler.isNum(calculation)) {
 //                    Util.log(prevAnsDisplay.equals("") ? "NO PREV ANSWER" : prevAnsDisplay + "=" + prevAnsValue);
                     final String answerValue = EquationHandler.answerValue(calculation, prevAnsDisplay, prevAnsValue);
-                    currentNum = EquationHandler.simplifyAns(answerValue);
-                    calculation = currentNum;
                     numberValue = "";
                     showAns = true;
 
@@ -66,6 +64,13 @@ public class CalcHandler {
                             a.addScale(1,xOffset,1,yOffset, pivot);
                             a.addTranslate(transX,(int)(calc.numberText.y() - calc.answerLayout.y()));
 
+                            a.setStart(new Runnable() {
+                                @Override
+                                public void run() {
+                                    currentNum = EquationHandler.simplifyAns(answerValue);
+                                    calculation = currentNum;
+                                }
+                            });
                             a.setEnd(new Runnable() {
                                 @Override
                                 public void run() {
@@ -80,7 +85,7 @@ public class CalcHandler {
 
                                         EquationHandler.Value v = new EquationHandler.Operation().gen(answerValue);
                                         if (v.isRational()) {
-                                            prevAnsValue = prevAnsDisplay;
+                                            prevAnsValue = EquationHandler.Operation.derationalize(v).getNumerator().toPlainString();
                                         }else{
                                             prevAnsValue = answerValue.replace("-","");
                                         }
@@ -144,7 +149,6 @@ public class CalcHandler {
                         }
                     }
                 }else if (id == CalculatorUI.ID.CLEAR) {
-                    //fix incorrect assignation odf currentNum in delete
                     prevAnsDisplay = "";
                     prevAnsValue = "";
                     calculation = "";
