@@ -39,12 +39,12 @@ public class CalculatorUI extends UIClass {
     public CalcHandler calcHandler;
 
     public enum ID {
-        BRACKET(R.drawable.calculator_bracket,"("), SQROOT(R.drawable.calculator_sqroot,"√"), POW(R.drawable.calculator_pow,"^"), CLEAR(R.drawable.calculator_clear,""), SEVEN(R.drawable.calculator_seven,7), EIGHT(R.drawable.calculator_eight,8), NINE(R.drawable.calculator_nine,9), DIVIDE(R.drawable.calculator_divide,"÷"), FOUR(R.drawable.calculator_four,4), FIVE(R.drawable.calculator_five,5), SIX(R.drawable.calculator_six,6), MULT(R.drawable.calculator_mult,"x"), ONE(R.drawable.calculator_one,1), TWO(R.drawable.calculator_two,2), THREE(R.drawable.calculator_three,3), SUB(R.drawable.calculator_sub,"-")
-        , NEGATE(R.drawable.calculator_negate,""), ZERO(R.drawable.calculator_zero,0), DEC(R.drawable.calculator_dec,"."), ADD(R.drawable.calculator_add,"+"), EQUAL(R.drawable.calculator_equal,""), DELETE(R.drawable.calculator_delete,"");
+        BRACKET(R.drawable.calculator_bracket,"("), SQROOT(R.drawable.calculator_sqroot,"√"), POW(R.drawable.calculator_pow,"^"), PI(R.drawable.calculator_pi,"π"), SEVEN(R.drawable.calculator_seven,7), EIGHT(R.drawable.calculator_eight,8), NINE(R.drawable.calculator_nine,9), DIVIDE(R.drawable.calculator_divide,"÷"), FOUR(R.drawable.calculator_four,4), FIVE(R.drawable.calculator_five,5), SIX(R.drawable.calculator_six,6), MULT(R.drawable.calculator_mult,"x"), ONE(R.drawable.calculator_one,1), TWO(R.drawable.calculator_two,2), THREE(R.drawable.calculator_three,3), SUB(R.drawable.calculator_sub,"-")
+        , NEGATE(R.drawable.calculator_negate,""), ZERO(R.drawable.calculator_zero,0), DEC(R.drawable.calculator_dec,"."), ADD(R.drawable.calculator_add,"+"), EQUAL(R.drawable.calculator_equal,""), DELETE(R.drawable.calculator_delete,""),CLEAR(R.drawable.calculator_clear,"");
 
         public int drawableRes;
         public String numValue;
-        public static final String NUM_VALUES = "[E0123456789/]", OPERATOR_VALUES = "[÷^x+-]";
+        public static final String NUM_VALUES = "[0123456789/]", OPERATOR_VALUES = "[÷^x+-]";
 
         ID(int drawableRes, String numValue) {
             this.drawableRes = drawableRes;
@@ -178,6 +178,25 @@ public class CalculatorUI extends UIClass {
                 @Override
                 public void onClick(View v) {
                     calcHandler.handle(ID.DELETE);
+                }
+            });
+
+            SView clearButton = new SView(new ImageView(c), textLayout.view);
+            float cHeight = deleteButton.height() * .75f;
+            ImageUtil.setImageDrawable(clearButton.view, ID.CLEAR.drawableRes);
+            operators.add(clearButton);
+            clearButton.plot();
+            clearButton.openRLayout()
+                    .setHeight(cHeight)
+                    .setWidth(deleteButton.width() * .75f)
+                    .addRule(RelativeLayout.ALIGN_PARENT_LEFT)
+                    .setBottomM((deleteButton.height() - cHeight) / 2)
+                    .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                    .save();
+            clearButton.view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    calcHandler.handle(ID.CLEAR);
                 }
             });
 
