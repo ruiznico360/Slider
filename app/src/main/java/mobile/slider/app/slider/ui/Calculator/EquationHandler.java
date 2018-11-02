@@ -55,7 +55,6 @@ public class EquationHandler {
 
         int i = 0;
         do {
-            Util.log("CURRENT ANS " + answer);
             answer = EQMath.reduce(answer);
 
             if (i == 100) {
