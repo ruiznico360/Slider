@@ -55,6 +55,7 @@ public class EquationHandler {
 
         int i = 0;
         do {
+            Util.log("curRent ANS " + answer);
             answer = EQMath.reduce(answer);
 
             if (i == 100) {
@@ -65,6 +66,7 @@ public class EquationHandler {
             }
             i++;
         }while (!isNum(answer) && i < 101);
+
         return answer;
     }
     public static String checkPrecision(EQMath.Value v) {
