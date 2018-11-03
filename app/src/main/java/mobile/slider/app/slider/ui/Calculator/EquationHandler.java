@@ -65,7 +65,6 @@ public class EquationHandler {
             }
             i++;
         }while (!isNum(answer) && i < 101);
-
         return answer;
     }
     public static String checkPrecision(EQMath.Value v) {
