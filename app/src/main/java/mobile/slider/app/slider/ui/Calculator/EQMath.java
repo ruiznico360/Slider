@@ -63,14 +63,59 @@ public class EQMath {
             }
             equation = start + equation.substring(rightBLoc == equation.length() ? rightBLoc : rightBLoc + 1, equation.length());
         }else{
-            CalculatorUI.ID[] order = new CalculatorUI.ID[]{CalculatorUI.ID.SQROOT, CalculatorUI.ID.POW,CalculatorUI.ID.DIVIDE, CalculatorUI.ID.MULT, CalculatorUI.ID.SUB, CalculatorUI.ID.ADD};
+            CalculatorUI.ID[] order = new CalculatorUI.ID[]{CalculatorUI.ID.PERCENT, CalculatorUI.ID.SQROOT, CalculatorUI.ID.POW,CalculatorUI.ID.DIVIDE, CalculatorUI.ID.MULT, CalculatorUI.ID.SUB, CalculatorUI.ID.ADD};
 
             boolean contLoop = true;
             while (contLoop) {
                 contLoop = false;
                 for (CalculatorUI.ID id : order) {
                     if (isNum(equation)) break;
-                    if (equation.contains(CalculatorUI.ID.SQROOT.numValue)) {
+
+                    if (id.equals(CalculatorUI.ID.PERCENT) && equation.contains(id.numValue)) {
+                        final String ADD = "ADD", SUB = "SUB", NULL = "NULL";
+
+                        int i = equation.lastIndexOf(id.numValue);
+                        int start = i - 1;
+                        int end = i;
+                        boolean finishedReading = false;
+                        String operation = NULL;
+
+
+                        for (int n = i - 1; n >= 0; n--) {
+                            String prev = equation.substring(n, n + 1);
+
+                            if (!finishedReading) {
+                                if (prev.matches(CalculatorUI.ID.NUM_VALUES)) {
+                                    start = n;
+                                }else if ((!prev.matches(CalculatorUI.ID.NUM_VALUES) && !prev.equals("."))) {
+                                    finishedReading = true;
+                                }
+                            }
+
+                            if (finishedReading) {
+                                if (prev.equals(CalculatorUI.ID.ADD.numValue)) {
+                                    operation = ADD;
+                                }else if (prev.equals(CalculatorUI.ID.SUB.numValue)) {
+                                    if (n != 0 && (equation.substring(n - 1, n).matches(CalculatorUI.ID.NUM_VALUES) || !equation.substring(n - 1, n).equals(")"))) {
+                                        operation = SUB;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+
+                        String s;
+                        if (operation.equals(SUB)) {
+                            s = equation.substring(0, start - 1) + CalculatorUI.ID.MULT.numValue + "(1" + CalculatorUI.ID.SUB.numValue  + equation.substring(start,end) + CalculatorUI.ID.DIVIDE.numValue + "100)" + equation.substring(end + 1,equation.length());
+                        }else if (operation.equals(ADD)) {
+                            s = equation.substring(0, start - 1) + CalculatorUI.ID.MULT.numValue + "(1" + CalculatorUI.ID.ADD.numValue  + equation.substring(start,end) + CalculatorUI.ID.DIVIDE.numValue + "100)" + equation.substring(end + 1,equation.length());
+                        }else {
+                            s = equation.substring(0, start) + "(" + equation.substring(start,end) + CalculatorUI.ID.DIVIDE.numValue + "100)" + equation.substring(end + 1,equation.length());
+                        }
+                        Util.log(operation + " = " + s);
+                        return s;
+                    }
+                    else if (id.equals(CalculatorUI.ID.SQROOT) && equation.contains(id.numValue)) {
                         int i = equation.lastIndexOf(CalculatorUI.ID.SQROOT.numValue);
                         if (i == equation.length() - 1) {
                             return ERROR;
@@ -150,44 +195,6 @@ public class EQMath {
                             }else {
                                 i = loc;
                             }
-
-//                            boolean negateFix = true;
-//                            int indexOfNum = equation.length();
-//                            if (equation.substring(0, 1).equals(CalculatorUI.ID.SUB.numValue)) {
-//                                for (int p = 0; p < equation.length(); p++) {
-//                                    String s = equation.substring(p, p + 1);
-//                                    if (s.matches(CalculatorUI.ID.NUM_VALUES) || s.equals(".")) {
-//                                        if (p - indexOfNum > 1) {
-//                                            negateFix = false;
-//                                            break;
-//                                        }
-//                                        indexOfNum = p;
-//                                    }
-//                                }
-//                            }else{
-//                                negateFix = false;
-//                            }
-//                            if (negateFix) {
-//                                String negTracker = "";
-//                                for (int n = 0; n < equation.length(); n++) {
-//                                    if (equation.charAt(n) == CalculatorUI.ID.SUB.numValue.charAt(0)) {
-//                                        negTracker = negTracker.equals("") ? "-" : "";
-//                                    }
-//                                }
-//                                equation = equation.replace(CalculatorUI.ID.SUB.numValue, "");
-//                                return negTracker + equation;
-//                            }
-//                            for (int p = 0; p < equation.length(); p++) {
-//                                Util.log(i);
-//                                if (equation.substring(p, p + 1).equals(CalculatorUI.ID.SUB.numValue)) {
-//                                    if (p == 0 || !equation.substring(p - 1, p).matches(CalculatorUI.ID.NUM_VALUES)) {
-//
-//                                    }else{
-//                                        i = p;
-//                                        break;
-//                                    }
-//                                }
-//                            }
                         }
                         if (i == equation.length() - 1) {
                             return ERROR;

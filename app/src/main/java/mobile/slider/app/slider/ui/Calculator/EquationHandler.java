@@ -9,6 +9,7 @@ import mobile.slider.app.slider.util.Util;
 
 public class EquationHandler {
     public static final int MAX_DIGITS = 10,MAX_LENGTH = 100, BD_SCALE = MAX_DIGITS * 2, SCIENTIFIC_NOT_DIGITS = 4;
+    public static String ansValue = "1";
 
     public static final MathContext MC = MathContext.DECIMAL128;
     public static final String ERROR = "ERROR",POS_INFINITY = Double.POSITIVE_INFINITY + "", NEG_INFINITY = Double.NEGATIVE_INFINITY + "", NAN = Double.NaN + "";
@@ -46,12 +47,13 @@ public class EquationHandler {
             String sub = answer.substring(i, i + 1);
             if (sub.equals("e")) {
                 answer = answer.substring(0,i) + CalculatorUI.ID.MULT.numValue + "10" + CalculatorUI.ID.POW.numValue + answer.substring((answer.substring(i + 1, i + 2).equals(CalculatorUI.ID.ADD.numValue) ? i + 2 : i + 1), answer.length());
+            }else if (sub.equals(CalculatorUI.ID.PI.numValue)) {
+                answer = answer.substring(0,i) + Math.PI + answer.substring(i + 1, answer.length());
+            }else if (sub.equals(CalculatorUI.ID.EULER.numValue)) {
+                answer = answer.substring(0,i) + Math.E + answer.substring(i + 1, answer.length());
             }
         }
 
-        if (answer.contains(CalculatorUI.ID.PI.numValue)) {
-            answer = answer.replace(CalculatorUI.ID.PI.numValue, Math.PI + "");
-        }
 
         int i = 0;
         do {

@@ -20,7 +20,7 @@ public class CalcHandler {
     public String calculation = "";
     public String currentNum = "";
     CalculatorUI.ID prevID = CalculatorUI.ID.CLEAR;
-    public String prevAnsDisplay = "", prevAnsValue = "";
+    String prevAnsDisplay = "", prevAnsValue = "";
 
     public CalcHandler(CalculatorUI calculator) {
         this.calc = calculator;
@@ -151,11 +151,11 @@ public class CalcHandler {
                         }
                         if (calculation.length() >= 1) {
                             String prev = calculation.substring(calculation.length() - 1, calculation.length());
-                            if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(CalculatorUI.ID.PI.numValue)) {
+                            if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
                                 int loc = 0;
                                 for (int i = calculation.length() - 1; i >= 0; i--) {
                                     String s = calculation.substring(i,i + 1);
-                                    if (!s.matches(CalculatorUI.ID.NUM_VALUES) && !s.equals(".") && !prev.equals(CalculatorUI.ID.PI.numValue)) {
+                                    if (!s.matches(CalculatorUI.ID.NUM_VALUES) && !s.equals(".") && !prev.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
                                         loc = i + 1;
                                         break;
                                     }
@@ -176,7 +176,7 @@ public class CalcHandler {
                     currentNum = "";
                 }else if (id == CalculatorUI.ID.DEC) {
 
-                    if (currentNum.equals(CalculatorUI.ID.PI.numValue) || prevID.equals(CalculatorUI.ID.EQUAL)) {
+                    if (currentNum.matches(CalculatorUI.ID.VARIABLE_VALUES) || prevID.equals(CalculatorUI.ID.EQUAL)) {
                         handle(CalculatorUI.ID.ZERO);
                         handle(CalculatorUI.ID.DEC);
                         return;
@@ -282,7 +282,7 @@ public class CalcHandler {
                         int loc = 0;
                         for (int i = calculation.length() - 1; i >= 0; i--) {
                             String s = calculation.substring(i , i + 1);
-                            if (!s.matches(CalculatorUI.ID.NUM_VALUES) && !s.equals(".") && !s.equals(CalculatorUI.ID.PI.numValue)) {
+                            if (!s.matches(CalculatorUI.ID.NUM_VALUES) && !s.equals(".") && !s.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
                                 loc = i + 1;
                                 break;
                             }
@@ -302,18 +302,40 @@ public class CalcHandler {
                             calculation = calculation.substring(0, loc) + operation + calculation.substring(loc, calculation.length());
                         }
                     }
-                }else if (id == CalculatorUI.ID.PI) {
+                }else if (id.isVariable()) {
                     if (calculation.equals("")) {
                         calculation =  id.numValue;
                     }else{
                         String prev = calculation.substring(calculation.length() - 1, calculation.length());
-                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.equals(id.numValue)) {
+                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES) || prev.equals(CalculatorUI.ID.PERCENT.numValue)) {
                             calculation += (prev.equals(".") ? "0" : "") + CalculatorUI.ID.MULT.numValue + id.numValue;
                         }else{
                             calculation += id.numValue;
                         }
                     }
                     currentNum = id.numValue;
+                }else if (id.equals(CalculatorUI.ID.PERCENT)) {
+                    if (!calculation.equals("")) {
+                        String prev = calculation.substring(calculation.length() - 1, calculation.length());
+
+                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
+                            calculation += (prev.equals(".") ? "0" : "") + id.numValue;
+                            currentNum = "";
+                        }
+                    }
+                }else if (id.equals(CalculatorUI.ID.ANSWER)) {
+                    if (calculation.equals("")) {
+                        calculation += id.numValue;
+                    }else{
+                        String prev = calculation.substring(calculation.length() - 1, calculation.length());
+
+                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
+                            calculation += (prev.equals(".") ? "0" : "") + id.MULT.numValue + id.numValue;
+                        }else {
+                            calculation += id.numValue;
+                        }
+                        currentNum = id.numValue;
+                    }
                 }
                 numberValue = calculation;
                 showAns = !EquationHandler.isNum(calculation);
@@ -328,13 +350,13 @@ public class CalcHandler {
                 String numVal = currentNum + id.numValue;
                 String calcVal = calculation + id.numValue;
 
-                if (currentNum.equals(CalculatorUI.ID.PI.numValue)) {
+                if (currentNum.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
                     numVal = id.numValue;
                     calcVal = calculation + CalculatorUI.ID.MULT.numValue + id.numValue;
                 }else {
                     if (currentNum.length() - (currentNum.contains(".") ? 1 : 0) < EquationHandler.MAX_DIGITS) {
                         if (currentNum.equals("") && !calculation.equals("")) {
-                            if (calculation.substring(calculation.length() - 1, calculation.length()).equals(")")) {
+                            if (calculation.substring(calculation.length() - 1, calculation.length()).equals(")") || calculation.substring(calculation.length() - 1, calculation.length()).equals(CalculatorUI.ID.PERCENT.numValue)) {
                                 numVal = id.numValue;
                                 calcVal = calculation + CalculatorUI.ID.MULT.numValue + id.numValue;
                             }
@@ -368,12 +390,13 @@ public class CalcHandler {
         String finalNumberText = "";
         for (int i = 0; i < formatedNumValue.length(); i++){
             String val = formatedNumValue.substring(i, i + 1);
-            if (!val.matches(CalculatorUI.ID.NUM_VALUES) && !val.equals(CalculatorUI.ID.PI.numValue)) {
+            if (!val.matches(CalculatorUI.ID.NUM_VALUES) && !val.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
                 finalNumberText += "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + val + "</font>";
             }else{
                 finalNumberText += val;
             }
         }
+        finalNumberText = finalNumberText.replace(CalculatorUI.ID.EULER.numValue, "e");
 
         number.setText(Html.fromHtml(finalNumberText), TextView.BufferType.SPANNABLE);
         if (showAns) {
