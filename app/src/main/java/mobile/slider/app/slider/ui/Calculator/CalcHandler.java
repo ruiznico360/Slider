@@ -19,10 +19,11 @@ public class CalcHandler {
     public Context c;
     public String calculation = "";
     public String currentNum = "";
+    public static String ansValue = "1";
     CalculatorUI.ID prevID = CalculatorUI.ID.CLEAR;
-    String prevAnsDisplay = "", prevAnsValue = "";
 
     public CalcHandler(CalculatorUI calculator) {
+        ansValue = "1";
         this.calc = calculator;
         this.c = calc.c;
     }
@@ -39,7 +40,7 @@ public class CalcHandler {
         if (!id.isNumber()) {
             if (id == CalculatorUI.ID.EQUAL) {
                 if (!EquationHandler.isNum(calculation)) {
-                    final String answerValue = EquationHandler.answerValue(calculation, prevAnsDisplay, prevAnsValue);
+                    final String answerValue = EquationHandler.answerValue(calculation);
                     numberValue = "";
                     showAns = true;
 
@@ -71,12 +72,14 @@ public class CalcHandler {
                                     calc.numberLayout.view.setHorizontalScrollBarEnabled(false);
 
                                     calculation = EquationHandler.simplifyAns(answerValue);
-                                    if ((calculation.contains("e") || calculation.contains(CalculatorUI.ID.SUB.numValue)) && EquationHandler.getError(calculation) == null) {
-                                        calculation = "(" + calculation + ")";
-                                        currentNum = "";
-                                    }else {
-                                        currentNum = calculation;
-                                    }
+//                                    if ((calculation.contains("e") || calculation.contains(CalculatorUI.ID.SUB.numValue)) && EquationHandler.getError(calculation) == null) {
+//                                        calculation = "(" + calculation + ")";
+//                                        currentNum = "";
+//                                    }else {
+//                                        currentNum = calculation;
+//                                    }
+                                    currentNum = calculation;
+
                                 }
                             });
                             a.setEnd(new Runnable() {
@@ -85,23 +88,17 @@ public class CalcHandler {
                                     if (EquationHandler.getError(calculation) != null) {
                                         number.setText(Html.fromHtml(EquationHandler.getError(calculation).equals(EquationHandler.ERROR) ?"<font color=red>" + EquationHandler.ERROR + "</font>" : "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + formatCommas(calculation) + "</font>"), TextView.BufferType.SPANNABLE);
                                         calculation = "";
-                                        prevAnsDisplay = "";
-                                        prevAnsValue = "";
                                     }else{
                                         number.setText(Html.fromHtml("<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + formatCommas(calculation) + "</font>"), TextView.BufferType.SPANNABLE);
-                                        prevAnsDisplay = calculation.replace("(","").replace(")","");
-                                        if (prevAnsDisplay.substring(0,1).equals(CalculatorUI.ID.SUB.numValue)) prevAnsDisplay = prevAnsDisplay.substring(1, prevAnsDisplay.length());
-
 
                                         EQMath.Value v = EQMath.Operation.gen(answerValue);
 //                                        Util.log("ANSWER " + v.getNumerator() + " " +  v.getDenominator());
                                         if (v.isRational()) {
-                                            prevAnsValue = EQMath.Operation.derationalize(v).getNumerator().toString();
+                                            ansValue = EQMath.Operation.derationalize(v).getNumerator().toString();
 //                                            Util.log("PREVANSVAL " + prevAnsValue + " " + v.getNumerator());
                                         }else{
-                                            prevAnsValue = answerValue;
+                                            ansValue = answerValue;
                                         }
-                                        prevAnsValue = prevAnsValue.replace("-","");
                                     }
 
                                     calc.answerLayout.view.setHorizontalScrollBarEnabled(true);
@@ -116,46 +113,24 @@ public class CalcHandler {
                     numberValue = calculation;
                 }
             }else{
+                if(prevID.equals(CalculatorUI.ID.EQUAL)) {
+                    calculation = "";
+                    currentNum = "";
+                    prevID = CalculatorUI.ID.CLEAR;
+                    handle(CalculatorUI.ID.ANSWER);
+                }
+
                 if (id == CalculatorUI.ID.DELETE) {
                     if (!calculation.equals("")) {
                         calculation = calculation.substring(0,calculation.length() - 1);
 
-                        if (!prevAnsDisplay.equals("")) {
-                            String prev = prevAnsDisplay.contains("e") ? "(" + prevAnsDisplay + ")" : prevAnsDisplay;
-                            if (!calculation.contains(prev)) {
-                                prevAnsDisplay = "";
-                                prevAnsValue = "";
-                            }
-//                            int start = -1;
-//                            int end = -1;
-//                            for (int i = 0; i < calculation.length(); i++) {
-//                                String prev = calculation.substring(i, i + 1);
-//                                if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".")) {
-//                                    if (start == -1) {
-//                                        start = i;
-//                                        end = i;
-//                                    }else{
-//                                        end = i;
-//                                    }
-//                                }else {
-//                                    if (start != -1) {
-//                                        break;
-//                                    }
-//                                }
-//                            }
-//
-//                            if (!prevAnsDisplay.equals(calculation.substring(start, end + 1))) {
-//                                prevAnsDisplay = "";
-//                                prevAnsValue = "";
-//                            }
-                        }
                         if (calculation.length() >= 1) {
                             String prev = calculation.substring(calculation.length() - 1, calculation.length());
-                            if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
+                            if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES) || prev.equals(CalculatorUI.ID.ANSWER.numValue)) {
                                 int loc = 0;
                                 for (int i = calculation.length() - 1; i >= 0; i--) {
                                     String s = calculation.substring(i,i + 1);
-                                    if (!s.matches(CalculatorUI.ID.NUM_VALUES) && !s.equals(".") && !prev.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
+                                    if (!s.matches(CalculatorUI.ID.NUM_VALUES) && !s.equals(".") && !prev.matches(CalculatorUI.ID.VARIABLE_VALUES) && !prev.equals(CalculatorUI.ID.ANSWER.numValue)) {
                                         loc = i + 1;
                                         break;
                                     }
@@ -170,13 +145,12 @@ public class CalcHandler {
                     }
 //                    Util.log("DELETED " + prevAnsDisplay + " " + prevAnsValue);
                 }else if (id == CalculatorUI.ID.CLEAR) {
-                    prevAnsDisplay = "";
-                    prevAnsValue = "";
                     calculation = "";
                     currentNum = "";
                 }else if (id == CalculatorUI.ID.DEC) {
 
-                    if (currentNum.matches(CalculatorUI.ID.VARIABLE_VALUES) || prevID.equals(CalculatorUI.ID.EQUAL)) {
+
+                    if (currentNum.equals("") || currentNum.equals(CalculatorUI.ID.ANSWER.numValue) || currentNum.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
                         handle(CalculatorUI.ID.ZERO);
                         handle(CalculatorUI.ID.DEC);
                         return;
@@ -236,7 +210,8 @@ public class CalcHandler {
                             if (EquationHandler.leftBrackets(calculation) > EquationHandler.rightBrackets(calculation)) {
                                 calculation += ")";
                             }else {
-                                calculation += CalculatorUI.ID.MULT.numValue + "(";
+                                String prev = calculation.substring(calculation.length() - 1, calculation.length());
+                                calculation += (prev.equals(".") ? "0" : "") + CalculatorUI.ID.MULT.numValue + "(";
                             }
                         }
                     }
@@ -282,7 +257,7 @@ public class CalcHandler {
                         int loc = 0;
                         for (int i = calculation.length() - 1; i >= 0; i--) {
                             String s = calculation.substring(i , i + 1);
-                            if (!s.matches(CalculatorUI.ID.NUM_VALUES) && !s.equals(".") && !s.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
+                            if (!s.matches(CalculatorUI.ID.NUM_VALUES) && !s.equals(".") && !s.matches(CalculatorUI.ID.VARIABLE_VALUES) && !s.equals(CalculatorUI.ID.ANSWER.numValue)) {
                                 loc = i + 1;
                                 break;
                             }
@@ -307,7 +282,7 @@ public class CalcHandler {
                         calculation =  id.numValue;
                     }else{
                         String prev = calculation.substring(calculation.length() - 1, calculation.length());
-                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES) || prev.equals(CalculatorUI.ID.PERCENT.numValue)) {
+                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES) || prev.equals(CalculatorUI.ID.PERCENT.numValue) || prev.equals(CalculatorUI.ID.ANSWER.numValue)) {
                             calculation += (prev.equals(".") ? "0" : "") + CalculatorUI.ID.MULT.numValue + id.numValue;
                         }else{
                             calculation += id.numValue;
@@ -318,7 +293,7 @@ public class CalcHandler {
                     if (!calculation.equals("")) {
                         String prev = calculation.substring(calculation.length() - 1, calculation.length());
 
-                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
+                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES) || prev.equals(CalculatorUI.ID.ANSWER.numValue)) {
                             calculation += (prev.equals(".") ? "0" : "") + id.numValue;
                             currentNum = "";
                         }
@@ -329,28 +304,26 @@ public class CalcHandler {
                     }else{
                         String prev = calculation.substring(calculation.length() - 1, calculation.length());
 
-                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
+                        if (prev.matches(CalculatorUI.ID.NUM_VALUES) || prev.equals(".") || prev.equals(")") || prev.matches(CalculatorUI.ID.VARIABLE_VALUES) || prev.equals(CalculatorUI.ID.ANSWER.numValue) || prev.equals(CalculatorUI.ID.PERCENT.numValue)) {
                             calculation += (prev.equals(".") ? "0" : "") + id.MULT.numValue + id.numValue;
                         }else {
                             calculation += id.numValue;
                         }
-                        currentNum = id.numValue;
                     }
+                    currentNum = id.numValue;
                 }
                 numberValue = calculation;
                 showAns = !EquationHandler.isNum(calculation);
             }
         }else{
             if (prevID.equals(CalculatorUI.ID.EQUAL)) {
-                prevAnsDisplay = "";
-                prevAnsValue = "";
                 calculation = id.numValue;
                 currentNum = id.numValue;
             }else{
                 String numVal = currentNum + id.numValue;
                 String calcVal = calculation + id.numValue;
 
-                if (currentNum.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
+                if (currentNum.matches(CalculatorUI.ID.VARIABLE_VALUES) || currentNum.equals(CalculatorUI.ID.ANSWER.numValue)) {
                     numVal = id.numValue;
                     calcVal = calculation + CalculatorUI.ID.MULT.numValue + id.numValue;
                 }else {
@@ -390,18 +363,19 @@ public class CalcHandler {
         String finalNumberText = "";
         for (int i = 0; i < formatedNumValue.length(); i++){
             String val = formatedNumValue.substring(i, i + 1);
-            if (!val.matches(CalculatorUI.ID.NUM_VALUES) && !val.matches(CalculatorUI.ID.VARIABLE_VALUES)) {
+            if (!val.matches(CalculatorUI.ID.NUM_VALUES) && !val.matches(CalculatorUI.ID.VARIABLE_VALUES) && !val.equals(CalculatorUI.ID.ANSWER.numValue)) {
                 finalNumberText += "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + val + "</font>";
             }else{
                 finalNumberText += val;
             }
         }
-        finalNumberText = finalNumberText.replace(CalculatorUI.ID.EULER.numValue, "e");
+
+        finalNumberText = finalNumberText.replace(CalculatorUI.ID.EULER.numValue, "e").replace(CalculatorUI.ID.ANSWER.numValue, "ANS");
 
         number.setText(Html.fromHtml(finalNumberText), TextView.BufferType.SPANNABLE);
         if (showAns) {
-            String ans = formatCommas(EquationHandler.simplifyAns(EquationHandler.answerValue(calculation, prevAnsDisplay, prevAnsValue)));
-            ans = ((ans.contains("e") || ans.contains(CalculatorUI.ID.SUB.numValue)) && EquationHandler.getError(ans) == null) ? "(" + ans + ")" : ans;
+            String ans = formatCommas(EquationHandler.simplifyAns(EquationHandler.answerValue(calculation)));
+//            ans = ((ans.contains("e") || ans.contains(CalculatorUI.ID.SUB.numValue)) && EquationHandler.getError(ans) == null) ? "(" + ans + ")" : ans;
             answer.setText(EquationHandler.getError(ans) != null && EquationHandler.getError(ans).equals(EquationHandler.ERROR) ? "" : ans);
         }else{
             answer.setText("");

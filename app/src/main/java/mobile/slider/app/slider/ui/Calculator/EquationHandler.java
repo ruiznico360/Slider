@@ -9,10 +9,9 @@ import mobile.slider.app.slider.util.Util;
 
 public class EquationHandler {
     public static final int MAX_DIGITS = 10,MAX_LENGTH = 100, BD_SCALE = MAX_DIGITS * 2, SCIENTIFIC_NOT_DIGITS = 4;
-    public static String ansValue = "1";
 
     public static final MathContext MC = MathContext.DECIMAL128;
-    public static final String ERROR = "ERROR",POS_INFINITY = Double.POSITIVE_INFINITY + "", NEG_INFINITY = Double.NEGATIVE_INFINITY + "", NAN = Double.NaN + "";
+    public static final String ERROR = "ERROR",POS_INFINITY = Double.POSITIVE_INFINITY + "", NEG_INFINITY = Double.NEGATIVE_INFINITY + "", NAN = Double.NaN + "", PI = "3.141592653589793", E = "2.7182818284590452354";
 
     public static String getError(String answer) {
         if (answer.length() == 0) return ERROR;
@@ -36,21 +35,19 @@ public class EquationHandler {
         return Double.parseDouble(num);
     }
 
-    public static String answerValue(String calculation, String prevAnsDisplay, String prevAnsValue) {
+    public static String answerValue(String calculation) {
         String answer = calculation;
-//        Util.log("ANS " + prevAnsDisplay + " " + prevAnsValue);
-        if (!prevAnsDisplay.equals("")) {
-            answer = answer.substring(0,answer.indexOf(prevAnsDisplay)) + prevAnsValue + answer.substring(answer.indexOf(prevAnsDisplay) + prevAnsDisplay.length(), answer.length());
-        }
 
         for (int i = 0; i < answer.length(); i++) {
             String sub = answer.substring(i, i + 1);
             if (sub.equals("e")) {
                 answer = answer.substring(0,i) + CalculatorUI.ID.MULT.numValue + "10" + CalculatorUI.ID.POW.numValue + answer.substring((answer.substring(i + 1, i + 2).equals(CalculatorUI.ID.ADD.numValue) ? i + 2 : i + 1), answer.length());
             }else if (sub.equals(CalculatorUI.ID.PI.numValue)) {
-                answer = answer.substring(0,i) + Math.PI + answer.substring(i + 1, answer.length());
+                answer = answer.substring(0,i) + PI + answer.substring(i + 1, answer.length());
             }else if (sub.equals(CalculatorUI.ID.EULER.numValue)) {
-                answer = answer.substring(0,i) + Math.E + answer.substring(i + 1, answer.length());
+                answer = answer.substring(0,i) + E + answer.substring(i + 1, answer.length());
+            }else if (sub.equals(CalculatorUI.ID.ANSWER.numValue)) {
+                answer = answer.substring(0,i) + "(" + CalcHandler.ansValue + ")" + answer.substring(i + 1, answer.length());
             }
         }
 

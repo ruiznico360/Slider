@@ -52,7 +52,7 @@ public class EQMath {
                 if (negTracker.equals("-")) {
                     start = equation.substring(0, leftBLoc - 1) + negTracker + reduce;
                 }else{
-                    if (leftBLoc > 1 && equation.substring(leftBLoc - 2, leftBLoc - 1).matches(CalculatorUI.ID.NUM_VALUES)) {
+                    if (leftBLoc > 1 && equation.substring(leftBLoc - 2, leftBLoc - 1).matches(CalculatorUI.ID.NUM_VALUES) || leftBLoc > 1 && equation.substring(leftBLoc - 2, leftBLoc - 1).equals(")")) {
                         start = equation.substring(0, leftBLoc - 1) + "+" + reduce;
                     }else {
                         start = equation.substring(0, leftBLoc - 1) + negTracker + reduce;
@@ -112,7 +112,6 @@ public class EQMath {
                         }else {
                             s = equation.substring(0, start) + "(" + equation.substring(start,end) + CalculatorUI.ID.DIVIDE.numValue + "100)" + equation.substring(end + 1,equation.length());
                         }
-                        Util.log(operation + " = " + s);
                         return s;
                     }
                     else if (id.equals(CalculatorUI.ID.SQROOT) && equation.contains(id.numValue)) {
@@ -330,7 +329,13 @@ public class EQMath {
             return val;
         }
         public String pow() {
-            String max = max(Math.pow(derationalize(num1).getDoubleNumerator(),(derationalize(num2).getDoubleNumerator())));
+            double maxD = Math.pow(derationalize(num1).getDoubleNumerator(),(derationalize(num2).getDoubleNumerator()));
+
+            if (maxD == 0) {
+                return "0/1";
+            }
+
+            String max = max(maxD);
             if (max != null) {
                 return max;
             }
@@ -417,6 +422,8 @@ public class EQMath {
             }
         }
         public String add() {
+            Util.log("(" + num1.numerator + "/" + num1.denominator + ") + (" + num2.numerator + "/" + num2.denominator + ")");
+
             String max = max(derationalize(num1).getDoubleNumerator() + (derationalize(num2).getDoubleNumerator()));
             if (max != null) {
                 return max;
