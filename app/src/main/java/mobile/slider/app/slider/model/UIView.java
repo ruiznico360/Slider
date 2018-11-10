@@ -35,12 +35,17 @@ public class UIView {
     }
 
     public static class MHScrollView extends HorizontalScrollView {
+        boolean interactable = true;
         public MHScrollView(Context c) {
             super(c);
         }
+        public MHScrollView(Context c, boolean interactable) {
+            super(c);
+            this.interactable = interactable;
+        }
         @Override
         public boolean onTouchEvent(MotionEvent event) {
-            if (UserInterface.shouldMove()) {
+            if (UserInterface.shouldMove() && interactable) {
                 return super.onTouchEvent(event);
             }else{
                 return false;

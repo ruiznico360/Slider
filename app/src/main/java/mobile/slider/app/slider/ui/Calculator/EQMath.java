@@ -331,10 +331,6 @@ public class EQMath {
         public String pow() {
             double maxD = Math.pow(derationalize(num1).getDoubleNumerator(),(derationalize(num2).getDoubleNumerator()));
 
-            if (maxD == 0) {
-                return "0/1";
-            }
-
             String max = max(maxD);
             if (max != null) {
                 return max;
@@ -460,7 +456,7 @@ public class EQMath {
         }
 
         public String max(double d) {
-            if (d == Double.POSITIVE_INFINITY || d == Double.NEGATIVE_INFINITY) return d + "";
+            if (d == Double.POSITIVE_INFINITY || d == Double.NEGATIVE_INFINITY || d == 0) return d + "";
             return null;
         }
 

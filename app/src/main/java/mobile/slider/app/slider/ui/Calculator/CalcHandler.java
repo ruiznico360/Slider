@@ -1,8 +1,12 @@
 package mobile.slider.app.slider.ui.Calculator;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.text.Html;
+import android.util.TypedValue;
+import android.view.View;
 import android.widget.TextView;
 
 import java.text.NumberFormat;
@@ -15,11 +19,12 @@ import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.Util;
 
 public class CalcHandler {
+    public static final String SCROLL_TO_CURRENTNUM = "SCROLL_TO_CURRENTNUM";
     public CalculatorUI calc;
     public Context c;
     public String calculation = "";
     public String currentNum = "";
-    public static String ansValue = "1";
+    public static String ansValue;
     CalculatorUI.ID prevID = CalculatorUI.ID.CLEAR;
 
     public CalcHandler(CalculatorUI calculator) {
@@ -28,8 +33,11 @@ public class CalcHandler {
         this.c = calc.c;
     }
     public void handle(CalculatorUI.ID id) {
-        if (calc.answerLayout.currentAnim != null) return;
+        if (calc.answerText.currentAnim != null) return;
         if (calculation.length() > EquationHandler.MAX_LENGTH && !id.equals(CalculatorUI.ID.EQUAL) && !id.equals(CalculatorUI.ID.DELETE) && !id.equals(CalculatorUI.ID.CLEAR)) return;
+
+        calc.answerLayout.view.setTranslationY(0);
+
         final TextView number = ((TextView)calc.numberText.view);
         final TextView answer = ((TextView)calc.answerText.view);
         boolean showAns = false;
@@ -48,36 +56,16 @@ public class CalcHandler {
                         @Override
                         public void run() {
                             ((UIView.MHScrollView)calc.numberLayout.view).scrollTo(0,0);
-                            ((UIView.MHScrollView)calc.answerLayout.view).scrollTo(0,0);
 
                             final Anim a = UserInterface.uiAnim(c, calc.answerLayout, 150);
-                            float yOffset = (((float)calc.numberText.height()) / calc.answerText.height()) - 1;
-                            float xOffset = (((float)calc.answerText.width()) / calc.answerText.height() * calc.numberText.height()) / calc.answerText.width() - 1;
-
-                            int transX = 0;
-                            int pivot = calc.answerLayout.width();
-
-                            if (((float)calc.answerText.width()) * (1f + xOffset) > calc.numberLayout.width()) {
-                                pivot = 0;
-                                transX = (int)((calc.answerLayout.x() - calc.answerText.x()) * (1f + xOffset));
-                            }
-
-                            a.addScale(1,xOffset,1,yOffset, pivot);
-                            a.addTranslate(transX,(int)(calc.numberText.y() - calc.answerLayout.y()));
+                            a.addTranslate(0, (calc.numberText.y() + (int)(calc.numberText.height() * (1f - calc.TEXT_SIZE))) - calc.answerLayout.y());
 
                             a.setStart(new Runnable() {
                                 @Override
                                 public void run() {
-                                    calc.answerLayout.view.setHorizontalScrollBarEnabled(false);
                                     calc.numberLayout.view.setHorizontalScrollBarEnabled(false);
 
                                     calculation = EquationHandler.simplifyAns(answerValue);
-//                                    if ((calculation.contains("e") || calculation.contains(CalculatorUI.ID.SUB.numValue)) && EquationHandler.getError(calculation) == null) {
-//                                        calculation = "(" + calculation + ")";
-//                                        currentNum = "";
-//                                    }else {
-//                                        currentNum = calculation;
-//                                    }
                                     currentNum = calculation;
 
                                 }
@@ -85,14 +73,12 @@ public class CalcHandler {
                             a.setEnd(new Runnable() {
                                 @Override
                                 public void run() {
+                                    calc.answerLayout.view.setTranslationY(calc.numberText.y() - calc.answerLayout.y());
                                     if (EquationHandler.getError(calculation) != null) {
                                         number.setText(Html.fromHtml(EquationHandler.getError(calculation).equals(EquationHandler.ERROR) ?"<font color=red>" + EquationHandler.ERROR + "</font>" : "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + formatCommas(calculation) + "</font>"), TextView.BufferType.SPANNABLE);
                                         calculation = "";
                                     }else{
-                                        number.setText(Html.fromHtml("<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + formatCommas(calculation) + "</font>"), TextView.BufferType.SPANNABLE);
-
                                         EQMath.Value v = EQMath.Operation.gen(answerValue);
-//                                        Util.log("ANSWER " + v.getNumerator() + " " +  v.getDenominator());
                                         if (v.isRational()) {
                                             ansValue = EQMath.Operation.derationalize(v).getNumerator().toString();
 //                                            Util.log("PREVANSVAL " + prevAnsValue + " " + v.getNumerator());
@@ -101,9 +87,7 @@ public class CalcHandler {
                                         }
                                     }
 
-                                    calc.answerLayout.view.setHorizontalScrollBarEnabled(true);
                                     calc.numberLayout.view.setHorizontalScrollBarEnabled(true);
-                                    answer.setText("");
                                 }
                             });
                             a.start();
@@ -266,10 +250,10 @@ public class CalcHandler {
                             String prev = calculation.substring(loc - 2, loc);
                             if (prev.equals("(" + CalculatorUI.ID.SUB.numValue)) {
                                 calculation = calculation.substring(0, loc - 2) + calculation.substring(loc, calculation.length());
-                                scrollToStart = loc - 2 + "";
+                                scrollToStart = SCROLL_TO_CURRENTNUM;
                             }else if (prev.equals(CalculatorUI.ID.SQROOT.numValue + CalculatorUI.ID.SUB.numValue)) {
                                 calculation = calculation.substring(0, loc - 1) + calculation.substring(loc, calculation.length());
-                                scrollToStart = loc - 1 + "";
+                                scrollToStart = SCROLL_TO_CURRENTNUM;
                             }else{
                                 calculation = calculation.substring(0, loc) + operation + calculation.substring(loc, calculation.length());
                             }
@@ -373,6 +357,8 @@ public class CalcHandler {
         finalNumberText = finalNumberText.replace(CalculatorUI.ID.EULER.numValue, "e").replace(CalculatorUI.ID.ANSWER.numValue, "ANS");
 
         number.setText(Html.fromHtml(finalNumberText), TextView.BufferType.SPANNABLE);
+
+        String prevAnsText = answer.getText().toString();
         if (showAns) {
             String ans = formatCommas(EquationHandler.simplifyAns(EquationHandler.answerValue(calculation)));
 //            ans = ((ans.contains("e") || ans.contains(CalculatorUI.ID.SUB.numValue)) && EquationHandler.getError(ans) == null) ? "(" + ans + ")" : ans;
@@ -382,6 +368,9 @@ public class CalcHandler {
         }
         final String scrollToStartfinal = scrollToStart;
         if (id != CalculatorUI.ID.EQUAL) {
+
+            if (!prevAnsText.equals(answer.getText().toString())) answer.setVisibility(View.INVISIBLE);
+
             calc.answerText.post(new Runnable() {
                 @Override
                 public void run() {
@@ -389,17 +378,50 @@ public class CalcHandler {
                     int scrollTo = calc.numberText.width() - calc.numberLayout.width();
                     if (scrollToStartfinal != null) {
                         String text;
-                        try {
-                            text = calculation.substring(0, Integer.parseInt(scrollToStartfinal));
-                        }catch (NumberFormatException e) {
-                            text = calculation.substring(0, calculation.lastIndexOf(scrollToStartfinal));
+                        String numText = number.getText() + "";
+
+                        if (scrollToStartfinal.equals(SCROLL_TO_CURRENTNUM)) {
+                            int tracker = currentNum.length() - 1;
+                            int index = numText.length() - 1;
+
+                            while (index >= 0) {
+                                if (tracker == -1) break;
+
+                                if (numText.substring(index, index + 1).equals(currentNum.substring(tracker, tracker + 1))) {
+                                    tracker--;
+                                }
+
+                                index--;
+                            }
+
+                            text = numText.substring(0, index);
+                        }else{
+                            text = numText.substring(0, numText.lastIndexOf(scrollToStartfinal));
                         }
+
                         Rect subBounds = new Rect();
                         number.getPaint().getTextBounds(text, 0, text.length(), subBounds);
                         scrollTo = subBounds.width();
                     }
                     ((UIView.MHScrollView)calc.numberLayout.view).smoothScrollTo(scrollTo,0);
-                    ((UIView.MHScrollView)calc.answerLayout.view).smoothScrollTo(0,0);
+
+                    float width = calc.textLayout.width();
+                    float maxHeight = calc.answerText.height();
+                    float scaleX = width / calc.answerText.width();
+                    float scaleY = scaleX;
+
+                    if (scaleY * calc.answerText.height() > maxHeight) {
+                        scaleY = 1;
+                        scaleX = 1;
+                    }
+
+                    answer.setPivotX(calc.answerText.width());
+                    answer.setPivotY(0);
+                    answer.setScaleX(scaleX);
+                    answer.setScaleY(scaleY);
+
+                    ((UIView.MHScrollView)calc.answerLayout.view).scrollTo(calc.answerLayout.width(),0);
+                    answer.setVisibility(View.VISIBLE);
                 }
             });
         }

@@ -33,14 +33,18 @@ public class CalculatorUI extends UIClass {
     public static final int operatorRGB = Color.rgb(66, 134, 244);
     public Context c;
     public int calcHeight;
-    public SView mainLayout, calcLayout,numberText, answerText,answerLayout, numberLayout, operatorsLayout, textLayout;
+    public SView mainLayout, calcLayout,numberText, answerText, answerLayout, numberLayout, operatorsLayout, textLayout;
     public ArrayList<SView> operators;
     public float operatorsTotalHeight, operatorHeight, operatorWidth;
     public CalcHandler calcHandler;
 
     public enum ID {
-        CLEAR(R.drawable.calculator_clear,""),  BRACKET(R.drawable.calculator_bracket,"("), PERCENT(R.drawable.calculator_percent, "%"), ANSWER(R.drawable.calculator_ans, "?"), SQROOT(R.drawable.calculator_sqroot,"√"), POW(R.drawable.calculator_pow,"^"), EULER(R.drawable.calculator_euler, "*"), PI(R.drawable.calculator_pi,"π"), SEVEN(R.drawable.calculator_seven,7), EIGHT(R.drawable.calculator_eight,8), NINE(R.drawable.calculator_nine,9), DIVIDE(R.drawable.calculator_divide,"÷"), FOUR(R.drawable.calculator_four,4), FIVE(R.drawable.calculator_five,5), SIX(R.drawable.calculator_six,6), MULT(R.drawable.calculator_mult,"x"), ONE(R.drawable.calculator_one,1), TWO(R.drawable.calculator_two,2), THREE(R.drawable.calculator_three,3), SUB(R.drawable.calculator_sub,"-")
-        , NEGATE(R.drawable.calculator_negate,""), ZERO(R.drawable.calculator_zero,0), DEC(R.drawable.calculator_dec,"."), ADD(R.drawable.calculator_add,"+"), EQUAL(R.drawable.calculator_equal,""), DELETE(R.drawable.calculator_delete,"");
+//        CLEAR(R.drawable.calculator_clear,""),  BRACKET(R.drawable.calculator_bracket,"("), PERCENT(R.drawable.calculator_percent, "%"), ANSWER(R.drawable.calculator_ans, "?"), SQROOT(R.drawable.calculator_sqroot,"√"), POW(R.drawable.calculator_pow,"^"), EULER(R.drawable.calculator_euler, "*"), PI(R.drawable.calculator_pi,"π"), SEVEN(R.drawable.calculator_seven,7), EIGHT(R.drawable.calculator_eight,8), NINE(R.drawable.calculator_nine,9), DIVIDE(R.drawable.calculator_divide,"÷"), FOUR(R.drawable.calculator_four,4), FIVE(R.drawable.calculator_five,5), SIX(R.drawable.calculator_six,6), MULT(R.drawable.calculator_mult,"x"), ONE(R.drawable.calculator_one,1), TWO(R.drawable.calculator_two,2), THREE(R.drawable.calculator_three,3), SUB(R.drawable.calculator_sub,"-")
+//        , NEGATE(R.drawable.calculator_negate,""), ZERO(R.drawable.calculator_zero,0), DEC(R.drawable.calculator_dec,"."), ADD(R.drawable.calculator_add,"+"), EQUAL(R.drawable.calculator_equal,""), DELETE(R.drawable.calculator_delete,"");
+
+        CLEAR(R.drawable.calculator_clear,""),  BRACKET(R.drawable.calculator_bracket,"("), ANSWER(R.drawable.calculator_ans, "?"), DELETE(R.drawable.calculator_delete,""), SQROOT(R.drawable.calculator_sqroot,"√"), POW(R.drawable.calculator_pow,"^"), PERCENT(R.drawable.calculator_percent, "%"), PI(R.drawable.calculator_pi,"π"), SEVEN(R.drawable.calculator_seven,7), EIGHT(R.drawable.calculator_eight,8), NINE(R.drawable.calculator_nine,9), DIVIDE(R.drawable.calculator_divide,"÷"), FOUR(R.drawable.calculator_four,4), FIVE(R.drawable.calculator_five,5), SIX(R.drawable.calculator_six,6), MULT(R.drawable.calculator_mult,"x"), ONE(R.drawable.calculator_one,1), TWO(R.drawable.calculator_two,2), THREE(R.drawable.calculator_three,3), SUB(R.drawable.calculator_sub,"-")
+        , NEGATE(R.drawable.calculator_negate,""), ZERO(R.drawable.calculator_zero,0), DEC(R.drawable.calculator_dec,"."), ADD(R.drawable.calculator_add,"+"), EQUAL(R.drawable.calculator_equal,""), EULER(R.drawable.calculator_euler, "*");
+
 
         public int drawableRes;
         public String numValue;
@@ -136,7 +140,7 @@ public class CalculatorUI extends UIClass {
                     final ID id = ids.next();
 
                     SView operator = new SView(new ImageView(c), operatorsLayout.view);
-                    ((ImageView)operator.view).setImageBitmap(calcOperatorBG(id));
+                    ((ImageView)operator.view).setImageBitmap(calcOperatorBG(id, id.equals(ID.DELETE) ? 0.75f : 0.5f));
                     operator.plot();
                     operator.openRLayout()
                             .setWidth(operatorWidth)
@@ -167,25 +171,25 @@ public class CalculatorUI extends UIClass {
                     .addRule(RelativeLayout.CENTER_HORIZONTAL)
                     .save();
 
-            SView deleteButton = new SView(new ImageView(c), textLayout.view);
-            ImageUtil.setImageDrawable(deleteButton.view, ID.DELETE.drawableRes);
-            operators.add(deleteButton);
-            deleteButton.plot();
-            deleteButton.openRLayout()
-                    .setHeight(totalHeight / 4)
-                    .setWidth(totalWidth / 4)
-                    .addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
-                    .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-                    .save();
-            deleteButton.view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    calcHandler.handle(ID.DELETE);
-                }
-            });
+//            SView deleteButton = new SView(new ImageView(c), textLayout.view);
+//            ImageUtil.setImageDrawable(deleteButton.view, ID.DELETE.drawableRes);
+//            operators.add(deleteButton);
+//            deleteButton.plot();
+//            deleteButton.openRLayout()
+//                    .setHeight(totalHeight / 4)
+//                    .setWidth(totalWidth / 4)
+//                    .addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+//                    .addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+//                    .save();
+//            deleteButton.view.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    calcHandler.handle(ID.DELETE);
+//                }
+//            });
 
-            answerLayout = new SView(new UIView.MHScrollView(c), textLayout.view);
-//            ((UIView.MHScrollView) answerLayout.view).setHorizontalScrollBarEnabled(false);
+            answerLayout = new SView(new UIView.MHScrollView(c,false), textLayout.view);
+            ((UIView.MHScrollView) answerLayout.view).setHorizontalScrollBarEnabled(false);
             answerLayout.plot();
             answerLayout.openRLayout()
                     .setHeight(totalHeight / 4)
@@ -200,6 +204,8 @@ public class CalculatorUI extends UIClass {
             answerText.openLayout().save();
             ((TextView) answerText.view).setMaxLines(1);
             ((TextView) answerText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(answerText.height() * TEXT_SIZE));
+
+
 
             numberLayout = new SView(new UIView.MHScrollView(c), textLayout.view);
 //            ((UIView.MHScrollView) numberLayout.view).setHorizontalScrollBarEnabled(false);
@@ -220,8 +226,7 @@ public class CalculatorUI extends UIClass {
             return (int) ((perc / 100f) * calcHeight);
         }
 
-        public Bitmap calcOperatorBG(ID id) {
-            int destSize = (int)operatorWidth / 2;
+        public Bitmap calcOperatorBG(ID id, float scale) {
             Bitmap calc = BitmapFactory.decodeResource(c.getResources(), id.drawableRes);
             Bitmap b = Bitmap.createBitmap((int)operatorWidth, (int)operatorHeight, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(b);
@@ -231,8 +236,11 @@ public class CalculatorUI extends UIClass {
             p.setColor(Color.WHITE);
             canvas.drawRect(2,2,operatorWidth - 1,operatorHeight - 1,p);
 
-            Rect dest = new Rect((int)operatorWidth / 2 - destSize / 2,(int)operatorHeight / 2 - destSize / 2,(int)operatorWidth / 2 + destSize / 2,(int)operatorHeight / 2 + destSize / 2);
-            canvas.drawBitmap(calc, new Rect(0,0,calc.getWidth(),calc.getHeight()), dest, p);
+
+            int destSize = (int) (operatorWidth * scale);
+            Rect dest = new Rect((int) operatorWidth / 2 - destSize / 2, (int) operatorHeight / 2 - destSize / 2, (int) operatorWidth / 2 + destSize / 2, (int) operatorHeight / 2 + destSize / 2);
+            canvas.drawBitmap(calc, new Rect(0, 0, calc.getWidth(), calc.getHeight()), dest, p);
+
             return b;
         }
     }
