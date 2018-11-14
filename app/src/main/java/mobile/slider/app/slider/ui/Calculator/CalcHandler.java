@@ -35,11 +35,9 @@ public class CalcHandler {
     public void handle(CalculatorUI.ID id) {
         if (calc.answerText.currentAnim != null) return;
         if (calculation.length() > EquationHandler.MAX_LENGTH && !id.equals(CalculatorUI.ID.EQUAL) && !id.equals(CalculatorUI.ID.DELETE) && !id.equals(CalculatorUI.ID.CLEAR)) return;
-
-        calc.answerLayout.view.setTranslationY(0);
-
         final TextView number = ((TextView)calc.numberText.view);
         final TextView answer = ((TextView)calc.answerText.view);
+        final TextView dummyAnswer = ((TextView)calc.dummyAnswerText.view);
         boolean showAns = false;
         String scrollToStart = null;
 
@@ -47,6 +45,7 @@ public class CalcHandler {
 
         if (!id.isNumber()) {
             if (id == CalculatorUI.ID.EQUAL) {
+                if (prevID.equals(CalculatorUI.ID.EQUAL)) return;
                 if (!EquationHandler.isNum(calculation)) {
                     final String answerValue = EquationHandler.answerValue(calculation);
                     numberValue = "";
@@ -359,18 +358,25 @@ public class CalcHandler {
         number.setText(Html.fromHtml(finalNumberText), TextView.BufferType.SPANNABLE);
 
         String prevAnsText = answer.getText().toString();
+        final String ansText;
         if (showAns) {
             String ans = formatCommas(EquationHandler.simplifyAns(EquationHandler.answerValue(calculation)));
 //            ans = ((ans.contains("e") || ans.contains(CalculatorUI.ID.SUB.numValue)) && EquationHandler.getError(ans) == null) ? "(" + ans + ")" : ans;
-            answer.setText(EquationHandler.getError(ans) != null && EquationHandler.getError(ans).equals(EquationHandler.ERROR) ? "" : ans);
+            ansText = EquationHandler.getError(ans) != null && EquationHandler.getError(ans).equals(EquationHandler.ERROR) ? "" : ans;
         }else{
-            answer.setText("");
+            ansText = "";
         }
-        final String scrollToStartfinal = scrollToStart;
-        if (id != CalculatorUI.ID.EQUAL) {
+        answer.setText(ansText);
 
-            if (!prevAnsText.equals(answer.getText().toString())) answer.setVisibility(View.INVISIBLE);
-
+        if (id.equals(CalculatorUI.ID.EQUAL)) {
+            dummyAnswer.setText(ansText);
+        }else {
+            calc.answerLayout.view.setTranslationY(0);
+            if (!ansText.equals("") && !prevAnsText.equals(ansText)) {
+                dummyAnswer.setVisibility(View.VISIBLE);
+                answer.setVisibility(View.INVISIBLE);
+            }
+            final String scrollToStartfinal = scrollToStart;
             calc.answerText.post(new Runnable() {
                 @Override
                 public void run() {
@@ -384,7 +390,7 @@ public class CalcHandler {
                             int tracker = currentNum.length() - 1;
                             int index = numText.length() - 1;
 
-                            while (index >= 0) {
+                            while (index > 0) {
                                 if (tracker == -1) break;
 
                                 if (numText.substring(index, index + 1).equals(currentNum.substring(tracker, tracker + 1))) {
@@ -395,7 +401,7 @@ public class CalcHandler {
                             }
 
                             text = numText.substring(0, index);
-                        }else{
+                        } else {
                             text = numText.substring(0, numText.lastIndexOf(scrollToStartfinal));
                         }
 
@@ -403,7 +409,7 @@ public class CalcHandler {
                         number.getPaint().getTextBounds(text, 0, text.length(), subBounds);
                         scrollTo = subBounds.width();
                     }
-                    ((UIView.MHScrollView)calc.numberLayout.view).smoothScrollTo(scrollTo,0);
+                    ((UIView.MHScrollView) calc.numberLayout.view).smoothScrollTo(scrollTo, 0);
 
                     float width = calc.textLayout.width();
                     float maxHeight = calc.answerText.height();
@@ -420,8 +426,19 @@ public class CalcHandler {
                     answer.setScaleX(scaleX);
                     answer.setScaleY(scaleY);
 
-                    ((UIView.MHScrollView)calc.answerLayout.view).scrollTo(calc.answerLayout.width(),0);
+
+
+                    ((UIView.MHScrollView) calc.answerLayout.view).scrollTo(calc.answerLayout.width(), 0);
                     answer.setVisibility(View.VISIBLE);
+                    dummyAnswer.setVisibility(View.INVISIBLE);
+
+                    dummyAnswer.setPivotX(calc.answerText.width());
+                    dummyAnswer.setPivotY(0);
+                    dummyAnswer.setScaleX(scaleX);
+                    dummyAnswer.setScaleY(scaleY);
+
+
+                    dummyAnswer.setText(ansText);
                 }
             });
         }

@@ -7,10 +7,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Handler;
+import android.support.v7.widget.AppCompatCheckedTextView;
+import android.support.v7.widget.AppCompatTextView;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -33,7 +37,7 @@ public class CalculatorUI extends UIClass {
     public static final int operatorRGB = Color.rgb(66, 134, 244);
     public Context c;
     public int calcHeight;
-    public SView mainLayout, calcLayout,numberText, answerText, answerLayout, numberLayout, operatorsLayout, textLayout;
+    public SView mainLayout, calcLayout,numberText, answerText, dummyAnswerText, answerLayout, numberLayout, operatorsLayout, textLayout;
     public ArrayList<SView> operators;
     public float operatorsTotalHeight, operatorHeight, operatorWidth;
     public CalcHandler calcHandler;
@@ -193,17 +197,39 @@ public class CalculatorUI extends UIClass {
             answerLayout.plot();
             answerLayout.openRLayout()
                     .setHeight(totalHeight / 4)
-                    .setWidth(RelativeLayout.LayoutParams.MATCH_PARENT)
+                    .setWidth(textLayout.width() * 2)
                     .setTopM(totalHeight / 2)
                     .save();
 
-            answerText = new SView(new TextView(c), answerLayout.view);
+            SView answerLayoutContainer = new SView(new RelativeLayout(c), answerLayout.view);
+            answerLayoutContainer.plot();
+            ((UIView.MHScrollView.LayoutParams) answerLayoutContainer.params).gravity = Gravity.RIGHT;
+            answerLayoutContainer.openLayout()
+                    .setHeight(RelativeLayout.LayoutParams.MATCH_PARENT)
+                    .setWidth(answerLayout.width())
+                    .save();
+
+            SView innerContainer = new SView(new RelativeLayout(c), answerLayoutContainer.view);
+            innerContainer.plot(answerLayoutContainer.width(), RelativeLayout.LayoutParams.MATCH_PARENT);
+
+            answerText = new SView(new TextView(c), innerContainer.view);
             ((TextView)answerText.view).setTextColor(operatorRGB);
-            answerText.plot(ScrollView.LayoutParams.WRAP_CONTENT, answerLayout.height());
-            ((UIView.MHScrollView.LayoutParams)answerText.params).gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
-            answerText.openLayout().save();
+            answerText.plot(RelativeLayout.LayoutParams.WRAP_CONTENT, answerLayout.height());
+            answerText.openRLayout()
+                    .addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+                    .save();
             ((TextView) answerText.view).setMaxLines(1);
             ((TextView) answerText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(answerText.height() * TEXT_SIZE));
+
+
+            dummyAnswerText = new SView(new TextView(c), innerContainer.view);
+            ((TextView)dummyAnswerText.view).setTextColor(operatorRGB);
+            dummyAnswerText.plot(RelativeLayout.LayoutParams.WRAP_CONTENT, answerLayout.height());
+            dummyAnswerText.openRLayout()
+                    .addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+                    .save();
+            ((TextView) dummyAnswerText.view).setMaxLines(1);
+            ((TextView) dummyAnswerText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(dummyAnswerText.height() * TEXT_SIZE));
 
 
 
@@ -222,6 +248,8 @@ public class CalculatorUI extends UIClass {
             ((TextView) numberText.view).setMaxLines(1);
             ((TextView) numberText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(numberText.height() * TEXT_SIZE));
         }
+
+
         public int hUnit(float perc) {
             return (int) ((perc / 100f) * calcHeight);
         }

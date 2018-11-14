@@ -329,23 +329,20 @@ public class EQMath {
             return val;
         }
         public String pow() {
-            double maxD = Math.pow(derationalize(num1).getDoubleNumerator(),(derationalize(num2).getDoubleNumerator()));
+            String arg = derationalize(num2).numerator;
+            double maxD = Math.pow(derationalize(num1).getDoubleNumerator(), Double.parseDouble(arg.substring((arg.charAt(0) == CalculatorUI.ID.SUB.numValue.charAt(0) ? 1 : 0),arg.length())));
 
             String max = max(maxD);
             if (max != null) {
-                return max;
+                return arg.charAt(0) == CalculatorUI.ID.SUB.numValue.charAt(0) ? "0" : max;
             }
 
             boolean num2Neg = false;
-            boolean maxNegative = false;
             String num1Neg = "";
             String numerDisplay;
             String denomDisplay = 1 + "";
 
             if (num2.getDoubleNumerator() < 0) {
-                if (derationalize(num2).getDoubleNumerator() < -100) {
-                    maxNegative = true;
-                }
                 num2Neg = true;
                 num2.setNumerator(num2.getNumerator().multiply(getVal(-1)));
             }
@@ -358,8 +355,6 @@ public class EQMath {
                 num1Neg = (hasDecimalValue(derationalize(num2).getNumerator().divide(new Apfloat(2, PRECISION)).toString(true)) ? "-" : "");
                 num1.setNumerator(num1.getNumerator().multiply(getVal(-1)));
             }else if (num1.getDoubleNumerator() == 0) return "1/1";
-
-            if (maxNegative) return "0/1";
 
             String numerV = ApfloatMath.pow(num1.getNumerator(), num2.getNumerator().divide(num2.getDenominator())).toString(true);
 
@@ -418,8 +413,6 @@ public class EQMath {
             }
         }
         public String add() {
-            Util.log("(" + num1.numerator + "/" + num1.denominator + ") + (" + num2.numerator + "/" + num2.denominator + ")");
-
             String max = max(derationalize(num1).getDoubleNumerator() + (derationalize(num2).getDoubleNumerator()));
             if (max != null) {
                 return max;
