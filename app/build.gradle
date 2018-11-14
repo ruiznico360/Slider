@@ -10,22 +10,24 @@ android {
         versionName "1.0"
     }
     signingConfigs {
-        key {
-            keyAlias 'slideitkeystore'
+        SliderKey {
+            keyAlias 'SliderKey'
             keyPassword 'password'
-            storeFile file('C:\\Users\\Nicolas\\Documents\\Android\\Slider\\keystoretest.jks')
             storePassword 'password'
+            storeFile file('C:/Users/Nicolas/Documents/Android Studio/Slider/sliderkey.jks ')
         }
     }
     buildTypes {
-        debug {
-            signingConfig signingConfigs.key
+        release {
+            signingConfig signingConfigs.SliderKey
         }
     }
     buildToolsVersion '28.0.3'
+    productFlavors {
+    }
 }
 dependencies {
-    implementation fileTree(dir: 'libs', include: '*')
+    implementation fileTree(include: '*', dir: 'libs')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     testImplementation 'junit:junit:4.12'

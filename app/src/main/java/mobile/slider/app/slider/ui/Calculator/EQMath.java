@@ -157,19 +157,6 @@ public class EQMath {
                                 return ERROR;
                             }
                             value = op.pow();
-//                            Double num;
-
-//                            try {
-//                                num = parse(sq) * negTracker;
-//                            } catch (Exception e) {
-//                                return ERROR;
-//                            }
-//                            double d = Math.pow(num, 0.5);
-//                            if (getError(d + "") != null) {
-//                                value = getError(d + "");
-//                            } else {
-//                                value = BigDecimal.valueOf(d).toPlainString();
-//                            }
 
                             equation = equation.substring(0, i) + value + equation.substring(end, equation.length());
                             contLoop = true;
