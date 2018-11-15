@@ -317,11 +317,11 @@ public class EQMath {
         }
         public String pow() {
             String arg = derationalize(num2).numerator;
-            double maxD = Math.pow(derationalize(num1).getDoubleNumerator(), Double.parseDouble(arg.substring((arg.charAt(0) == CalculatorUI.ID.SUB.numValue.charAt(0) ? 1 : 0),arg.length())));
+            double maxD = Math.pow(derationalize(num1).getDoubleNumerator(), Double.parseDouble(arg));
 
             String max = max(maxD);
             if (max != null) {
-                return arg.charAt(0) == CalculatorUI.ID.SUB.numValue.charAt(0) ? "0" : max;
+                return max;
             }
 
             boolean num2Neg = false;
@@ -364,6 +364,7 @@ public class EQMath {
             return s;
         }
         public String mult() {
+            Util.log(derationalize(num1).getDoubleNumerator() + " " + (derationalize(num2).getDoubleNumerator()) + " " + (derationalize(num1).getDoubleNumerator() * (derationalize(num2).getDoubleNumerator())));
             String max = max(derationalize(num1).getDoubleNumerator() * (derationalize(num2).getDoubleNumerator()));
             if (max != null) {
                 return max;
@@ -385,19 +386,23 @@ public class EQMath {
                 double val = (derationalize(num1).getDoubleNumerator() / derationalize(num2).getDoubleNumerator());
                 return EquationHandler.getError( val + "");
             }
-            String max = max(derationalize(num1).getDoubleNumerator() / derationalize(num2).getDoubleNumerator());
-            if (max != null) {
-                return max;
-            }
-            Value newVal = new Value();
-            newVal.setNumerator(num1.getNumerator().multiply(num2.getDenominator()));
-            newVal.setDenominator(num1.getDenominator().multiply(num2.getNumerator()));
-
-            if (newVal.isRational()) {
-                return derationalize(newVal).getNumerator().toString(true);
-            }else{
-                return newVal.getNumerator() + "/" + newVal.getDenominator();
-            }
+//            String max = max(derationalize(num1).getDoubleNumerator() / derationalize(num2).getDoubleNumerator());
+//            if (max != null) {
+//                return max;
+//            }
+//            Value newVal = new Value();
+//            newVal.setNumerator(num1.getNumerator().multiply(num2.getDenominator()));
+//            newVal.setDenominator(num1.getDenominator().multiply(num2.getNumerator()));
+//
+//            if (newVal.isRational()) {
+//                return derationalize(newVal).getNumerator().toString(true);
+//            }else{
+//                return newVal.getNumerator() + "/" + newVal.getDenominator();
+//            }
+            String temp = num2.numerator;
+            num2.setNumerator(num2.denominator);
+            num2.setDenominator(temp);
+            return mult();
         }
         public String add() {
             String max = max(derationalize(num1).getDoubleNumerator() + (derationalize(num2).getDoubleNumerator()));
@@ -485,7 +490,19 @@ public class EQMath {
         }
 
         public void setNumerator(Apfloat numerator) {
-            this.numerator = numerator.toString(true);
+            setNumerator(numerator.toString(true));
+
+        }
+        public void setDenominator(Apfloat denominator) {
+            setDenominator(denominator.toString(true));
+        }
+
+        public void setNumerator(String numerator) {
+            this.numerator = numerator;
+            vaildateNegatives();
+        }
+        public void setDenominator(String denominator) {
+            this.denominator = denominator;
             vaildateNegatives();
         }
 
@@ -498,10 +515,6 @@ public class EQMath {
                 numerator = (getNumerator().multiply(getVal(-1))).toString(true);
                 denominator = (getDenominator().multiply(getVal(-1))).toString(true);
             }
-        }
-        public void setDenominator(Apfloat denominator) {
-            this.denominator = denominator.toString(true);
-            vaildateNegatives();
         }
 
         public boolean isRational() {

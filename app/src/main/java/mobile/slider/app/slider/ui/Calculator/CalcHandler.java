@@ -236,20 +236,33 @@ public class CalcHandler {
                         handleDelete();
                     } else if (id.equals(CalculatorUI.ID.CLEAR)) {
                         handleClear();
-                    } else if (id.equals(CalculatorUI.ID.DEC)) {
+                    }else if (id.equals(CalculatorUI.ID.DEC)) {
                         if (handleDec()) return true;
-                    } else if (id.isBasicOperator()) {
-                        handleBasicOperator();
-                    } else if (id.equals(CalculatorUI.ID.BRACKET)) {
-                        handleBracket();
-                    } else if (id.equals(CalculatorUI.ID.SQROOT) || id.equals(CalculatorUI.ID.NEGATE)) {
-                        handleSQNegate();
-                    } else if (id.isVariable()) {
-                        handleVariable();
-                    } else if (id.equals(CalculatorUI.ID.PERCENT)) {
-                        handlePercent();
-                    } else if (id.equals(CalculatorUI.ID.ANSWER)) {
-                        handleAnswer();
+                    }else{
+                        int operatorCounter = 0;
+                        for (int i = 0; i < calculation.length(); i++) {
+                            String s = calculation.substring(i, i + 1);
+
+                            if (s.matches(CalculatorUI.ID.OPERATOR_VALUES) || s.equals(CalculatorUI.ID.PERCENT.numValue) || s.equals(CalculatorUI.ID.SQROOT.numValue)) {
+                                operatorCounter++;
+                            }
+                        }
+
+                        if (operatorCounter >= EquationHandler.MAX_OPERATORS) return true;
+
+                        if (id.isBasicOperator()) {
+                            handleBasicOperator();
+                        } else if (id.equals(CalculatorUI.ID.BRACKET)) {
+                            handleBracket();
+                        } else if (id.equals(CalculatorUI.ID.SQROOT) || id.equals(CalculatorUI.ID.NEGATE)) {
+                            handleSQNegate();
+                        } else if (id.isVariable()) {
+                            handleVariable();
+                        } else if (id.equals(CalculatorUI.ID.PERCENT)) {
+                            handlePercent();
+                        } else if (id.equals(CalculatorUI.ID.ANSWER)) {
+                            handleAnswer();
+                        }
                     }
 
                     numberValue = calculation;
