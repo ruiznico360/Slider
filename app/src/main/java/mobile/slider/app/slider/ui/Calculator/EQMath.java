@@ -80,7 +80,6 @@ public class EQMath {
                         boolean finishedReading = false;
                         String operation = NULL;
 
-
                         for (int n = i - 1; n >= 0; n--) {
                             String prev = equation.substring(n, n + 1);
 

@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
+import java.util.Random;
+
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.SView.SView;
 import mobile.slider.app.slider.model.RoundedImageView;
@@ -279,14 +281,7 @@ public class MainUI extends UIClass{
             item.appIcon.view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ((InputMethodManager) c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(0,1);
-                }
-            });
-            item.appIcon.view.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    ((InputMethodManager) c.getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(1,0);
-                    return false;
+                    SettingsUtil.setBackgroundColor(Color.rgb(new Random().nextInt(255),new Random().nextInt(255),new Random().nextInt(255)));
                 }
             });
         }

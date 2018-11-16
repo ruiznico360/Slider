@@ -14,7 +14,7 @@ android {
             keyAlias 'SliderKey'
             keyPassword 'password'
             storePassword 'password'
-            storeFile file('C:/Users/Nicolas/Documents/Android Studio/Slider/sliderkey.jks ')
+            storeFile file('C:/Users/Nicolas/Documents/Android Studio/Slider/sliderkeystore.jks ')
         }
     }
     buildTypes {
