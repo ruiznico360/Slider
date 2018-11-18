@@ -10,16 +10,19 @@ android {
         versionName "1.0"
     }
     signingConfigs {
-        SliderKey {
-            keyAlias 'SliderKey'
+        MainKey {
+            keyAlias 'MainKey'
             keyPassword 'password'
+            storeFile file('C:/Android/Slider/keys.jks')
             storePassword 'password'
-            storeFile file('C:/Android/Slider/sliderkeystore.jks ')
         }
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.SliderKey
+            signingConfig signingConfigs.MainKey
+        }
+        debug {
+            signingConfig signingConfigs.MainKey
         }
     }
     buildToolsVersion '28.0.3'
