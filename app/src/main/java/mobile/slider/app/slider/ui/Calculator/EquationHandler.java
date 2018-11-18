@@ -11,7 +11,7 @@ import java.math.MathContext;
 import mobile.slider.app.slider.util.Util;
 
 public class EquationHandler {
-    public static final int MAX_DIGITS = 10,MAX_LENGTH = 100, MAX_OPERATORS = 10, BD_SCALE = MAX_DIGITS, SCIENTIFIC_NOT_DIGITS = 4;
+    public static final int MAX_DIGITS = 10,MAX_LENGTH = 100, MAX_OPERATORS = 10, BD_SCALE = MAX_DIGITS + 1, SCIENTIFIC_NOT_DIGITS = 4;
     public static final String ERROR = "ERROR",POS_INFINITY = Double.POSITIVE_INFINITY + "", NEG_INFINITY = Double.NEGATIVE_INFINITY + "", NAN = Double.NaN + "", PI = "3.141592653589793", E = "2.7182818284590452354";
 
     public static String getError(String answer) {

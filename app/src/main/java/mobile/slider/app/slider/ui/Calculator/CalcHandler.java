@@ -20,11 +20,13 @@ import mobile.slider.app.slider.util.Util;
 
 public class CalcHandler {
     public static final String SCROLL_TO_CURRENTNUM = "SCROLL_TO_CURRENTNUM";
+    public final Handler handler = new Handler();
+    public static String ansValue;
+    public TextView number, answer, dummyAnswer;
     public CalculatorUI calc;
     public Context c;
-    public String calculation = "";
-    public String currentNum = "";
-    public static String ansValue;
+    public String calculation = "", prevAnsText = "", currentNum = "";
+    public int currentCalculation = 0;
     CalculatorUI.ID prevID = CalculatorUI.ID.CLEAR;
 
     public CalcHandler(CalculatorUI calculator) {
@@ -93,22 +95,22 @@ public class CalcHandler {
         return calculation;
     }
 
-    public void handle(CalculatorUI.ID id) {
+    public void handle(final CalculatorUI.ID id) {
+        number = ((TextView)calc.numberText.view);
+        answer = ((TextView)calc.answerText.view);
+        dummyAnswer = ((TextView)calc.dummyAnswerText.view);
+
         if (calc.answerText.currentAnim != null) return;
         if (calculation.length() > EquationHandler.MAX_LENGTH && !id.equals(CalculatorUI.ID.EQUAL) && !id.equals(CalculatorUI.ID.DELETE) && !id.equals(CalculatorUI.ID.CLEAR)) return;
 
-        final TextView number = ((TextView)calc.numberText.view);
-        final TextView answer = ((TextView)calc.answerText.view);
-        final TextView dummyAnswer = ((TextView)calc.dummyAnswerText.view);
 
-        boolean showAns;
+
         String scrollToStart;
         String numberValue;
-        String prevAnsText = answer.getText().toString();
+        answer.getText().toString();
 
         Processor p = new Processor(id);
         if (p.exec()) return;
-        showAns = p.showAns;
         scrollToStart = p.scrollToStart;
         numberValue = p.numberValue;
 
@@ -124,16 +126,65 @@ public class CalcHandler {
         }
         finalNumberText = finalNumberText.replace(CalculatorUI.ID.EULER.numValue, "e").replace(CalculatorUI.ID.ANSWER.numValue, "ANS");
 
+        number.setText(Html.fromHtml(finalNumberText), TextView.BufferType.SPANNABLE);
 
+        final String scrollToStartfinal = scrollToStart;
+        calc.numberText.post(new Runnable() {
+            @Override
+            public void run() {
+                int scrollTo = calc.numberText.width() - calc.numberLayout.width();
+                if (scrollToStartfinal != null) {
+                    String text;
+                    String numText = number.getText() + "";
+
+                    if (scrollToStartfinal.equals(SCROLL_TO_CURRENTNUM)) {
+                        int tracker = currentNum.length() - 1;
+                        int index = numText.length() - 1;
+
+                        while (index > 0) {
+                            if (tracker == -1) break;
+
+                            if (numText.substring(index, index + 1).equals(currentNum.substring(tracker, tracker + 1))) {
+                                tracker--;
+                            }
+
+                            index--;
+                        }
+
+                        text = numText.substring(0, index);
+                    } else {
+                        text = numText.substring(0, numText.lastIndexOf(scrollToStartfinal));
+                    }
+
+                    Rect subBounds = new Rect();
+                    number.getPaint().getTextBounds(text, 0, text.length(), subBounds);
+                    scrollTo = subBounds.width();
+                }
+                ((UIView.MHScrollView) calc.numberLayout.view).smoothScrollTo(scrollTo, 0);
+            }
+        });
+
+        prevID = id;
+    }
+
+    public void findAnsValue(boolean ansVisible, final CalculatorUI.ID id) {
         final String ansText;
-        if (showAns) {
-            String ans = formatCommas(EquationHandler.simplifyAns(EquationHandler.answerValue(calculation)));
-            ansText = EquationHandler.getError(ans) != null && EquationHandler.getError(ans).equals(EquationHandler.ERROR) ? "" : ans;
+        if (ansVisible) {
+            final ComputerThread ct = new ComputerThread();
+            ct.setFinisher(new Runnable() {
+                @Override
+                public void run() {
+                    String ans = formatCommas(EquationHandler.simplifyAns(ct.answer));
+                    updateAnswerText(EquationHandler.getError(ans) != null && EquationHandler.getError(ans).equals(EquationHandler.ERROR) ? "" : ans, id);
+                }
+            });
+            ct.start();
         }else{
             ansText = "";
+            updateAnswerText(ansText, id);
         }
-
-        number.setText(Html.fromHtml(finalNumberText), TextView.BufferType.SPANNABLE);
+    }
+    public void updateAnswerText(final String ansText, CalculatorUI.ID id) {
         answer.setText(ansText);
 
         if (id.equals(CalculatorUI.ID.EQUAL)) {
@@ -144,41 +195,9 @@ public class CalcHandler {
                 dummyAnswer.setVisibility(View.VISIBLE);
                 answer.setVisibility(View.INVISIBLE);
             }
-            final String scrollToStartfinal = scrollToStart;
             calc.answerText.post(new Runnable() {
                 @Override
                 public void run() {
-
-                    int scrollTo = calc.numberText.width() - calc.numberLayout.width();
-                    if (scrollToStartfinal != null) {
-                        String text;
-                        String numText = number.getText() + "";
-
-                        if (scrollToStartfinal.equals(SCROLL_TO_CURRENTNUM)) {
-                            int tracker = currentNum.length() - 1;
-                            int index = numText.length() - 1;
-
-                            while (index > 0) {
-                                if (tracker == -1) break;
-
-                                if (numText.substring(index, index + 1).equals(currentNum.substring(tracker, tracker + 1))) {
-                                    tracker--;
-                                }
-
-                                index--;
-                            }
-
-                            text = numText.substring(0, index);
-                        } else {
-                            text = numText.substring(0, numText.lastIndexOf(scrollToStartfinal));
-                        }
-
-                        Rect subBounds = new Rect();
-                        number.getPaint().getTextBounds(text, 0, text.length(), subBounds);
-                        scrollTo = subBounds.width();
-                    }
-                    ((UIView.MHScrollView) calc.numberLayout.view).smoothScrollTo(scrollTo, 0);
-
                     float width = calc.textLayout.width();
                     float maxHeight = calc.answerText.height();
                     float scaleX = width / calc.answerText.width();
@@ -206,12 +225,54 @@ public class CalcHandler {
                 }
             });
         }
-        prevID = id;
     }
 
+    public void equalUpdater(final String answerValue) {
+        calc.answerText.post(new Runnable() {
+            @Override
+            public void run() {
+                ((UIView.MHScrollView)calc.numberLayout.view).scrollTo(0,0);
+
+                final Anim a = UserInterface.uiAnim(c, calc.answerLayout, 100);
+                a.addTranslate(0, (calc.numberText.y() + (int)(calc.numberText.height() * (1f - calc.TEXT_SIZE))) - calc.answerLayout.y());
+
+                a.setStart(new Runnable() {
+                    @Override
+                    public void run() {
+                        calc.numberLayout.view.setHorizontalScrollBarEnabled(false);
+
+                        calculation = EquationHandler.simplifyAns(answerValue);
+                        currentNum = calculation;
+
+                    }
+                });
+                a.setEnd(new Runnable() {
+                    @Override
+                    public void run() {
+                        calc.answerLayout.view.setTranslationY(calc.numberText.y() - calc.answerLayout.y());
+                        if (EquationHandler.getError(calculation) != null) {
+                            ((TextView) calc.numberText.view).setText(Html.fromHtml(EquationHandler.getError(calculation).equals(EquationHandler.ERROR) ?"<font color=red>" + EquationHandler.ERROR + "</font>" : "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + formatCommas(calculation) + "</font>"), TextView.BufferType.SPANNABLE);
+                            calculation = "";
+                        }else{
+                            EQMath.Value v = EQMath.Operation.gen(answerValue);
+                            if (v.isRational()) {
+                                ansValue = EQMath.Operation.derationalize(v).getNumerator().toString();
+//                                            Util.log("PREVANSVAL " + prevAnsValue + " " + v.getNumerator());
+                            }else{
+                                ansValue = answerValue;
+                            }
+                        }
+
+                        ((TextView) calc.dummyAnswerText.view).setText("");
+                        calc.numberLayout.view.setHorizontalScrollBarEnabled(true);
+                    }
+                });
+                a.start();
+            }
+        });
+    }
     public class Processor {
         public CalculatorUI.ID id;
-        public boolean showAns = false;
         public String numberValue, scrollToStart = null;
 
         public boolean exec() {
@@ -266,7 +327,7 @@ public class CalcHandler {
                     }
 
                     numberValue = calculation;
-                    showAns = !EquationHandler.isNum(calculation);
+                    findAnsValue(!EquationHandler.isNum(calculation),id);
                 }
             }
             return false;
@@ -315,57 +376,23 @@ public class CalcHandler {
             }
 
             numberValue = calculation;
-            showAns = !EquationHandler.isNum(calculation);
+            findAnsValue(!EquationHandler.isNum(calculation),id);
         }
         public boolean handleEqual() {
             if (prevID.equals(CalculatorUI.ID.EQUAL)) return true;
             if (!EquationHandler.isNum(calculation)) {
-                final String answerValue = EquationHandler.answerValue(calculation);
                 numberValue = "";
-                showAns = true;
-
-                calc.answerText.post(new Runnable() {
+                final ComputerThread ct = new ComputerThread();
+                ct.setFinisher(new Runnable() {
                     @Override
                     public void run() {
-                        ((UIView.MHScrollView)calc.numberLayout.view).scrollTo(0,0);
-
-                        final Anim a = UserInterface.uiAnim(c, calc.answerLayout, 150);
-                        a.addTranslate(0, (calc.numberText.y() + (int)(calc.numberText.height() * (1f - calc.TEXT_SIZE))) - calc.answerLayout.y());
-
-                        a.setStart(new Runnable() {
-                            @Override
-                            public void run() {
-                                calc.numberLayout.view.setHorizontalScrollBarEnabled(false);
-
-                                calculation = EquationHandler.simplifyAns(answerValue);
-                                currentNum = calculation;
-
-                            }
-                        });
-                        a.setEnd(new Runnable() {
-                            @Override
-                            public void run() {
-                                calc.answerLayout.view.setTranslationY(calc.numberText.y() - calc.answerLayout.y());
-                                if (EquationHandler.getError(calculation) != null) {
-                                    ((TextView) calc.numberText.view).setText(Html.fromHtml(EquationHandler.getError(calculation).equals(EquationHandler.ERROR) ?"<font color=red>" + EquationHandler.ERROR + "</font>" : "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + formatCommas(calculation) + "</font>"), TextView.BufferType.SPANNABLE);
-                                    calculation = "";
-                                }else{
-                                    EQMath.Value v = EQMath.Operation.gen(answerValue);
-                                    if (v.isRational()) {
-                                        ansValue = EQMath.Operation.derationalize(v).getNumerator().toString();
-//                                            Util.log("PREVANSVAL " + prevAnsValue + " " + v.getNumerator());
-                                    }else{
-                                        ansValue = answerValue;
-                                    }
-                                }
-
-                                ((TextView) calc.dummyAnswerText.view).setText("");
-                                calc.numberLayout.view.setHorizontalScrollBarEnabled(true);
-                            }
-                        });
-                        a.start();
+                        String ans = formatCommas(EquationHandler.simplifyAns(ct.answer));
+                        updateAnswerText(EquationHandler.getError(ans) != null && EquationHandler.getError(ans).equals(EquationHandler.ERROR) ? "" : ans, id);
+                        equalUpdater(ct.answer);
                     }
                 });
+                ct.start();
+
             }else{
                 numberValue = calculation;
             }
@@ -572,6 +599,30 @@ public class CalcHandler {
                 }
             }
             currentNum = id.numValue;
+        }
+    }
+    public class ComputerThread extends Thread {
+        public Runnable finisher;
+        public String answer;
+        public int id;
+
+        public ComputerThread() {
+            currentCalculation++;
+            id = currentCalculation;
+        }
+        public void setFinisher(Runnable r) {
+            this.finisher = r;
+        }
+        @Override
+        public void run() {
+            answer = EquationHandler.answerValue(calculation);
+
+            Util.log("current calculation " + currentCalculation);
+            if (currentCalculation == id) {
+                handler.post(finisher);
+            }else{
+                Util.log("TOO FAST");
+            }
         }
     }
 }

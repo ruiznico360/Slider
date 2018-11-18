@@ -363,7 +363,7 @@ public class EQMath {
             return s;
         }
         public String mult() {
-            Util.log(derationalize(num1).getDoubleNumerator() + " " + (derationalize(num2).getDoubleNumerator()) + " " + (derationalize(num1).getDoubleNumerator() * (derationalize(num2).getDoubleNumerator())));
+//            Util.log(derationalize(num1).getDoubleNumerator() + " " + (derationalize(num2).getDoubleNumerator()) + " " + (derationalize(num1).getDoubleNumerator() * (derationalize(num2).getDoubleNumerator())));
             String max = max(derationalize(num1).getDoubleNumerator() * (derationalize(num2).getDoubleNumerator()));
             if (max != null) {
                 return max;
@@ -436,6 +436,7 @@ public class EQMath {
 
             v.setNumerator(ApfloatMath.round(num.getNumerator().divide(num.getDenominator()), PRECISION / 2, RoundingMode.HALF_EVEN));
             v.setDenominator(getVal(1));
+
             return v;
         }
 
