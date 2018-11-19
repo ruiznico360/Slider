@@ -4,10 +4,14 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.text.Html;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
+
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -168,6 +172,12 @@ public class CalcHandler {
     }
 
     public void findAnsValue(boolean ansVisible, final CalculatorUI.ID id) {
+
+        if (calc.answerLayout.view.getTranslationY() != 0) {
+            answer.setText("");
+            calc.answerLayout.view.setTranslationY(0);
+        }
+
         final String ansText;
         if (ansVisible) {
             final ComputerThread ct = new ComputerThread();
@@ -190,7 +200,6 @@ public class CalcHandler {
         if (id.equals(CalculatorUI.ID.EQUAL)) {
             dummyAnswer.setText(ansText);
         }else {
-            calc.answerLayout.view.setTranslationY(0);
             if (!ansText.equals("") && !prevAnsText.equals(ansText)) {
                 dummyAnswer.setVisibility(View.VISIBLE);
                 answer.setVisibility(View.INVISIBLE);
@@ -233,8 +242,9 @@ public class CalcHandler {
             public void run() {
                 ((UIView.MHScrollView)calc.numberLayout.view).scrollTo(0,0);
 
-                final Anim a = UserInterface.uiAnim(c, calc.answerLayout, 100);
-                a.addTranslate(0, (calc.numberText.y() + (int)(calc.numberText.height() * (1f - calc.TEXT_SIZE))) - calc.answerLayout.y());
+                final Anim a = UserInterface.uiAnim(c, calc.answerLayout, 150);
+                //(int)(calc.numberText.height() * (1f - calc.TEXT_SIZE)))
+                a.addTranslate(0, (calc.numberText.y() +  -calc.answerText.y()));
 
                 a.setStart(new Runnable() {
                     @Override
@@ -249,7 +259,7 @@ public class CalcHandler {
                 a.setEnd(new Runnable() {
                     @Override
                     public void run() {
-                        calc.answerLayout.view.setTranslationY(calc.numberText.y() - calc.answerLayout.y());
+                        calc.answerLayout.view.setTranslationY(a.translate.yOffset);
                         if (EquationHandler.getError(calculation) != null) {
                             ((TextView) calc.numberText.view).setText(Html.fromHtml(EquationHandler.getError(calculation).equals(EquationHandler.ERROR) ?"<font color=red>" + EquationHandler.ERROR + "</font>" : "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + formatCommas(calculation) + "</font>"), TextView.BufferType.SPANNABLE);
                             calculation = "";
@@ -616,12 +626,8 @@ public class CalcHandler {
         @Override
         public void run() {
             answer = EquationHandler.answerValue(calculation);
-
-            Util.log("current calculation " + currentCalculation);
             if (currentCalculation == id) {
                 handler.post(finisher);
-            }else{
-                Util.log("TOO FAST");
             }
         }
     }

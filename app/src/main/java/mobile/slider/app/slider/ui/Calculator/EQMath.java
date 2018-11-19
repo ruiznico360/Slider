@@ -316,7 +316,7 @@ public class EQMath {
         }
         public String pow() {
             String arg = derationalize(num2).numerator;
-            double maxD = Math.pow(derationalize(num1).getDoubleNumerator(), Double.parseDouble(arg));
+            double maxD = Math.pow(derationalize(num1).getDoubleNumerator(), EquationHandler.parse(arg));
 
             String max = max(maxD);
             if (max != null) {
@@ -480,10 +480,10 @@ public class EQMath {
         }
 
         public double getDoubleNumerator() {
-            return Double.parseDouble(numerator);
+            return EquationHandler.parse(numerator);
         }
         public double getDoubleDenominator() {
-            return Double.parseDouble(denominator);
+            return EquationHandler.parse(denominator);
         }
         public Apfloat getNumerator() {
             return getVal(numerator);

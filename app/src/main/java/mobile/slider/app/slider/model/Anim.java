@@ -26,10 +26,10 @@ public class Anim {
     public long init;
     public int duration;
     public int delay;
-    private Runnable onStart, onEnd, condition;
-    private Translate translate;
-    private Alpha alpha;
-    private Scale scale;
+    public Runnable onStart, onEnd, condition;
+    public Translate translate;
+    public Alpha alpha;
+    public Scale scale;
     public boolean cancelled = false, hideAfter = false;
 
     public Anim(Context c, SView view, int duration) {
@@ -230,7 +230,7 @@ public class Anim {
 
     }
 
-    private class Translate {
+    public class Translate {
         public int initX, xOffset, initY, yOffset;
     }
     private class Alpha {
