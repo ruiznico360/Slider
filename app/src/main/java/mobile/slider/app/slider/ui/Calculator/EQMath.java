@@ -342,25 +342,29 @@ public class EQMath {
                 num1.setNumerator(num1.getNumerator().multiply(getVal(-1)));
             }else if (num1.getDoubleNumerator() == 0) return "1/1";
 
-            String numerV = ApfloatMath.pow(num1.getNumerator(), num2.getNumerator().divide(num2.getDenominator())).toString(true);
+            return num1Neg + (num2Neg ? "1/" : "") + ApfloatMath.pow(derationalize(num1).getNumerator(), derationalize(num2).getNumerator()).toString(true);
 
-            if (EquationHandler.getError(numerV + "") != null) {
-                return EquationHandler.getError(numerV + "");
-            }
+//            Util.log("PRE " + num1.getNumerator() + " " + num2.getNumerator() + " " + num2.getDenominator());
+//            String numerV = ApfloatMath.pow(num1.getNumerator(), num2.getNumerator().divide(num2.getDenominator())).toString(true);
+//
+//            if (EquationHandler.getError(numerV + "") != null) {
+//                return EquationHandler.getError(numerV + "");
+//            }
+//
+//            numerDisplay = numerV;
+//
+//            if (!num1.isRational()) {
+//                String denomV = ApfloatMath.pow(num1.getDenominator(), num2.getNumerator().divide(num2.getDenominator())).toString(true);
+//
+//                if (EquationHandler.getError(denomV + "") != null) {
+//                    return EquationHandler.getError(denomV + "");
+//                }
+//
+//                denomDisplay = denomV;
+//            }
+//            String s = num1Neg + (num2Neg ? round(denomDisplay) + "/" + round(numerDisplay) : round(numerDisplay) + "/" + round(denomDisplay));
 
-            numerDisplay = numerV;
-
-            if (!num1.isRational()) {
-                String denomV = ApfloatMath.pow(num1.getDenominator(), num2.getNumerator().divide(num2.getDenominator())).toString(true);
-
-                if (EquationHandler.getError(denomV + "") != null) {
-                    return EquationHandler.getError(denomV + "");
-                }
-
-                denomDisplay = denomV;
-            }
-            String s = num1Neg + (num2Neg ? denomDisplay + "/" + numerDisplay : numerDisplay + "/" + denomDisplay);
-            return s;
+//            return s;
         }
         public String mult() {
 //            Util.log(derationalize(num1).getDoubleNumerator() + " " + (derationalize(num2).getDoubleNumerator()) + " " + (derationalize(num1).getDoubleNumerator() * (derationalize(num2).getDoubleNumerator())));
@@ -376,7 +380,7 @@ public class EQMath {
             if (newVal.isRational()) {
                 return derationalize(newVal).getNumerator().toString(true);
             }else{
-                return newVal.getNumerator() + "/" + newVal.getDenominator();
+                return round(newVal.getNumerator()) + "/" + round(newVal.getDenominator());
             }
 
         }
@@ -423,7 +427,7 @@ public class EQMath {
             if (newVal.isRational()) {
                 return derationalize(newVal).getNumerator().toString(true);
             }else{
-                return newVal.getNumerator() + "/" + newVal.getDenominator();
+                return round(newVal.getNumerator()) + "/" + round(newVal.getDenominator());
             }
         }
         public String subtract() {
@@ -434,12 +438,20 @@ public class EQMath {
         public static Value derationalize(Value num) {
             Value v = new Value();
 
-            v.setNumerator(ApfloatMath.round(num.getNumerator().divide(num.getDenominator()), PRECISION / 2, RoundingMode.HALF_EVEN));
+            v.setNumerator(num.getNumerator().divide(num.getDenominator()));
             v.setDenominator(getVal(1));
 
             return v;
         }
 
+        public static String round(String num) {
+            return num;
+//            return round(new Apfloat(num));
+        }
+        public static String round(Apfloat num) {
+            return num.toString(true);
+//            return ApfloatMath.round(num, PRECISION, RoundingMode.HALF_EVEN).toString(true);
+        }
         public String max(double d) {
             if (d == Double.POSITIVE_INFINITY || d == Double.NEGATIVE_INFINITY || d == 0) return d + "";
             return null;

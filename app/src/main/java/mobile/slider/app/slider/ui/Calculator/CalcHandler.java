@@ -125,7 +125,7 @@ public class CalcHandler {
             if (!val.matches(CalculatorUI.ID.NUM_VALUES) && !val.matches(CalculatorUI.ID.VARIABLE_VALUES) && !val.equals(CalculatorUI.ID.ANSWER.numValue)) {
                 finalNumberText += "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + val + "</font>";
             }else{
-                finalNumberText += val;
+                finalNumberText += "<font color=" + Util.hex(Color.GRAY) + ">" + val + "</font>";
             }
         }
         finalNumberText = finalNumberText.replace(CalculatorUI.ID.EULER.numValue, "e").replace(CalculatorUI.ID.ANSWER.numValue, "ANS");
@@ -229,7 +229,7 @@ public class CalcHandler {
 
                     answer.setVisibility(View.VISIBLE);
                     dummyAnswer.setVisibility(View.INVISIBLE);
-                    ((UIView.MHScrollView) calc.answerLayout.view).scrollTo(calc.answerLayout.width(), 0);
+                    ((UIView.MHScrollView) calc.answerLayout.view).fullScroll(View.FOCUS_RIGHT);
                     dummyAnswer.setText(ansText);
                 }
             });

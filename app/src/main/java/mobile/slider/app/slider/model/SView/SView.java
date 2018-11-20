@@ -112,6 +112,7 @@ public class SView {
             params.width = (int)toWidth;
             params.height = (int)toHeight;
             container.updateViewLayout(view, params);
+            view.setLayoutParams(params);
         }
 
         public Layout setLayout(ViewGroup.LayoutParams newParams) {

@@ -11,6 +11,7 @@ import android.graphics.Typeface;
 import android.os.Handler;
 import android.support.v7.widget.AppCompatCheckedTextView;
 import android.support.v7.widget.AppCompatTextView;
+import android.util.LayoutDirection;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -236,12 +237,13 @@ public class CalculatorUI extends UIClass {
             numberLayout.plot();
             numberLayout.openRLayout()
                     .setHeight(totalHeight / 2)
-                    .setWidth(RelativeLayout.LayoutParams.MATCH_PARENT)
+                    .addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+                    .setWidth(RelativeLayout.LayoutParams.WRAP_CONTENT)
                     .save();
 
             numberText = new SView(new TextView(c), numberLayout.view);
-            numberText.plot(ScrollView.LayoutParams.WRAP_CONTENT, numberLayout.width() / 3 < numberLayout.height() ? numberLayout.width() / 3 : (int) (numberLayout.height()));
-            ((UIView.MHScrollView.LayoutParams)numberText.params).gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
+            numberText.plot(ScrollView.LayoutParams.WRAP_CONTENT, textLayout.width() / 3 < numberLayout.height() ? textLayout.width() / 3 : (int) (numberLayout.height()));
+            ((UIView.MHScrollView.LayoutParams)numberText.params).gravity = Gravity.CENTER_VERTICAL;
             numberText.openLayout().save();
             ((TextView) numberText.view).setMaxLines(1);
             ((TextView) numberText.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(numberText.height() * TEXT_SIZE));
