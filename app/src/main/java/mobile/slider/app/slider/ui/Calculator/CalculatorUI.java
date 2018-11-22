@@ -199,6 +199,12 @@ public class CalculatorUI extends UIClass {
                     .setWidth(textLayout.width() * 2)
                     .setTopM(totalHeight / 2)
                     .save();
+            answerLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    ((UIView.MHScrollView) answerLayout.view).fullScroll(View.FOCUS_RIGHT);
+                }
+            });
 
             SView answerLayoutContainer = new SView(new RelativeLayout(c), answerLayout.view);
             answerLayoutContainer.plot();

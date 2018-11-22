@@ -266,8 +266,7 @@ public class CalcHandler {
                         }else{
                             EQMath.Value v = EQMath.Operation.gen(answerValue);
                             if (v.isRational()) {
-                                ansValue = EQMath.Operation.derationalize(v).getNumerator().toString();
-//                                            Util.log("PREVANSVAL " + prevAnsValue + " " + v.getNumerator());
+                                ansValue = v.derationalize().numerator;
                             }else{
                                 ansValue = answerValue;
                             }

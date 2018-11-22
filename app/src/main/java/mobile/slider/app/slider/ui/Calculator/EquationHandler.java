@@ -1,5 +1,6 @@
 package mobile.slider.app.slider.ui.Calculator;
 
+import android.graphics.Path;
 import android.os.SystemClock;
 
 import org.apfloat.Apfloat;
@@ -14,7 +15,7 @@ import mobile.slider.app.slider.util.Util;
 import static mobile.slider.app.slider.ui.Calculator.EQMath.PRECISION;
 
 public class EquationHandler {
-    public static final int MAX_DIGITS = 12,MAX_LENGTH = 100, MAX_OPERATORS = 10, BD_SCALE = MAX_DIGITS * 2, SCIENTIFIC_NOT_DIGITS = 5;
+    public static final int MAX_DIGITS = 12,MAX_LENGTH = 100, MAX_OPERATORS = 10, BD_SCALE = MAX_DIGITS, SCIENTIFIC_NOT_DIGITS = 5;
     public static final String ERROR = "ERROR",POS_INFINITY = Double.POSITIVE_INFINITY + "", NEG_INFINITY = Double.NEGATIVE_INFINITY + "", NAN = Double.NaN + "", PI = "3.141592653589793", E = "2.7182818284590452354";
 
     public static String getError(String answer) {
@@ -78,7 +79,7 @@ public class EquationHandler {
         if (denomDec - numerDec > BD_SCALE - SCIENTIFIC_NOT_DIGITS) {
             v.setDenominator(EQMath.getVal("0." + v.getDenominator().toString().substring(0,SCIENTIFIC_NOT_DIGITS + 1).replace(".","")));
 
-            EQMath.Value newVal = EQMath.Operation.derationalize(v);
+            EQMath.Value newVal = v.derationalize();
 
             String newAns = "0.";
             for (int i = 0; i < denomDec - 1; i++) {
@@ -87,7 +88,7 @@ public class EquationHandler {
             newAns += newVal.getNumerator().toString().replace(".","");
             return newAns;
         }else{
-            return EQMath.Operation.derationalize(v).getNumerator().toString();
+            return v.derationalize().getNumerator().toString();
         }
     }
     public static String simplifyAns(String answer) {
@@ -97,7 +98,7 @@ public class EquationHandler {
         boolean negative = answer.contains("-");
         answer = answer.replace("-","");
 
-        answer = ApfloatMath.round(new Apfloat(checkPrecision(EQMath.Operation.gen(answer))), PRECISION / 2, RoundingMode.HALF_EVEN).toString(true);
+        answer = ApfloatMath.round(new Apfloat(checkPrecision(EQMath.Operation.gen(answer))), BD_SCALE, RoundingMode.HALF_EVEN).toString(true);
 
 
         int dec = answer.contains(".") ? answer.indexOf(".") : answer.length();
