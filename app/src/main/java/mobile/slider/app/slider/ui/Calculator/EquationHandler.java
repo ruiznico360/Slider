@@ -16,7 +16,7 @@ import static mobile.slider.app.slider.ui.Calculator.EQMath.PRECISION;
 
 public class EquationHandler {
     public static final int MAX_DIGITS = 12,MAX_LENGTH = 100, MAX_OPERATORS = 10, BD_SCALE = MAX_DIGITS, SCIENTIFIC_NOT_DIGITS = 5;
-    public static final String ERROR = "ERROR",POS_INFINITY = Double.POSITIVE_INFINITY + "", NEG_INFINITY = Double.NEGATIVE_INFINITY + "", NAN = Double.NaN + "", PI = "3.141592653589793", E = "2.7182818284590452354";
+    public static final String ERROR = "ERROR",POS_INFINITY = Double.POSITIVE_INFINITY + "", NEG_INFINITY = Double.NEGATIVE_INFINITY + "", NAN = Double.NaN + "", PI = "245850922/78256779", E = "2.7182818284590452354";
 
     public static String getError(String answer) {
         if (answer.length() == 0) return ERROR;

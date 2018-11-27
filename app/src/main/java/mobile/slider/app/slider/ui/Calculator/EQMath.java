@@ -19,11 +19,12 @@ import mobile.slider.app.slider.util.Util;
 import static mobile.slider.app.slider.ui.Calculator.EquationHandler.BD_SCALE;
 import static mobile.slider.app.slider.ui.Calculator.EquationHandler.ERROR;
 import static mobile.slider.app.slider.ui.Calculator.EquationHandler.NAN;
+import static mobile.slider.app.slider.ui.Calculator.EquationHandler.PI;
 import static mobile.slider.app.slider.ui.Calculator.EquationHandler.POS_INFINITY;
 import static mobile.slider.app.slider.ui.Calculator.EquationHandler.isNum;
 
 public class EQMath {
-    public static final int PRECISION = BD_SCALE * 2;
+    public static final int PRECISION = BD_SCALE + 10;
     public static String reduce(String equation) {
         if (equation.length() == 0) return ERROR;
         if (equation.contains("(")) {
@@ -110,6 +111,7 @@ public class EQMath {
                             s = equation.substring(0, start - 1) + CalculatorUI.ID.MULT.numValue + "(1" + CalculatorUI.ID.ADD.numValue  + equation.substring(start,end) + CalculatorUI.ID.DIVIDE.numValue + "100)" + equation.substring(end + 1,equation.length());
                         }else {
                             s = equation.substring(0, start) + "(" + equation.substring(start,end) + CalculatorUI.ID.DIVIDE.numValue + "100)" + equation.substring(end + 1,equation.length());
+                            Util.log(s);
                         }
                         return s;
                     }
@@ -315,6 +317,7 @@ public class EQMath {
             return val;
         }
         public String pow() {
+            Util.log("Commencing pow " + num1.getNumerator() + "/" + num1.getDenominator());
             String arg = num2.derationalize().numerator;
             double maxD = Math.pow(num1.derationalize().getDoubleNumerator(), EquationHandler.parse(arg));
 
@@ -338,11 +341,12 @@ public class EQMath {
                 if (hasDecimalValue(d)) {
                     return NAN;
                 }
-                num1Neg = (hasDecimalValue(num2.derationalize().getNumerator().divide(new Apfloat(2, PRECISION)).toString(true)) ? "-" : "");
+                num1Neg = (hasDecimalValue(num2.derationalize().getNumerator().divide(getVal(2)).toString(true)) ? "-" : "");
                 num1.setNumerator(num1.getNumerator().multiply(getVal(-1)));
             }else if (num1.getDoubleNumerator() == 0) return "1/1";
 
-            Apfloat pow = num2.derationalize().getNumerator();
+            Apfloat pow = num2.getNumerator().divide(num2.getDenominator());
+
             String numerV = (ApfloatMath.pow(num1.getNumerator(), pow)).toString(true);
 
             if (EquationHandler.getError(numerV + "") != null) {
@@ -351,21 +355,20 @@ public class EQMath {
 
             numerDisplay = numerV;
 
-            if (!num1.isRational()) {
-                String denomV = (ApfloatMath.pow(num1.getDenominator(), pow)).toString(true);
+            String denomV = (ApfloatMath.pow(num1.getDenominator(), pow)).toString(true);
 
-                if (EquationHandler.getError(denomV + "") != null) {
-                    return EquationHandler.getError(denomV + "");
-                }
-
-                denomDisplay = denomV;
+            if (EquationHandler.getError(denomV + "") != null) {
+                return EquationHandler.getError(denomV + "");
             }
+
+            denomDisplay = denomV;
 
             String s = num1Neg + (num2Neg ? (denomDisplay) + "/" + (numerDisplay) : (numerDisplay) + "/" + (denomDisplay));
 
-            if (Operation.gen(s).isRational()) {
-                return (Operation.gen(s)).derationalize().numerator;
-            }
+            Util.log("pow " + s);
+//            if (Operation.gen(s).isRational()) {
+//                return (Operation.gen(s)).derationalize().numerator;
+//            }
             return s;
         }
         public String mult() {
@@ -378,11 +381,12 @@ public class EQMath {
             newVal.setNumerator(num1.getNumerator().multiply(num2.getNumerator()));
             newVal.setDenominator(num1.getDenominator().multiply(num2.getDenominator()));
 
-            if (newVal.isRational()) {
-                return newVal.derationalize().getNumerator().toString(true);
-            }else{
-                return (newVal.getNumerator()) + "/" + (newVal.getDenominator());
-            }
+            Util.log("Mult " + newVal.numerator +"/"+newVal.denominator + " " + num1.numerator + "/" + num1.denominator + " " + num2.numerator +"/" + num2.denominator);
+//            if (newVal.isRational()) {
+//                return newVal.derationalize().getNumerator().toString(true);
+//            }
+            return (newVal.getNumerator()) + "/" + (newVal.getDenominator());
+
 
         }
         public String divide() {
@@ -412,11 +416,12 @@ public class EQMath {
 
 
 
-            if (newVal.isRational()) {
-                return newVal.derationalize().getNumerator().toString(true);
-            }else{
-                return (newVal.getNumerator()) + "/" + (newVal.getDenominator());
-            }
+//            if (newVal.isRational()) {
+//                return newVal.derationalize().getNumerator().toString(true);
+//            }
+
+            return (newVal.getNumerator()) + "/" + (newVal.getDenominator());
+
         }
         public String subtract() {
             num2.setNumerator(num2.getNumerator().multiply(getVal(-1)));
@@ -425,6 +430,9 @@ public class EQMath {
         }
         public static String cleanRound(Apfloat num) {
             return ApfloatMath.round(num, BD_SCALE, RoundingMode.HALF_EVEN).toString(true);
+        }
+        public static String round(Apfloat num) {
+            return ApfloatMath.round(num, PRECISION - 5, RoundingMode.HALF_EVEN).toString(true);
         }
         public String max(double d) {
             if (d == Double.POSITIVE_INFINITY || d == Double.NEGATIVE_INFINITY || d == 0) return d + "";
@@ -460,6 +468,10 @@ public class EQMath {
     public static class Value {
         public String numerator,denominator;
 
+        public Value(int precision) {
+            this.numerator = "1";
+            this.denominator = "1";
+        }
         public Value() {
             this.numerator = "1";
             this.denominator = "1";
@@ -507,16 +519,18 @@ public class EQMath {
             Value v = new Value();
 
             if (v.isRational()) {
-                String numer = (getNumerator().divide(getDenominator())).toString(true);
+                Apfloat numer = (getNumerator().divide(getDenominator()));
 
-                //MANUAL ROUNDING REQ
-                if (numer.replace(".","").length() >= PRECISION) {
-                    int lastDigit = Integer.parseInt(numer.substring(numer.length() - 1));
-                    int numerDec = numer.contains(".") ? numer.indexOf(".") : numer.length() - 1;
-                    if (lastDigit >= 5) {
-                        numer = getVal(numer).add(ApfloatMath.pow(getVal(10), getVal(numerDec - (numer.length() - 1))).multiply(getVal(10 - lastDigit))).toString(true);
-                    }
-                    Util.log(numerator + "/" + denominator + " " + numer + " " + ApfloatMath.pow(getVal(10), getVal(numerDec - (numer.length() - 1))).multiply(getVal(10 - lastDigit)));
+                if (numer.toString(true).replace(".","").length() >= PRECISION) {
+//                    int lastDigit = Integer.parseInt(numer.substring(numer.length() - 1));
+//                    int numerDec = numer.contains(".") ? numer.indexOf(".") : numer.length() - 1;
+//                    if (lastDigit >= 5) {
+//                        numer = getVal(numer).add(ApfloatMath.pow(getVal(10), getVal(numerDec - (numer.length() - 1))).multiply(getVal(10 - lastDigit))).toString(true);
+//                    }
+//                    BigDecimal b = new BigDecimal("3").pow
+//                    Util.log(numerator + "/" + denominator + " " + numer + " " + (ApfloatMath.round(getVal(numer), PRECISION - 1, RoundingMode.HALF_EVEN)));
+                    Util.log( "der " + numer + " " + new Apfloat(Operation.round((numer))) + " " + numerator +"/" + denominator );
+                    numer = new Apfloat(Operation.round((numer)));
                 }
 
                 v.setNumerator(numer);
@@ -531,14 +545,15 @@ public class EQMath {
         }
         public boolean isRational() {
             if (getDoubleDenominator() == 1) return true;
+            String s = getNumerator().divide(getDenominator()).multiply(getDenominator()).toString(true);
+            int size = BD_SCALE + ((PRECISION - BD_SCALE) / 2);
 
-            Apfloat numer = getVal(Operation.cleanRound(getNumerator()));
-            Apfloat denom = getVal(Operation.cleanRound(getDenominator()));
+//            if (size > numerator.length())
+            size = numerator.length();
 
-            if (Operation.cleanRound(numer.divide(denom).multiply(denom)).equals(numer.toString(true))) {
-                return true;
-            }
-            return false;
+            Util.log( "Rational? " + numerator.substring(0, size) + " " +(s.substring(0,size)));
+
+            return numerator.substring(0, size).equals(s.substring(0,size));
         }
     }
     public static class Num extends Apfloat {
