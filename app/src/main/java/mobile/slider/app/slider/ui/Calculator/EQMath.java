@@ -24,7 +24,7 @@ import static mobile.slider.app.slider.ui.Calculator.EquationHandler.POS_INFINIT
 import static mobile.slider.app.slider.ui.Calculator.EquationHandler.isNum;
 
 public class EQMath {
-    public static final int PRECISION = BD_SCALE + 10;
+    public static final int PRECISION = BD_SCALE + 5 + 5;
     public static String reduce(String equation) {
         if (equation.length() == 0) return ERROR;
         if (equation.contains("(")) {
