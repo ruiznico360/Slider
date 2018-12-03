@@ -51,7 +51,7 @@ public class CalculatorUI extends UIClass {
 
         public int drawableRes;
         public String numValue;
-        public static final String NUM_VALUES = "[0123456789/]", OPERATOR_VALUES = "[÷^x+-]", VARIABLE_VALUES = "[" + PI.numValue + EULER.numValue + "]";
+        public static final String NUM_VALUES = "[0123456789/_]", OPERATOR_VALUES = "[÷^x+-]", VARIABLE_VALUES = "[" + PI.numValue + EULER.numValue + "]";
 
         ID(int drawableRes, String numValue) {
             this.drawableRes = drawableRes;

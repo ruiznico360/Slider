@@ -264,7 +264,7 @@ public class CalcHandler {
                             ((TextView) calc.numberText.view).setText(Html.fromHtml(EquationHandler.getError(calculation).equals(EquationHandler.ERROR) ?"<font color=red>" + EquationHandler.ERROR + "</font>" : "<font color=" + Util.hex(CalculatorUI.operatorRGB) + ">" + formatCommas(calculation) + "</font>"), TextView.BufferType.SPANNABLE);
                             calculation = "";
                         }else{
-                            EQMath.Value v = EQMath.Operation.gen(answerValue);
+                            EQMath.Value v = EQMath.Value.gen(answerValue);
                             if (v.isRational()) {
                                 ansValue = v.derationalize().numerator;
                             }else{
@@ -474,7 +474,7 @@ public class CalcHandler {
                         if (id == CalculatorUI.ID.SUB) {
                             calculation += id.numValue;
                         }
-                    }else if (!prev.equals(CalculatorUI.ID.SQROOT.numValue) || id == CalculatorUI.ID.SUB){
+                    }else if (!prev.equals(CalculatorUI.ID.SQROOT.numValue)){
                         calculation += id.numValue;
                     }
                 }else{

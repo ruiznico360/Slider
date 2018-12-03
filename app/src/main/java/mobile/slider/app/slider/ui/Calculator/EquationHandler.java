@@ -59,7 +59,9 @@ public class EquationHandler {
 
         int i = 0;
         do {
+            Util.log("reducing " +  answer);
             answer = EQMath.reduce(answer);
+
 
             if (i == 100) {
                 return ERROR;
@@ -70,6 +72,7 @@ public class EquationHandler {
             i++;
         }while (!isNum(answer) && i < 101);
 
+        Util.log("final " + answer);
         return answer;
     }
     public static String checkPrecision(EQMath.Value v) {
@@ -95,10 +98,10 @@ public class EquationHandler {
         if (getError(answer) != null) {
             return getError(answer);
         }
-        boolean negative = answer.contains("-");
-        answer = answer.replace("-","");
+        boolean negative = answer.contains(EQMath.RAW_NEG);
+        answer = answer.replace(EQMath.RAW_NEG,"");
 
-        answer = ApfloatMath.round(new Apfloat(checkPrecision(EQMath.Operation.gen(answer))), BD_SCALE, RoundingMode.HALF_EVEN).toString(true);
+        answer = ApfloatMath.round(new Apfloat(checkPrecision(EQMath.Value.gen(answer))), BD_SCALE, RoundingMode.HALF_EVEN).toString(true);
 
 
         int dec = answer.contains(".") ? answer.indexOf(".") : answer.length();
@@ -183,6 +186,7 @@ public class EquationHandler {
     }
     public static boolean isNum(String num) {
         if (num.equals("")) return true;
+        num = num.replace(EQMath.RAW_NEG, EQMath.NEG);
         try {
             if (num.contains("/")) {
                 parse(EQMath.Operation.numerator(num));
