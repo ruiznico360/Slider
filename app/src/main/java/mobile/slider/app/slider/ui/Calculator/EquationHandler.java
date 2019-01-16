@@ -59,7 +59,6 @@ public class EquationHandler {
 
         int i = 0;
         do {
-            Util.log("reducing " +  answer);
             answer = EQMath.reduce(answer);
 
 
@@ -72,7 +71,6 @@ public class EquationHandler {
             i++;
         }while (!isNum(answer) && i < 101);
 
-        Util.log("final " + answer);
         return answer;
     }
     public static String checkPrecision(EQMath.Value v) {
@@ -117,7 +115,6 @@ public class EquationHandler {
                 String s = answer.substring(i, i + 1);
                 if (firstNum == -1) {
                     if (!s.equals("0") && !s.equals(".")) {
-                        firstNum = i;
                         firstNum = i;
                         lastNum = i;
                         length++;

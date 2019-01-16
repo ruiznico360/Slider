@@ -3,7 +3,9 @@ package mobile.slider.app.slider.ui.Calculator;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 import mobile.slider.app.slider.util.Util;
 
@@ -195,6 +197,41 @@ public class EQMath {
         return equation;
     }
 
+    public static String simplifyNotation(String s) {
+        if (s.contains("e")) {
+            if (!s.contains(".")) s = s.substring(0,s.indexOf("e")) + ".0" + s.substring(s.indexOf("e"),s.length());
+            boolean pos;
+            int zeros;
+            if (s.substring(s.indexOf("e") + 1, s.indexOf("e") + 2).equals("-")) {
+                pos = false;
+                zeros = Integer.parseInt(s.substring(s.indexOf("e") + 2, s.length()));
+            }else{
+                pos = true;
+                zeros = Integer.parseInt(s.substring(s.indexOf("e") + 1, s.length()));
+            }
+
+            int index = s.indexOf(".");
+            s = s.substring(0,s.indexOf("e")).replace(".","");
+
+            if (pos) {
+                for (int i = 0; i < zeros; i++) {
+                    if (index == s.length()) s += "0";
+                    index++;
+                }
+                s = s.substring(0,index) + "." + s.substring(index,s.length());
+            }else{
+                for (int i = 0; i < zeros; i++) {
+                    if (index <= 0) s = "0" + s;
+                    index--;
+                }
+                s = s.substring(0,index > 0 ? index : 0) + "." + s.substring(index > 0 ? index : 0,s.length());
+            }
+            return s;
+        }else{
+            return s;
+        }
+    }
+
     public static boolean hasDecimalValue(String s) {
         if (s.contains(".")) {
             for (int i = s.indexOf(".") + 1; i < s.length(); i++) {
@@ -224,9 +261,8 @@ public class EQMath {
         }
 
         public String pow() {
-            Util.log("Commencing pow " + num1.getNumerator() + "/" + num1.getDenominator());
-            String arg = num2.derationalize().numerator;
-            double maxD = Math.pow(num1.derationalize().getDoubleNumerator(), EquationHandler.parse(arg));
+
+            double maxD = Math.pow(num1.getNumerator().divide(num1.getDenominator()).doubleValue(), num2.getNumerator().divide(num2.getDenominator()).doubleValue());
 
             String max = max(maxD);
             if (max != null) {
@@ -242,34 +278,27 @@ public class EQMath {
                 num2Neg = true;
                 num2.setNumerator(num2.getNumerator().multiply(getVal(-1)));
             }
+            Apfloat pow = num2.getNumerator().divide(num2.getDenominator());
 
             if (isNegative(num1.numerator)) {
-                String d = num2.derationalize().numerator;
+                String d = pow.toString(true);
                 if (hasDecimalValue(d)) {
                     return NAN;
                 }
-                num1Neg = (hasDecimalValue(num2.derationalize().getNumerator().divide(getVal(2)).toString(true)) ? "-" : "");
+                num1Neg = (hasDecimalValue(pow.divide(getVal(2)).toString(true)) ? "-" : "");
                 num1.setNumerator(num1.getNumerator().multiply(getVal(-1)));
             }else if (num1.getDoubleNumerator() == 0) return "1/1";
 
-            Apfloat pow = num2.getNumerator().divide(num2.getDenominator());
+            Apfloat a = ApfloatMath.pow(num1.getNumerator(), pow);
+            Apfloat b = ApfloatMath.pow(num1.getDenominator(), pow);
 
-            String numerV = (ApfloatMath.pow(num1.getNumerator(), pow)).toString(true);
-
-            if (EquationHandler.getError(numerV + "") != null) {
-                return EquationHandler.getError(numerV + "");
+            if (a.doubleValue() == Double.POSITIVE_INFINITY || b.doubleValue() == Double.POSITIVE_INFINITY) {
+                numerDisplay = ApfloatMath.pow(num1.getNumerator().divide(num1.getDenominator()), pow).toString(true);
+                denomDisplay = "1";
+            }else {
+                numerDisplay = a.toString(true);
+                denomDisplay = b.toString(true);
             }
-
-            numerDisplay = numerV;
-
-            String denomV = (ApfloatMath.pow(num1.getDenominator(), pow)).toString(true);
-
-            if (EquationHandler.getError(denomV + "") != null) {
-                return EquationHandler.getError(denomV + "");
-            }
-
-            denomDisplay = denomV;
-
             Value newVal = Value.gen(num1Neg + (num2Neg ? (denomDisplay) + "/" + (numerDisplay) : (numerDisplay) + "/" + (denomDisplay)));
 
             if (newVal.isRational()) {
@@ -438,14 +467,6 @@ public class EQMath {
                 Apfloat numer = (getNumerator().divide(getDenominator()));
 
                 if (numer.toString(true).replace(".","").length() >= PRECISION) {
-//                    int lastDigit = Integer.parseInt(numer.substring(numer.length() - 1));
-//                    int numerDec = numer.contains(".") ? numer.indexOf(".") : numer.length() - 1;
-//                    if (lastDigit >= 5) {
-//                        numer = getVal(numer).add(ApfloatMath.pow(getVal(10), getVal(numerDec - (numer.length() - 1))).multiply(getVal(10 - lastDigit))).toString(true);
-//                    }
-//                    BigDecimal b = new BigDecimal("3").pow
-//                    Util.log(numerator + "/" + denominator + " " + numer + " " + (ApfloatMath.round(getVal(numer), PRECISION - 1, RoundingMode.HALF_EVEN)));
-                    Util.log( "der " + numer + " " + new Apfloat(Operation.round((numer))) + " " + numerator +"/" + denominator );
                     numer = new Apfloat(Operation.round((numer)));
                 }
 
@@ -467,7 +488,6 @@ public class EQMath {
 //            if (size > numerator.length())
             size = numerator.length();
 
-            Util.log( "Rational? " + numerator.substring(0, size) + " " +(s.substring(0,size)));
 
             return numerator.substring(0, size).equals(s.substring(0,size));
         }

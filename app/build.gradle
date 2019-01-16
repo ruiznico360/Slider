@@ -28,6 +28,10 @@ android {
     buildToolsVersion '28.0.3'
     productFlavors {
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 dependencies {
     implementation fileTree(include: '*', dir: 'libs')
