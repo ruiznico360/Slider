@@ -36,7 +36,7 @@ import mobile.slider.app.slider.util.ToastMessage;
 import mobile.slider.app.slider.util.Util;
 
 public class Floater extends SView {
-    public static final int SHOW_DELAY = 1000;
+    public static final int SHOW_DELAY = 500;
     public FloaterController floaterMovement;
     public SWindowLayout sContainer;
     public int currentOrientation, currentVisibility;

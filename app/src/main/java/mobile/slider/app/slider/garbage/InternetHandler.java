@@ -1,4 +1,4 @@
-package mobile.slider.app.slider.content;
+package mobile.slider.app.slider.garbage;
 
 public class InternetHandler {
 //    private Activity act;

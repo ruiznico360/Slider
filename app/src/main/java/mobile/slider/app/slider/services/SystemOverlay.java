@@ -295,11 +295,11 @@ public class SystemOverlay extends Service {
                 }
             },500);
 
-            new Handler().postDelayed(new Runnable() {
+            handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     sysTask.run();
-                    new Handler().postDelayed(this,5000);
+                    handler.postDelayed(this,5000);
                 }
             }, 5000);
         }

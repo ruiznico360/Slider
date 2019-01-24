@@ -1,5 +1,7 @@
 package mobile.slider.app.slider.ui;
 
+import android.content.Context;
+
 import mobile.slider.app.slider.util.Util;
 
 public abstract class UIClass {

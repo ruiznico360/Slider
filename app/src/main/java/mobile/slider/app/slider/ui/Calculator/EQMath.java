@@ -281,11 +281,11 @@ public class EQMath {
             Apfloat pow = num2.getNumerator().divide(num2.getDenominator());
 
             if (isNegative(num1.numerator)) {
-                String d = pow.toString(true);
+                String d = num2.derationalize().numerator;
                 if (hasDecimalValue(d)) {
                     return NAN;
                 }
-                num1Neg = (hasDecimalValue(pow.divide(getVal(2)).toString(true)) ? "-" : "");
+                num1Neg = (hasDecimalValue(num2.derationalize().getNumerator().divide(getVal(2)).toString(true)) ? "-" : "");
                 num1.setNumerator(num1.getNumerator().multiply(getVal(-1)));
             }else if (num1.getDoubleNumerator() == 0) return "1/1";
 

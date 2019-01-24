@@ -73,25 +73,26 @@ public class EquationHandler {
 
         return answer;
     }
-    public static String checkPrecision(EQMath.Value v) {
-        int numerDec = v.getNumerator().toString().contains(".") ? v.getNumerator().toString().indexOf(".") : v.getNumerator().toString().length();
-        int denomDec = v.getDenominator().toString().contains(".") ? v.getDenominator().toString().indexOf(".") : v.getDenominator().toString().length();
-
-        if (denomDec - numerDec > BD_SCALE - SCIENTIFIC_NOT_DIGITS) {
-            v.setDenominator(EQMath.getVal("0." + v.getDenominator().toString().substring(0,SCIENTIFIC_NOT_DIGITS + 1).replace(".","")));
-
-            EQMath.Value newVal = v.derationalize();
-
-            String newAns = "0.";
-            for (int i = 0; i < denomDec - 1; i++) {
-                newAns += "0";
-            }
-            newAns += newVal.getNumerator().toString().replace(".","");
-            return newAns;
-        }else{
-            return v.derationalize().getNumerator().toString();
-        }
-    }
+//    public static String checkPrecision(EQMath.Value v) {
+//        int numerDec = v.getNumerator().toString().contains(".") ? v.getNumerator().toString().indexOf(".") : v.getNumerator().toString().length();
+//        int denomDec = v.getDenominator().toString().contains(".") ? v.getDenominator().toString().indexOf(".") : v.getDenominator().toString().length();
+//
+//        if (denomDec - numerDec > BD_SCALE - SCIENTIFIC_NOT_DIGITS) {
+//            v.setDenominator(EQMath.getVal("0." + v.getDenominator().toString().substring(0,SCIENTIFIC_NOT_DIGITS + 1).replace(".","")));
+//
+//            EQMath.Value newVal = v.derationalize();
+//
+//            String newAns = "0.";
+//            for (int i = 0; i < denomDec - 1; i++) {
+//                newAns += "0";
+//            }
+//            newAns += newVal.getNumerator().toString().replace(".","");
+//            Util.log(v.numerator + " " + v.denominator + " " + newAns);
+//            return newAns;
+//        }else{
+//            return v.derationalize().getNumerator().toString();
+//        }
+//    }
     public static String simplifyAns(String answer) {
         if (getError(answer) != null) {
             return getError(answer);
@@ -99,7 +100,7 @@ public class EquationHandler {
         boolean negative = answer.contains(EQMath.RAW_NEG);
         answer = answer.replace(EQMath.RAW_NEG,"");
 
-        answer = ApfloatMath.round(new Apfloat(checkPrecision(EQMath.Value.gen(answer))), BD_SCALE, RoundingMode.HALF_EVEN).toString(true);
+        answer = ApfloatMath.round(new Apfloat(((EQMath.Value.gen(answer).derationalize().numerator))), BD_SCALE, RoundingMode.HALF_EVEN).toString(true);
 
 
         int dec = answer.contains(".") ? answer.indexOf(".") : answer.length();
