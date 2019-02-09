@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -74,6 +75,7 @@ public class ContactsUI extends UIClass {
                 .save();
 
         new ContactList(this, contactContainer);
+
     }
     public void backPressed() {
         UserInterface.UI.launchNewWindow(UserInterface.UI_WINDOW);

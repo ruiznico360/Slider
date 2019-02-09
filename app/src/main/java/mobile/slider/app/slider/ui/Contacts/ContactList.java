@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 import mobile.slider.app.slider.R;
 import mobile.slider.app.slider.model.Anim;
@@ -88,156 +90,84 @@ public class ContactList {
         new ContactScroller().setup();
     }
     public class ContactScroller {
-        public boolean scrollerInUse = false, alphabetScrollerInUse = false, touchEnabled = false;
+        public final float rWidth = ui.wUnit(80);
+        public final float rHeight = rWidth * 1.75f;
+        public final ArrayList<ContactRenderable> contacts = new ArrayList<ContactRenderable>();
+        public final ArrayList<ContactRenderable> indicators = new ArrayList<ContactRenderable>();
+
+        public SView container;
+        public boolean touchEnabled = false, scrollerInUse = false, alphabetScrollerInUse = false;
 
         public void setup() {
-            final SView container = new SView(new RelativeLayout(c), contactScroller.view);
-            final ArrayList<Item> items = new ArrayList<>();
-            final ArrayList<Item> indicatorItems = new ArrayList<>();
-            final Runnable setUpContactList = new Runnable() {
-                @Override
-                public void run() {
-                    Iterator<Contact> contactIterator = Contact.contacts.iterator();
+            container = new SView(new RelativeLayout(c), contactScroller.view);
 
-                    int cAdded = 0;
-                    int index = 0;
-                    Character prevCharacter = null;
-                    while (cAdded < Contact.contacts.size()) {
-                        char start = Contact.contacts.get(cAdded).displayName.charAt(0);
+            setupContactRenderables();
+            setupList();
+            setupScroller();
 
-                        if (Character.isLetter(start)) {
-                            if (prevCharacter == null || start != prevCharacter) {
-                                Item item = genItem(container);
-                                item.appIcon.openRLayout().setHeight(item.appIcon.height() *.6f).setWidth(item.appIcon.width() * .6f).addRule(RelativeLayout.CENTER_VERTICAL).save();
-                                item.contactItem = false;
-                                items.add(item);
-                                indicatorItems.add(item);
-                                item.indicatorTag = (start + "").toUpperCase();
+            container.plot(ui.wUnit(100), rHeight * contacts.size());
+            touchEnabled = true;
+        }
+        public void setupList() {
+            for (int i = 0; i < contacts.size(); i++) {
+                ContactRenderable cr = contacts.get(i);
+                cr.appIcon = new SView(new RoundedImageView(c), container.view);
 
-                                Bitmap b = Bitmap.createBitmap(item.appIcon.width(), item.appIcon.height(), Bitmap.Config.ARGB_8888);
-                                Paint p = new Paint();
-                                p.setColor(Color.RED);
-                                new Canvas(b).drawRect(0,0,b.getWidth(),b.getHeight(),p);
-                                ((ImageView)item.appIcon.view).setImageBitmap(ImageUtil.drawChar(80,50,item.indicatorTag,b));
-
-                                if (index != 0) {
-                                    SView.RLayout edit = items.get(index).container.openRLayout();
-                                    edit.addRule(RelativeLayout.BELOW, items.get(index - 1).container.view.getId());
-                                    edit.setTopM(ui.wUnit(15));
-                                    edit.save();
-                                }
-                                index++;
-                            }
-                        }else {
-                            if (Character.isDigit(start)) {
-                                if (prevCharacter == null || !Character.isDigit(prevCharacter)) {
-                                    Item item = genItem(container);
-                                    item.appIcon.openRLayout().setHeight(item.appIcon.height() *.6f).setWidth(item.appIcon.width() * .6f).addRule(RelativeLayout.CENTER_VERTICAL).save();
-                                    item.contactItem = false;
-                                    items.add(item);
-                                    indicatorItems.add(item);
-                                    item.indicatorTag = "#";
-
-                                    Bitmap b = Bitmap.createBitmap(item.appIcon.width(), item.appIcon.height(), Bitmap.Config.ARGB_8888);
-                                    Paint p = new Paint();
-                                    p.setColor(Color.RED);
-                                    new Canvas(b).drawRect(0,0,b.getWidth(),b.getHeight(),p);
-                                    ((ImageView)item.appIcon.view).setImageBitmap(ImageUtil.drawChar(80,50,"#",b));
-
-                                    if (index != 0) {
-                                        SView.RLayout edit = items.get(index).container.openRLayout();
-                                        edit.addRule(RelativeLayout.BELOW, items.get(index - 1).container.view.getId());
-                                        edit.setTopM(ui.wUnit(15));
-                                        edit.save();
-                                    }
-                                    index++;
-                                }
-                            } else {
-                                if (prevCharacter == null || Character.isDigit(prevCharacter) || Character.isLetter(prevCharacter)) {
-                                    Item item = genItem(container);
-                                    item.appIcon.openRLayout().setHeight(item.appIcon.height() *.6f).setWidth(item.appIcon.width() * .6f).addRule(RelativeLayout.CENTER_VERTICAL).save();
-                                    item.contactItem = false;
-                                    items.add(item);
-                                    indicatorItems.add(item);
-                                    item.indicatorTag = "&";
-
-                                    Bitmap b = Bitmap.createBitmap(item.appIcon.width(), item.appIcon.height(), Bitmap.Config.ARGB_8888);
-                                    Paint p = new Paint();
-                                    p.setColor(Color.RED);
-                                    new Canvas(b).drawRect(0,0,b.getWidth(),b.getHeight(),p);
-                                    ((ImageView)item.appIcon.view).setImageBitmap(ImageUtil.drawChar(80,50,"&",b));
-
-                                    if (index != 0) {
-                                        SView.RLayout edit = items.get(index).container.openRLayout();
-                                        edit.addRule(RelativeLayout.BELOW, items.get(index - 1).container.view.getId());
-                                        edit.setTopM(ui.wUnit(15));
-                                        edit.save();
-                                    }
-                                    index++;
-                                }
-                            }
-                        }
-
-                        items.add(genItem(container));
-                        if (index != 0) {
-                            SView.RLayout edit = items.get(index).container.openRLayout();
-                            edit.addRule(RelativeLayout.BELOW, items.get(index - 1).container.view.getId());
-                            edit.setTopM(ui.wUnit(15));
-                            edit.save();
-                        }
-
-                        prevCharacter = start;
-                        index++;
-                        cAdded++;
+                if (cr.contact != null) {
+                    float textHeight = rHeight / 7;
+                    if (cr.contact.photo != null) {
+                        ((ImageView) cr.appIcon.view).setImageBitmap(cr.contact.photo);
                     }
-                    while (contactIterator.hasNext()) {
-                        Contact current = contactIterator.next();
-                        for (int i = 0; i < items.size(); i++) {
-                            if (items.get(i).contactItem) {
-                                if (current.lastName != null) {
-                                    ((TextView) items.get(i).lastName.view).setText(current.lastName);
-                                }else{
-                                    items.get(i).lastName.remove();
-                                }
+                    cr.firstName = new SView(new TextView(c), container.view);
+                    cr.lastName = new SView(new TextView(c), container.view);
 
-                                ((TextView) items.get(i).firstName.view).setText(current.firstName);
-                                ((ImageView) items.get(i).appIcon.view).setImageBitmap(current.photo);
+                    ((TextView) cr.firstName.view).setMaxLines(1);
+                    ((TextView) cr.firstName.view).setEllipsize(TextUtils.TruncateAt.END);
+                    ((TextView) cr.firstName.view).setGravity(Gravity.CENTER);
+                    ((TextView) cr.firstName.view).setText(cr.contact.firstName);
+                    ((TextView) cr.firstName.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, textHeight * .75f);
 
-                                if (i == items.size() - 1) {
-                                    loading.view.setVisibility(View.INVISIBLE);
-                                    contactScroller.view.setVisibility(View.VISIBLE);
-                                    touchEnabled = true;
-                                }else{
-                                    current = contactIterator.next();
-                                }
-                            }
-                        }
-                    }
+
+                    ((TextView) cr.lastName.view).setMaxLines(1);
+                    ((TextView) cr.lastName.view).setEllipsize(TextUtils.TruncateAt.END);
+                    ((TextView) cr.lastName.view).setGravity(Gravity.CENTER);
+                    ((TextView) cr.lastName.view).setText(cr.contact.lastName);
+                    ((TextView) cr.lastName.view).setTextSize(TypedValue.COMPLEX_UNIT_PX, textHeight * .75f);
+
+                    cr.firstName.plot(rWidth, textHeight);
+                    cr.lastName.plot(rWidth, textHeight);
+                    cr.appIcon.plot(rWidth, rWidth);
+
+                    cr.appIcon.openRLayout()
+                            .setTopM((rHeight * i + (rHeight - (cr.appIcon.height() + cr.firstName.height() * 2)) / 2))
+                            .setLeftM((ui.wUnit(100) - cr.appIcon.width()) / 2)
+                            .save();
+
+                    cr.firstName.openRLayout()
+                            .setTopM(cr.appIcon.openRLayout().getTopM() + cr.appIcon.height())
+                            .setLeftM((ui.wUnit(100) - cr.appIcon.width()) / 2)
+                            .save();
+
+                    cr.lastName.openRLayout()
+                            .setTopM(cr.appIcon.openRLayout().getTopM() + cr.appIcon.height() + cr.firstName.height())
+                            .setLeftM((ui.wUnit(100) - cr.appIcon.width()) / 2)
+                            .save();
+                }else{
+                    Bitmap b = Bitmap.createBitmap((int)rWidth, (int)rWidth, Bitmap.Config.ARGB_8888);
+                    Paint p = new Paint();
+                    p.setColor(Color.RED);
+                    new Canvas(b).drawRect(0,0,b.getWidth(),b.getHeight(),p);
+                    ((ImageView)cr.appIcon.view).setImageBitmap(ImageUtil.drawChar(80,50,cr.start + "",b));
+
+                    cr.appIcon.plot(rWidth / 2, rWidth / 2);
+                    cr.appIcon.openRLayout()
+                            .setTopM((rHeight * i + (rHeight - cr.appIcon.height()) / 2))
+                            .setLeftM((ui.wUnit(100) - cr.appIcon.width()) / 2)
+                            .save();
                 }
-            };
-
-            container.plot(ui.wUnit(100), ScrollView.LayoutParams.WRAP_CONTENT);
-
-            if (Contact.loadedContactInfo) {
-                setUpContactList.run();
-            }else {
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        if (UserInterface.running()) {
-                            if (Contact.loadedContactInfo && UserInterface.shouldMove()) {
-                                setUpContactList.run();
-                            } else {
-                                loading.view.setVisibility(View.VISIBLE);
-                                contactScroller.view.setVisibility(View.INVISIBLE);
-                                touchEnabled = false;
-                                new Handler().postDelayed(this, 1);
-                            }
-                        }
-                    }
-                }.run();
             }
-
+        }
+        public void setupScroller() {
             contactScroller.view.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
@@ -250,8 +180,9 @@ public class ContactList {
                                 alphabetScroller.currentAnim.cancel();
                             }
                             alphabetScroller.view.setVisibility(View.VISIBLE);
-                        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        }else if (event.getAction() == MotionEvent.ACTION_UP) {
                             scrollerInUse = false;
+
                             final Handler handler = new Handler();
                             handler.postDelayed(new Runnable() {
                                 public int prevScrollY = contactScroller.view.getScrollY();
@@ -276,7 +207,7 @@ public class ContactList {
                                         prevScrollY = contactScroller.view.getScrollY();
                                     }
                                 }
-                            }, 1);
+                            },1);
                         }
                     }else{
                         return true;
@@ -319,7 +250,7 @@ public class ContactList {
                         if (newIndicator != currentIndicator) {
                             currentIndicator = newIndicator;
                             Bitmap b = BitmapFactory.decodeResource(c.getResources(), R.drawable.scroller_letter_icon);
-                            b = ImageUtil.drawChar(50,40, indicatorItems.get(currentIndicator).indicatorTag, b);
+                            b = ImageUtil.drawChar(50,40, indicators.get(currentIndicator).start + "", b);
 
                             ((ImageView)alphabetScrollerLetter.view).setImageBitmap(b);
                         }
@@ -345,8 +276,8 @@ public class ContactList {
                 }
                 public int checkIndicator() {
                     int indicator = currentIndicator;
-                    for (int i = indicatorItems.size() - 1; i >= 0; i--) {
-                        int yPos = indicatorItems.get(i).appIcon.y() + indicatorItems.get(i).appIcon.height();
+                    for (int i = indicators.size() - 1; i >= 0; i--) {
+                        int yPos = indicators.get(i).appIcon.y() + indicators.get(i).appIcon.height();
 
                         if (yPos <= contactScroller.height() + contactScroller.y()) {
                             indicator = i;
@@ -379,61 +310,47 @@ public class ContactList {
                 }
             });
         }
+        public void setupContactRenderables() {
+            char currentIndicator = ' ';
+            for (int i = 0; i < Contact.contacts.size(); i++) {
+                Contact c = Contact.contacts.get(i);
+                char start = c.displayName.charAt(0);
 
-        public int pWidth(float percent) {
-            return (int)(contactScroller.width() / 100f * percent);
-        }
-        private Item genItem(SView parent) {
-            Item item;
-
-            SView container = new SView(new RelativeLayout(c), parent.view);
-            Util.generateViewId(container.view);
-            container.plot();
-            container.openRLayout().setWidth(pWidth(80)).setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT).setLeftM(pWidth(10)).save();
-
-            final SView appIcon = new SView(new RoundedImageView(c), container.view);
-            ImageUtil.setImageDrawable(appIcon.view, R.drawable.contact_icon);
-            appIcon.plot();
-            appIcon.openRLayout().setWidth(container.width()).setHeight(container.width()).addRule(RelativeLayout.CENTER_HORIZONTAL).save();
-
-            SView firstName = new SView(new TextView(c), container.view);
-            ((TextView) firstName.view).setMaxLines(1);
-            ((TextView) firstName.view).setEllipsize(TextUtils.TruncateAt.END);
-            ((TextView) firstName.view).setGravity(Gravity.CENTER_HORIZONTAL);
-            firstName.plot();
-            Util.generateViewId(firstName.view);
-            firstName.openRLayout()
-                    .setWidth(container.width())
-                    .setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT)
-                    .setTopM(container.width())
-                    .save();
-
-            SView lastName = new SView(new TextView(c), container.view);
-            ((TextView) lastName.view).setMaxLines(1);
-            ((TextView) lastName.view).setEllipsize(TextUtils.TruncateAt.END);
-            ((TextView) lastName.view).setGravity(Gravity.CENTER_HORIZONTAL);
-            lastName.plot();
-            lastName.openRLayout()
-                    .addRule(RelativeLayout.BELOW, firstName.view.getId())
-                    .setWidth(container.width())
-                    .setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT)
-                    .save();
-
-            item = new Item(container, appIcon, firstName, lastName);
-
-            return item;
-        }
-        public class Item {
-            public SView container, appIcon, firstName, lastName;
-            public String indicatorTag;
-            public boolean contactItem = true;
-
-            public Item(SView container, SView appIcon, SView firstName, SView lastName) {
-                this.container = container;
-                this.appIcon = appIcon;
-                this.firstName = firstName;
-                this.lastName = lastName;
+                if (Character.isLetter(start)) {
+                    if (currentIndicator != start) {
+                        ContactRenderable cr = new ContactRenderable();
+                        cr.start = start;
+                        contacts.add(cr);
+                        indicators.add(cr);
+                        currentIndicator = start;
+                    }
+                }else {
+                    char indicator;
+                    if (Character.isDigit(start)) {
+                        indicator = '#';
+                    }else{
+                        indicator = '&';
+                    }
+                    if (currentIndicator != indicator) {
+                        ContactRenderable cr = new ContactRenderable();
+                        cr.start = indicator;
+                        contacts.add(cr);
+                        indicators.add(cr);
+                        currentIndicator = indicator;
+                    }
+                }
+                ContactRenderable cr = new ContactRenderable();
+                cr.contact = c;
+                contacts.add(cr);
             }
+        }
+
+        public class ContactRenderable {
+            public Contact contact;
+            public char start;
+            public SView appIcon, firstName, lastName;
+
+            public boolean initialized = false;
         }
     }
 }

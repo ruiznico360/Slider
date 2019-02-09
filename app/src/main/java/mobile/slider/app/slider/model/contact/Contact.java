@@ -84,7 +84,7 @@ public class Contact {
             for (int p = unicodes.get(i).length() - ID_TAG.length(); p >= 0; p--) {
                 if (unicodes.get(i).substring(p, p + ID_TAG.length()).equals(ID_TAG)) {
                     Contact c = new Contact(unicodes.get(i).substring(0, p), unicodes.get(i).substring(p + ID_TAG.length(), unicodes.get(i).length()));
-                    for (int x = 0; x < 25; x++) {
+                    for (int x = 0; x < 1; x++) {
                         contacts.add(c);
                     }
                 }
@@ -94,7 +94,7 @@ public class Contact {
             for (int p = letterNames.get(i).length() - ID_TAG.length(); p >= 0; p--) {
                 if (letterNames.get(i).substring(p, p + ID_TAG.length()).equals(ID_TAG)) {
                     Contact c = new Contact(letterNames.get(i).substring(0, p), letterNames.get(i).substring(p + ID_TAG.length(), letterNames.get(i).length()));
-                    for (int x = 0; x < 25; x++) {
+                    for (int x = 0; x < 1; x++) {
                         contacts.add(c);
                     }
                 }
@@ -104,7 +104,7 @@ public class Contact {
             for (int p = numNames.get(i).length() - ID_TAG.length(); p >= 0; p--) {
                 if (numNames.get(i).substring(p, p + ID_TAG.length()).equals(ID_TAG)) {
                     Contact c = new Contact(numNames.get(i).substring(0, p), numNames.get(i).substring(p + ID_TAG.length(), numNames.get(i).length()));
-                    for (int x = 0; x < 25; x++) {
+                    for (int x = 0; x < 1; x++) {
                         contacts.add(c);
                     }
                 }
@@ -125,13 +125,12 @@ public class Contact {
         loadedContactInfo = true;
     }
     public void loadPhoto() {
-        Bitmap b = BitmapFactory.decodeResource(SystemOverlay.service.getResources(), R.drawable.contact_icon_background);
-        String initials = firstName.charAt(0) + (lastName != null ? lastName.charAt(0) + "" : "");
-        b = ImageUtil.drawChar(50,50,initials.toUpperCase(),b);
         try {
-            b = MediaStore.Images.Media.getBitmap(SystemOverlay.service.getContentResolver(), Uri.parse(photoURI));
-        }catch (Exception e) { }
-        photo = b;
-
+            photo = MediaStore.Images.Media.getBitmap(SystemOverlay.service.getContentResolver(), Uri.parse(photoURI));
+        }catch (Exception e) {
+            Bitmap b = BitmapFactory.decodeResource(SystemOverlay.service.getResources(), R.drawable.contact_icon_background);
+            String initials = firstName.charAt(0) + (lastName != null ? lastName.charAt(0) + "" : "");
+            photo = ImageUtil.drawChar(50,50,initials.toUpperCase(),b);
+        }
     }
 }

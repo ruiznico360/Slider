@@ -261,7 +261,6 @@ public class EQMath {
         }
 
         public String pow() {
-
             double maxD = Math.pow(num1.getNumerator().divide(num1.getDenominator()).doubleValue(), num2.getNumerator().divide(num2.getDenominator()).doubleValue());
 
             String max = max(maxD);

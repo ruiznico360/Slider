@@ -301,7 +301,7 @@ public class SystemOverlay extends Service {
                     sysTask.run();
                     handler.postDelayed(this,5000);
                 }
-            }, 5000);
+            }, 10000);
         }
     }
 
