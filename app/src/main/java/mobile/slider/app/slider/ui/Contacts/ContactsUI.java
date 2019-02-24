@@ -47,6 +47,7 @@ public class ContactsUI extends UIClass {
     }
 
     public void setup() {
+        super.setup();
         UserInterface.UI.resize(Util.displayWidth() / 4);
         mainLayout = new SView(new RelativeLayout(c), UserInterface.UI.inner.view);
         mainLayout.plot(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -79,8 +80,5 @@ public class ContactsUI extends UIClass {
     }
     public void backPressed() {
         UserInterface.UI.launchNewWindow(UserInterface.UI_WINDOW);
-    }
-    public void remove() {
-
     }
 }

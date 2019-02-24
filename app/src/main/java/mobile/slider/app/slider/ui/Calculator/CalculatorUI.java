@@ -78,6 +78,7 @@ public class CalculatorUI extends UIClass {
         return UserInterface.CALCULATOR_WINDOW;
     }
     public void setup() {
+        super.setup();
         calcHandler = new CalcHandler(this);
         UserInterface.UI.resize(Util.displayWidth() / 2);
         mainLayout = new SView(new RelativeLayout(c), UserInterface.UI.inner.view);
@@ -279,7 +280,6 @@ public class CalculatorUI extends UIClass {
         }
     }
 
-    public void remove() { }
     public void backPressed() {
         UserInterface.UI.launchNewWindow(UserInterface.UI_WINDOW);
     }

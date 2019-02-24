@@ -78,16 +78,6 @@ public class UserInterface {
         edit.setWidth(width);
         edit.save();
     }
-    public class g extends RelativeLayout {
-        public g(Context c) {
-            super(c);
-        }
-
-        @Override
-        public void draw(Canvas canvas) {
-            super.draw(canvas);
-        }
-    }
     public void setup() {
         running = true;
         int size = Util.displayWidth() / 4;
@@ -115,7 +105,7 @@ public class UserInterface {
         }
         container = new SWindowLayout(new UIView.UIContainer(c));
         UserInterface.UI.container.layout.setVisibility(View.INVISIBLE);
-        inner = new SView(new g(c), container.layout);
+        inner = new SView(new RelativeLayout(c), container.layout);
 
         UserInterface.UI.container.plot(params);
         inner.plot();
@@ -221,6 +211,7 @@ public class UserInterface {
         if (SystemOverlay.periodicRunnableHandler.tasks.contains(deviceStateRunnable)) {
             SystemOverlay.periodicRunnableHandler.tasks.remove(deviceStateRunnable);
         }
+        currentView.disbleHandler();
 
         if (inner.currentAnim != null) {
             inner.currentAnim.cancel();

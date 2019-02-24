@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import mobile.slider.app.slider.R;
+import mobile.slider.app.slider.model.RoundedImageView;
 import mobile.slider.app.slider.services.SystemOverlay;
 import mobile.slider.app.slider.settings.SettingsUtil;
 
@@ -49,13 +50,21 @@ public class ImageUtil {
         }
     }
 
+    public static Bitmap mutableBitmap(int id) {
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inMutable = true;
+        o.inPurgeable = true;
+        o.inInputShareable = true;
+        return BitmapFactory.decodeResource(SystemOverlay.service.getResources(), id, o);
+
+    }
     public static Bitmap drawChar(float sizePerc, float marginPerc, String text, Bitmap output) {
         sizePerc /= 100f;
         marginPerc /= 100f;
 
         Paint p = new Paint();
         p.setTextSize((int)(output.getHeight() * sizePerc));
-        Bitmap bitmap = output.copy(Bitmap.Config.ARGB_8888, true);
+        Bitmap bitmap = output;
         Canvas c = new Canvas(bitmap);
 
         p.setTextAlign(Paint.Align.CENTER);

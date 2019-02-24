@@ -129,7 +129,7 @@ public class Util {
         return dm.heightPixels;
     }
 
-    public static void logM(Object... args) {
+    public static void log(Object... args) {
         String s = "MULTI-LOG: " + args[0].toString();
 
         for (int i = 1; i < args.length; i++) {

@@ -15,6 +15,7 @@ public class SView {
     public ViewGroup container;
     public ViewGroup.LayoutParams params;
     public Anim currentAnim;
+    public boolean plotted = false;
 
     public SView(View view, View container) {
         this.view = view;
@@ -22,16 +23,24 @@ public class SView {
     }
 
     public int x() {
-        int[] loc = new int[2];
-        view.getLocationOnScreen(loc);
-        return loc[0] - (int)view.getTranslationX();
-
+        return displayX() - (int)view.getTranslationX();
     }
     public int y() {
+        return displayY() - (int)view.getTranslationY();
+    }
+
+    public int displayX() {
         int[] loc = new int[2];
         view.getLocationOnScreen(loc);
-        return loc[1] - (int)view.getTranslationY();
+        return loc[0];
+
     }
+    public int displayY() {
+        int[] loc = new int[2];
+        view.getLocationOnScreen(loc);
+        return loc[1];
+    }
+
     public int width() {
         if (view.getMeasuredWidth() > 0) {
             return view.getMeasuredWidth();
@@ -68,14 +77,17 @@ public class SView {
     public void plot() {
         container.addView(view);
         params = view.getLayoutParams();
+        plotted = true;
     }
     public void remove() {
+        plotted = false;
         view.setVisibility(View.INVISIBLE);
         container.removeView(view);
     }
     public void plot(float width, float height) {
         container.addView(view,Math.round(width),Math.round(height));
         params = view.getLayoutParams();
+        plotted = true;
     }
     public Layout openLayout() {
         params = view.getLayoutParams();

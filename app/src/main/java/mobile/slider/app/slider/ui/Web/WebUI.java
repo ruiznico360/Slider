@@ -55,6 +55,7 @@ public class WebUI extends UIClass {
     }
 
     public void setup() {
+        super.setup();
         UserInterface.UI.resize(Util.displayWidth() / 2);
         mainLayout = new SView(new RelativeLayout(c), UserInterface.UI.inner.view);
         mainLayout.plot(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -287,6 +288,7 @@ public class WebUI extends UIClass {
         }
     }
     public void remove() {
+        super.remove();
         if (searchEdit != null && searchEdit.view.hasFocus()) {
             hideKeyboard();
         }

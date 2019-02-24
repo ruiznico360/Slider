@@ -81,6 +81,7 @@ public class UIView {
         public void setScrollEvent(Runnable r) {
             scrollEvent = r;
         }
+
         @Override
         public boolean onTouchEvent(MotionEvent event) {
             if (UserInterface.shouldMove()) {
@@ -88,6 +89,9 @@ public class UIView {
             }else{
                 return false;
             }
+        }
+        public static abstract class Draw {
+            public abstract void draw(Canvas c);
         }
     }
 }

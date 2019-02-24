@@ -39,14 +39,11 @@ public class MainUI extends UIClass{
         this.c = context;
     }
 
-    public void remove() {
-
-    }
-
     public void backPressed() {
         UserInterface.UI.remove();
     }
     public void setup() {
+        super.setup();
         UserInterface.UI.resize(Util.displayWidth() / 4);
         this.inner = UserInterface.UI.inner;
         mainLayout = (ViewGroup)inner.view;
