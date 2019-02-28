@@ -14,6 +14,7 @@ import android.widget.ScrollView;
 
 import java.util.Collection;
 
+import mobile.slider.app.slider.ui.Contacts.ContactList;
 import mobile.slider.app.slider.ui.UserInterface;
 import mobile.slider.app.slider.util.Util;
 
@@ -56,6 +57,7 @@ public class UIView {
     public static class MScrollView extends ScrollView {
         private Runnable scrollEvent;
         public int prevScrollY = 0;
+
         public MScrollView(Context c) {
             super(c);
 
@@ -89,9 +91,6 @@ public class UIView {
             }else{
                 return false;
             }
-        }
-        public static abstract class Draw {
-            public abstract void draw(Canvas c);
         }
     }
 }

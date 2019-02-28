@@ -4,6 +4,13 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.ContactsContract;
@@ -85,11 +92,12 @@ public class Contact {
         Collections.sort(numNames);
         Collections.sort(unicodes);
 
+        int test = 10;
         for (int i = 0; i < unicodes.size(); i++) {
             for (int p = unicodes.get(i).length() - ID_TAG.length(); p >= 0; p--) {
                 if (unicodes.get(i).substring(p, p + ID_TAG.length()).equals(ID_TAG)) {
-                    Contact c = new Contact(unicodes.get(i).substring(0, p), unicodes.get(i).substring(p + ID_TAG.length(), unicodes.get(i).length()));
-                    for (int x = 0; x < 10; x++) {
+                    for (int x = 0; x < test; x++) {
+                        Contact c = new Contact(unicodes.get(i).substring(0, p), unicodes.get(i).substring(p + ID_TAG.length(), unicodes.get(i).length()));
                         contacts.add(c);
                     }
                 }
@@ -98,8 +106,8 @@ public class Contact {
         for (int i = 0; i < letterNames.size(); i++) {
             for (int p = letterNames.get(i).length() - ID_TAG.length(); p >= 0; p--) {
                 if (letterNames.get(i).substring(p, p + ID_TAG.length()).equals(ID_TAG)) {
-                    Contact c = new Contact(letterNames.get(i).substring(0, p), letterNames.get(i).substring(p + ID_TAG.length(), letterNames.get(i).length()));
-                    for (int x = 0; x < 10; x++) {
+                    for (int x = 0; x < test; x++) {
+                        Contact c = new Contact(letterNames.get(i).substring(0, p), letterNames.get(i).substring(p + ID_TAG.length(), letterNames.get(i).length()));
                         contacts.add(c);
                     }
                 }
@@ -108,8 +116,8 @@ public class Contact {
         for (int i = 0; i < numNames.size(); i++) {
             for (int p = numNames.get(i).length() - ID_TAG.length(); p >= 0; p--) {
                 if (numNames.get(i).substring(p, p + ID_TAG.length()).equals(ID_TAG)) {
-                    Contact c = new Contact(numNames.get(i).substring(0, p), numNames.get(i).substring(p + ID_TAG.length(), numNames.get(i).length()));
-                    for (int x = 0; x < 10; x++) {
+                    for (int x = 0; x < test; x++) {
+                        Contact c = new Contact(numNames.get(i).substring(0, p), numNames.get(i).substring(p + ID_TAG.length(), numNames.get(i).length()));
                         contacts.add(c);
                     }
                 }
@@ -129,12 +137,36 @@ public class Contact {
         loadedContactInfo = true;
     }
     public void loadPhoto() {
+        if (photo != null) return;
         try {
-            photo = MediaStore.Images.Media.getBitmap(SystemOverlay.service.getContentResolver(), Uri.parse(photoURI));
+
+            Bitmap b = MediaStore.Images.Media.getBitmap(SystemOverlay.service.getContentResolver(), Uri.parse(photoURI));
+            Bitmap output = Bitmap.createBitmap(b.getWidth(), b.getHeight(),
+                    Bitmap.Config.ARGB_8888);
+
+            Canvas canvas = new Canvas(output);
+            Paint p = new Paint();
+            p.setAntiAlias(true);
+            p.setFilterBitmap(true);
+            p.setDither(true);
+            p.setColor(Color.parseColor("#BAB399"));
+            canvas.drawCircle(output.getWidth() / 2, output.getWidth() / 2, output.getWidth() / 2 - 0.3f, p);
+            p.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+
+            Rect rect = new Rect(0, 0, output.getWidth(), output.getHeight());
+            p.setColor(Color.RED);
+            canvas.drawBitmap(b, rect, rect,p);
+            photo = output;
         }catch (Exception e) {
             Bitmap b = ImageUtil.mutableBitmap(R.drawable.contact_icon_background);
             String initials = firstName.charAt(0) + (lastName != null ? lastName.charAt(0) + "" : "");
             photo = ImageUtil.drawChar(50, 50, initials.toUpperCase(), b);
+        }
+    }
+    public void unloadPhoto() {
+        if (photo != null) {
+            photo.recycle();
+            photo = null;
         }
     }
 }

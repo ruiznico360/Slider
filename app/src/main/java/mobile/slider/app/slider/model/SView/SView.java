@@ -74,6 +74,11 @@ public class SView {
             }
         });
     }
+    public void plot(float width, float height, int order) {
+        params = new ViewGroup.LayoutParams(Math.round(width),Math.round(height));
+        container.addView(view, order, params);
+        plotted = true;
+    }
     public void plot() {
         container.addView(view);
         params = view.getLayoutParams();
