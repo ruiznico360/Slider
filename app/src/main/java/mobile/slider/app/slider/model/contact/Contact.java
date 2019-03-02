@@ -34,15 +34,17 @@ public class Contact {
     public static ArrayList<Contact> contacts = new ArrayList<Contact>();
     public static final String ID_TAG = "CONTACT_ID#";
     public static boolean loadedContactIds = false;
-    public static boolean loadedContactInfo = false;
+    public static String INVALID = "INVALID";
 
     public String id, displayName,photoURI, firstName, lastName;
+    public boolean loadingPhoto = false, unload = false;
     public ArrayList<String> numbers = new ArrayList<>();
     public Bitmap photo;
 
     public Contact(String displayName, String id) {
         this.displayName = displayName;
         this.id = id;
+        this.photoURI = INVALID;
 
         String[] arr = displayName.split(" ");
 
@@ -55,7 +57,6 @@ public class Contact {
     }
 
     public static ArrayList<Contact> retrieveContacts() {
-        long start = SystemClock.uptimeMillis();
         ArrayList<Contact> contacts = new ArrayList<>();
         ArrayList<String> letterNames = new ArrayList<>(), numNames = new ArrayList<>(), unicodes = new ArrayList<>();
 
@@ -79,10 +80,10 @@ public class Contact {
                 cursor.close();
             }
         }
+
         alphabetize(letterNames, numNames, unicodes, contacts);
         loadedContactIds = true;
 
-//        Util.log((SystemClock.uptimeMillis() - start) + " time to load " + contacts.size() + " contacts");
         return contacts;
 
     }
@@ -92,7 +93,7 @@ public class Contact {
         Collections.sort(numNames);
         Collections.sort(unicodes);
 
-        int test = 10;
+        int test = 1;
         for (int i = 0; i < unicodes.size(); i++) {
             for (int p = unicodes.get(i).length() - ID_TAG.length(); p >= 0; p--) {
                 if (unicodes.get(i).substring(p, p + ID_TAG.length()).equals(ID_TAG)) {
@@ -124,22 +125,26 @@ public class Contact {
             }
         }
     }
-    public static void retrieveContactInfo() {
-        loadedContactInfo = false;
-        for (int i = 0; i < contacts.size(); i++) {
-            Cursor pCur = SystemOverlay.service.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME +" = ?", new String[]{contacts.get(i).displayName}, null);
-            while (pCur.moveToNext()) {
-                contacts.get(i).numbers.add(pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
-                contacts.get(i).photoURI = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
-            }
-            pCur.close();
+    public void retrieveContactInfo() {
+        Cursor pCur = SystemOverlay.service.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME +" = ?", new String[]{displayName}, null);
+        while (pCur.moveToNext()) {
+            numbers.add(pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
         }
-        loadedContactInfo = true;
+        pCur.close();
     }
+
     public void loadPhoto() {
         if (photo != null) return;
-        try {
 
+        loadingPhoto = true;
+        if (photoURI == null || photoURI.equals(INVALID)) {
+            Cursor pCur = SystemOverlay.service.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME +" = ?", new String[]{displayName}, null);
+            while (pCur.moveToNext()) {
+                photoURI = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
+            }
+        }
+
+        try {
             Bitmap b = MediaStore.Images.Media.getBitmap(SystemOverlay.service.getContentResolver(), Uri.parse(photoURI));
             Bitmap output = Bitmap.createBitmap(b.getWidth(), b.getHeight(),
                     Bitmap.Config.ARGB_8888);
@@ -156,14 +161,38 @@ public class Contact {
             Rect rect = new Rect(0, 0, output.getWidth(), output.getHeight());
             p.setColor(Color.RED);
             canvas.drawBitmap(b, rect, rect,p);
-            photo = output;
+
+            if (unload) {
+                unloadBitmap();
+                unload = false;
+            }else{
+                photo = output;
+            }
+
         }catch (Exception e) {
             Bitmap b = ImageUtil.mutableBitmap(R.drawable.contact_icon_background);
             String initials = firstName.charAt(0) + (lastName != null ? lastName.charAt(0) + "" : "");
-            photo = ImageUtil.drawChar(50, 50, initials.toUpperCase(), b);
+            b = ImageUtil.drawChar(50, 50, initials.toUpperCase(), b);
+
+            if (unload) {
+                unloadBitmap();
+                unload = false;
+            }else{
+                photo = b;
+            }
         }
+
+        loadingPhoto = false;
     }
     public void unloadPhoto() {
+        if (loadingPhoto) {
+            unload = true;
+        }else{
+            unloadBitmap();
+        }
+    }
+    private void unloadBitmap() {
+//        photoURI = null;
         if (photo != null) {
             photo.recycle();
             photo = null;

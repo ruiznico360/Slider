@@ -171,7 +171,7 @@ public class SystemOverlay extends Service {
             @Override
             public void run() {
                 Contact.contacts = Contact.retrieveContacts();
-                Contact.retrieveContactInfo();
+//                Contact.retrieveContactInfo();
             }
         };
         thread.start();
@@ -272,9 +272,9 @@ public class SystemOverlay extends Service {
                     @Override
                     public void run() {
                         if (!UserInterface.running()) {
-                            if (Contact.loadedContactInfo) {
+                            if (Contact.loadedContactIds) {
                                 Contact.contacts = Contact.retrieveContacts();
-                                Contact.retrieveContactInfo();
+//                                Contact.retrieveContactInfo();
                             }
                         }
                     }
