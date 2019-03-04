@@ -51,8 +51,11 @@ public class Contact {
         if (arr.length < 2) {
             firstName = arr[0];
         } else {
-            firstName = arr[0];
+            firstName = arr[0] + " ";
             lastName = arr[arr.length - 1];
+            for (int i = 1; i < arr.length - 1; i++) {
+                firstName += arr[i] + " ";
+            }
         }
     }
 

@@ -236,6 +236,7 @@ public class ContactList {
                                 alphabetScroller.view.setVisibility(View.INVISIBLE);
                             }
                         });
+
                         anim.start();
                     }
                     return true;
@@ -387,7 +388,7 @@ public class ContactList {
                     public long prevMovementTime = 0;
                     public float prevVel = 0;
                     public float velScroll = 0;
-                    public final float MAX_VEL = 30;
+                    public final float MAX_VEL = 60;
 
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
@@ -415,7 +416,7 @@ public class ContactList {
 
                             updateAlphabetScroller(event.getAction());
                         }else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                            velScroll =  Math.abs(prevVel) > MAX_VEL ? (prevVel < 0 ? -MAX_VEL : MAX_VEL) : prevVel * 25f;
+                            velScroll =  Math.abs(prevVel) > MAX_VEL ? (prevVel < 0 ? -MAX_VEL : MAX_VEL) : prevVel * 40f;
 
                             ui.postDelayed(new Runnable() {
                                 @Override
@@ -446,6 +447,8 @@ public class ContactList {
                                 }
                             },1);
                             updateAlphabetScroller(event.getAction());
+
+                            return false;
                         }
                         return true;
                     }
